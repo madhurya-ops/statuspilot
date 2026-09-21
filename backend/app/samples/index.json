@@ -1,0 +1,20 @@
+[
+  {
+    "id": "northwind-sprint-review",
+    "title": "Sprint review — mostly on track",
+    "description": "Northwind Bank loan portal. Clear owners and dates, one client dependency and one unconfirmed assumption. Should come out Amber.",
+    "filename": "sprint_review_northwind.txt"
+  },
+  {
+    "id": "contoso-escalation",
+    "title": "Client escalation — go-live slipped",
+    "description": "Contoso Insurance claims migration. A blocking defect, a late vendor and a month's slip. Should come out Red, with one internal remark held back from the client.",
+    "filename": "client_escalation_contoso.txt"
+  },
+  {
+    "id": "rough-standup-notes",
+    "title": "Rough standup notes — messy",
+    "description": "Abbreviated bullets, vague items and unassigned actions. Deliberately produces low-confidence items for the review queue.",
+    "filename": "rough_notes_standup.txt"
+  }
+]

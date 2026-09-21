@@ -1,0 +1,52 @@
+Northwind Bank - Loan Origination Portal
+Sprint 14 Review
+Date: 12 March 2026
+Attendees: Priya Nair (Delivery Manager), Marcus Webb (Tech Lead), Anita Rao (QA Lead), Tom Fielding (Business Analyst), Jonas Kern (Northwind, Product Owner)
+
+Priya Nair: Morning everyone. Sprint 14 review, we have about forty minutes. Agenda is the same as usual - sprint goal, demo, defects, then UAT readiness and anything for the risk log.
+Priya Nair: Marcus, do you want to start with where we landed against the sprint goal?
+Marcus Webb: Sure. The goal was to complete the document upload service and get the credit decision engine talking to the new rules API. Both are done and merged.
+Marcus Webb: Document upload went in on Tuesday. We are handling PDF, JPEG and PNG, with the twenty megabyte cap Jonas asked for.
+Marcus Webb: The rules API integration took longer than we sized it. We estimated five points and it was closer to eight, mostly because their error responses are not consistent.
+Marcus Webb: Right. We have a wrapper handling both now, so it is contained.
+Priya Nair: Did that overrun cost us anything else in the sprint?
+Marcus Webb: We dropped the audit log export story. It was the lowest priority item and nobody is blocked by it.
+Priya Nair: Agreed, that carries to Sprint 15.
+Priya Nair: Anita, defects?
+Anita Rao: We closed eleven and opened four. Three of the four are cosmetic - spacing on the applicant summary screen, a truncated label in Welsh, and a date format that shows US order on one report.
+Anita Rao: The fourth one is more interesting. If an applicant uploads a document and then hits back before the upload finishes, the record ends up with a document reference pointing at nothing.
+Jonas Kern: How often would that happen in practice?
+Anita Rao: Rarely, but a branch user on a slow connection could hit it. The record looks complete and is not.
+Marcus Webb: I'll take that one. It needs the upload to be transactional rather than fire and forget. I should have it done by Thursday.
+Priya Nair: Marcus to fix the orphaned document reference defect by Thursday. Noted.
+Anita Rao: I'd call that one high severity even though it is low frequency, because the data ends up wrong and nobody knows.
+Priya Nair: Fair. Let us log it as high.
+Tom Fielding: On the demo - I walked Jonas through the applicant journey on Monday and the feedback was good.
+Jonas Kern: It was. The one thing I raised was the wording on the affordability declaration. Legal want specific phrasing.
+Tom Fielding: Jonas is sending me the approved wording. Once I have it, it is a ten minute change.
+Priya Nair: Jonas, when do you think you will have that?
+Jonas Kern: I'll chase legal this week. I would say by the twentieth.
+Priya Nair: Tom to update the affordability declaration wording once Northwind legal provides it, expected 20 March.
+Priya Nair: Now, UAT readiness. This is the part I want to spend time on.
+Anita Rao: We are ready from a build point of view. What we do not have is test data.
+Anita Rao: We need around two hundred anonymised applicant records to exercise the decision engine properly. Synthetic data does not hit the edge cases.
+Jonas Kern: That has to come from our side. I will need to talk to the data governance team.
+Priya Nair: How long does that normally take at Northwind?
+Jonas Kern: Honestly, it varies. Two weeks if it is straightforward, longer if they want a new data sharing agreement.
+Priya Nair: UAT starts on the sixth of April. If the data arrives late, we lose the first week of UAT.
+Anita Rao: We have been assuming the anonymised data would be available by the end of March. That assumption is not confirmed anywhere.
+Priya Nair: Then let us put it in the log properly as an assumption, not a fact.
+Priya Nair: And the dependency is on Northwind's data governance team providing the anonymised records.
+Jonas Kern: Understood. I will raise it on Monday and come back to you with a date.
+Priya Nair: Jonas to confirm the anonymised test data date with Northwind data governance, by Monday 16 March.
+Marcus Webb: One more thing. The UAT environment is still pointing at the old rules API endpoint.
+Marcus Webb: It needs repointing before UAT or nothing will work. It is a config change, maybe an hour.
+Priya Nair: Who owns that?
+Marcus Webb: Infrastructure, but I can raise the ticket.
+Priya Nair: Marcus to raise the infrastructure ticket to repoint the UAT environment to the new rules API, before 6 April.
+Tom Fielding: Should we flag anything to the steering committee?
+Priya Nair: The test data dependency, yes. Everything else is inside our control.
+Priya Nair: Overall I would call the project amber rather than green, purely because of the test data. Delivery itself is on track.
+Jonas Kern: That seems fair to me. I would rather see amber with a reason than green with a surprise later.
+Priya Nair: Agreed. Anything else?
+Priya Nair: Thanks everyone. Sprint 15 planning is Thursday at ten.

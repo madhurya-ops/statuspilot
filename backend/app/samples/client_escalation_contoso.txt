@@ -1,0 +1,54 @@
+Contoso Insurance - Claims Platform Migration
+Weekly Client Call
+Date: 12 March 2026
+Attendees: Priya Nair (Delivery Manager), Raj Menon (Solution Architect), Elena Fischer (Test Manager), Diane Okafor (Contoso, Programme Director), Bill Hartley (Contoso, Head of Claims Ops)
+
+Priya Nair: Thanks for joining. I want to be straight with you today rather than walk through a status deck.
+Priya Nair: The go-live date of the thirtieth of April is no longer achievable. I will explain why and what we are proposing.
+Diane Okafor: I appreciate the directness. Go on.
+Priya Nair: Three things have converged. Raj, do you want to cover the migration defect?
+Raj Menon: Yes. During the second dress rehearsal we found that claims with more than one linked policy migrate with the policy links dropped.
+Raj Menon: The claim record arrives, the financials are correct, but the link back to the secondary policy is gone.
+Bill Hartley: How many claims does that affect?
+Raj Menon: About nine percent of the historical set. Roughly forty one thousand records.
+Bill Hartley: That is not a rounding error. Those are our complex claims, the ones that matter most.
+Raj Menon: Agreed. It is a defect in the transformation logic, not the data. We can fix it, but every fix has to be followed by a full rehearsal to prove it.
+Priya Nair: And a full rehearsal is a five day cycle.
+Elena Fischer: That is the second problem. UAT cannot start while this is open. We would be testing against data we know is wrong.
+Elena Fischer: We have twenty three UAT scripts ready and eleven testers booked from Contoso's side. They are effectively idle.
+Diane Okafor: Those testers were released from their day roles specifically for this window.
+Priya Nair: I know, and I am sorry. Holding them idle is not acceptable, so we need to agree a new window today.
+Priya Nair: The third issue is the vendor. Raj?
+Raj Menon: The document storage API from the vendor was due on the twenty eighth of February. It is still not delivered.
+Raj Menon: Their latest commitment is the twenty seventh of March, which is the third date they have given us.
+Diane Okafor: Is that contract ours or yours?
+Priya Nair: It is a Contoso contract. We have no leverage with them directly.
+Diane Okafor: Then I will escalate it. I will speak to their account director this week.
+Priya Nair: Diane to escalate the document storage API delay with the vendor account director this week.
+Bill Hartley: What is the new go-live date?
+Priya Nair: We are proposing the twenty ninth of May. That assumes the transformation fix lands by the twenty seventh of March and the fourth rehearsal is clean.
+Elena Fischer: And UAT moving to a four week window starting the sixth of April.
+Diane Okafor: A month's slip. I have to take that to the executive committee on Tuesday.
+Diane Okafor: What I need from you is a written note by Monday setting out the cause, the recovery plan and what changes so this does not happen a third time.
+Priya Nair: Priya to provide a written recovery note to Diane by Monday 16 March.
+Raj Menon: I will own the transformation fix. Target is the twenty seventh of March for the fix and the rehearsal.
+Priya Nair: Raj to deliver the multi-policy transformation fix and a clean rehearsal by 27 March.
+Elena Fischer: I will rework the UAT plan for the April window and reconfirm the tester bookings.
+Priya Nair: Elena to reissue the UAT plan for the 6 April window by 20 March.
+Bill Hartley: I want to say something about confidence. This is the second slip. The first one we were told about a week after the fact.
+Priya Nair: That is fair criticism and it is on me.
+Diane Okafor: Let us focus on recovery. I would rather have an honest May date than an optimistic April one.
+Priya Nair: Understood. Anything else from your side?
+Diane Okafor: No. Send the note by Monday. I have to drop, I have another call.
+Bill Hartley: Same here. Thanks both.
+Priya Nair: Thanks Diane, thanks Bill.
+Priya Nair: Right, they have gone. Let us have two minutes internally.
+Elena Fischer: That went better than I expected.
+Raj Menon: Honestly their team never reviews anything on time. Half of those forty one thousand records would not be an issue if they had signed off the mapping document in January like they promised.
+Priya Nair: That is true but it is not going in the note. We own the transformation logic.
+Elena Fischer: We should also be honest that we sized the rehearsal cycle wrong. Five days was always optimistic.
+Priya Nair: Agreed. I will put the rehearsal sizing in the lessons learned.
+Raj Menon: One risk nobody said out loud on the call. If the fourth rehearsal is not clean, May is gone too.
+Priya Nair: That is the real risk. Let us log it.
+Elena Fischer: And we are one architect deep on the transformation logic. If Raj is unavailable in the next three weeks we have a problem.
+Priya Nair: Also going in the log. Thanks both.

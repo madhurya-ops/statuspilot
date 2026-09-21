@@ -6,12 +6,12 @@ Vercel looks for a FastAPI instance named `app` at a supported entrypoint;
 
 import logging
 
-from fastapi import Depends, FastAPI
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import VERSION, get_settings
-from app.routers import health
-from app.security import ACCESS_CODE_HEADER, require_access_code
+from app.routers import health, parse, samples
+from app.security import ACCESS_CODE_HEADER
 
 # Log timings, sizes, counts and error types only — never transcript content
 # and never key material (Hard Rules 4 and 5).
@@ -41,5 +41,6 @@ app.add_middleware(
 # phone before the access code is known.
 app.include_router(health.router)
 
-# Routers added from Phase 2 onward all carry the access-code dependency.
-PROTECTED = [Depends(require_access_code)]
+# Every other router carries the access-code dependency on its own APIRouter.
+app.include_router(samples.router)
+app.include_router(parse.router)

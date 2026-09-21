@@ -1,0 +1,45 @@
+standup notes - weds
+proj: fabrikam portal rebuild
+me, dan, sasha, priya (late), infra guy joined for 5 min
+
+- dan: finished the nav refactor, mostly. couple of edge cases w/ deep links still open
+- said he'd tidy up thurs or fri, not urgent
+- sasha: still on the search indexing thing. slower than expected
+- reindex takes 40 min now, was 12. not sure why. maybe the new analyzer?
+- maybe look at perf? could be the analyzer, could be disk. needs investigating properly at some point
+- KT pending w/ infra - chk
+- infra guy said the staging box is still on the old image. nobody has repointed it
+- ^ this has been open since feb i think
+- priya joined - asked about the client demo
+- demo is 26th? or 27th. need to confirm w/ acct team
+- if 26th then we are tight on the search work
+- sasha said she can get basic search working by then but not the faceting
+- decision: ship basic search for the demo, faceting after
+- dan raised - do we still need the legacy export? nobody has asked for it in months
+- nobody knew. leaving it in for now
+- action: someone to ask the client if legacy export is still needed
+- (not assigned)
+- billing integration - waiting on sandbox creds from their side. chased twice
+- sasha: "i'll chase again this week" - ok
+- risk: if creds don't land by ~20th, billing slips past demo
+- also the contract renewal convo is happening in parallel, might affect scope
+- not our problem directly but worth knowing
+- test coverage is down to 61%, was 78% before the refactor
+- dan says most of that is the old nav tests that got deleted, not real regression
+- should probably verify that claim
+- someone mentioned the logging is too noisy in prod, hard to find anything
+- no owner, no date
+- sasha: docs are stale. the onboarding readme still references the old build script
+- said she'd fix "when i get a sec"
+- priya: reminder timesheets due friday
+- AOB: none
+- next standup thurs same time
+
+misc / parking lot:
+- accessibility audit never happened. was supposed to be sprint 3
+- the design system upgrade - still on v2, v4 is out. no plan to move
+- perf budget was agreed but nobody is measuring it
+- we never wrote down who owns the release process. it's just been dan every time
+- if dan is off it's unclear what happens
+- the 40 min reindex might actually be fine for prod? need real numbers
+- cost of the search cluster went up, nobody has looked at why

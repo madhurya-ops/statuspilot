@@ -121,8 +121,7 @@ reserved for quality escalation only.
 
 ## Phase 1 — Backend skeleton
 
-**Status:** code complete and pushed — **blocked on the Vercel deploy**, which needs
-dashboard access
+**Status:** ✅ complete — Gate 1 passed 2026-09-21
 **Date:** 2026-09-21
 
 ### Built
@@ -183,4 +182,85 @@ dashboard access
 - [x] `ruff check` passes
 - [x] `pytest` passes (12 tests)
 - [x] Health endpoint verified over real HTTP locally
-- [ ] **Live health URL works from the phone** — *needs the Vercel deploy*
+- [x] **Live health URL works from the phone**
+      → https://backend-zeta-orcin-78.vercel.app/api/health (200, 0.73 s cold)
+
+**Post-deploy observations**
+
+- The Vercel project is named `backend`, not `statuspilot-api`. Harmless, but the
+  plan's project names are indicative only. This host is what `VITE_API_BASE_URL`
+  must point at in Phase 6, and its origin must be added to `ALLOWED_ORIGINS`.
+- `/api/parse` and `/api/samples` correctly 404 (not yet built).
+- **`/docs` and `/openapi.json` are publicly reachable** — the FastAPI default. No
+  secrets are exposed and every real endpoint stays behind the access code, but a
+  public interactive API console on a demo URL invites poking. Offered to the user
+  as a Phase 9 hardening item (`docs_url=None` in production).
+- The user approved keeping `pyproject.toml` as the single dependency source.
+
+---
+
+## Phase 2 — Ingestion & samples
+
+**Status:** ✅ complete — awaiting Gate 2 approval
+**Date:** 2026-09-21
+
+### Built
+
+| File | What it does |
+|---|---|
+| `app/models.py` | `TranscriptLine`, `SampleSummary`, `SampleDetail`, `ParseResponse` |
+| `app/ingest/lines.py` | Whitespace normalisation, line-boundary truncation, `Name:` speaker detection |
+| `app/ingest/parse.py` | `.txt` (utf-8 → latin-1), `.docx` (incl. tables), `.vtt` / `.srt` |
+| `app/ingest/samples.py` | `__file__`-relative sample loader |
+| `app/routers/samples.py` | `GET /api/samples`, `GET /api/samples/{id}` |
+| `app/routers/parse.py` | `POST /api/parse`, `GET /api/parse/formats` |
+| `app/samples/*.txt` + `index.json` | The three synthetic transcripts |
+
+### Sample sizes (cap ~5000 chars)
+
+| Sample | Chars | Lines | Lines with a speaker |
+|---|---:|---:|---:|
+| `northwind-sprint-review` | **4937** | 51 | 47 |
+| `contoso-escalation` | **4886** | 53 | 49 |
+| `rough-standup-notes` | **2381** | 43 | **0** |
+
+`rough-standup-notes` having **no** detected speakers is deliberate, not a parser
+failure: they are freeform bullets with no `Name:` prefixes. That is precisely what
+should drive low-confidence `owner_explicit` judgments and populate the review queue
+in Phase 4.
+
+### Verification
+
+- `ruff check` clean; **60 tests pass**.
+- Verified over real HTTP, not only TestClient: 401 without a code, all three samples
+  listed and fetched, `.srt` upload merged into `Priya Nair: I will take it, by
+  Thursday.`, `.pdf` upload rejected 400.
+- Server log inspected: it records `ext=srt bytes=118 chars=40 truncated=False` and no
+  transcript text. The only hits for sample words were uvicorn's access log printing
+  the sample **id** in the URL path, which is a public identifier.
+
+### Bug found and fixed during testing
+
+`split_speaker` matched **"This sentence: has a colon..."** as speaker `"This
+sentence"`. A false speaker becomes a false **owner** downstream, which Hard Rule 7
+forbids outright. Fixed by requiring every word of the speaker to be capitalised, on
+top of the existing stop-word list. Covered by a parametrised regression test that
+includes `"One thing: we need sign-off"`.
+
+### Design notes
+
+- **Truncation lands on a line boundary.** A mid-sentence cut would be quoted back
+  verbatim as `evidence` by the extraction step, producing a citation to half a
+  sentence.
+- **Consecutive same-speaker caption cues are merged.** Caption formats split one
+  spoken sentence across cues; without merging, a single commitment arrives as three
+  fragments and neither the LLM nor Jev sees a whole item.
+- **The local `DEMO_ACCESS_CODE` was changed by the user** from the placeholder. Test
+  suite uses its own value via `conftest.py`, so the two never interact.
+
+### Gate 2
+
+- [x] All samples load via `/api/samples/{id}`
+- [x] Parser tests pass
+- [x] `ruff check` and `pytest` pass (60)
+- [x] Verified over real HTTP locally

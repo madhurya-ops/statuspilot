@@ -561,21 +561,28 @@ Jev: echoed `jev-1.13.0` for `jev-latest`; usage 295 in / 21 out.
 - [x] `vercel.json`: `maxDuration` 60 s keyed on `app/main.py` (a supported Vercel FastAPI entrypoint, so no `tool.vercel.entrypoint` override is needed), plus `excludeFiles` to keep tests and `.venv` out of the bundle. **The Python version does not go here** — it is `requires-python = ">=3.13,<3.14"` in `pyproject.toml`.
 - [x] ~~`requirements.txt` / `requirements-dev.txt`, pinned.~~ **Superseded: dependencies live in `pyproject.toml`** (`[project].dependencies` and `[project.optional-dependencies].dev`), pinned exactly. Vercel accepts `pyproject.toml`, `requirements.txt` or a Pipfile, but **does not document precedence when more than one is present** — and `pyproject.toml` is required regardless for `requires-python`. Shipping both would mean two dependency lists that can silently drift, with an undefined winner. One file, one source of truth. Install with `pip install -e ".[dev]"`.
 - [x] Tests: health; access-code rejection; CORS header present.
-- [ ] Create the Vercel projects via the dashboard's GitHub integration (deferred here from Phase 0): `statuspilot-api` with root directory `backend/`. `statuspilot-web` (root `frontend/`) can wait until Phase 6.
-- [ ] **Deploy `statuspilot-api` now**, add env vars in the Vercel dashboard, and open `/api/health` from the phone.
+- [x] Create the Vercel projects via the dashboard's GitHub integration (deferred here from Phase 0): `statuspilot-api` with root directory `backend/`. `statuspilot-web` (root `frontend/`) can wait until Phase 6.
+- [x] **Deploy `statuspilot-api` now**, add env vars in the Vercel dashboard, and open `/api/health` from the phone.
 
-**Gate 1:** live health URL works from the phone; `ruff check` and `pytest` pass.
+**Gate 1 — PASSED (2026-09-21).** Live health URL works from the phone;
+`ruff check` and `pytest` (12) pass.
+Backend: **https://backend-zeta-orcin-78.vercel.app** — note the Vercel project is
+named `backend`, not `statuspilot-api`, so this file's project names are indicative
+only. This is the origin the frontend must call via `VITE_API_BASE_URL` in Phase 6.
 
 ---
 
 ### PHASE 2 — Ingestion & samples · Day 1, ~1 h
-- [ ] `ingest/parse.py`: `.txt` (utf-8 → latin-1 fallback), `.docx` (python-docx), `.vtt` / `.srt` (strip cue numbers and timestamps, keep `Speaker: text`, merge consecutive cues from the same speaker).
-- [ ] `ingest/lines.py`: normalise whitespace, drop blanks, build `TranscriptLine`s with `^Name:` speaker detection, cap at `MAX_INPUT_CHARS`.
-- [ ] `POST /api/parse` (multipart → `{text}`) enforcing `MAX_UPLOAD_BYTES` and the extension allow-list.
-- [ ] Write the three sample transcripts (Section 9) + `/api/samples` endpoints.
-- [ ] Tests: each parser with fixtures; line numbering; speaker detection; oversize rejection.
+- [x] `ingest/parse.py`: `.txt` (utf-8 → latin-1 fallback), `.docx` (python-docx), `.vtt` / `.srt` (strip cue numbers and timestamps, keep `Speaker: text`, merge consecutive cues from the same speaker).
+- [x] `ingest/lines.py`: normalise whitespace, drop blanks, build `TranscriptLine`s with `^Name:` speaker detection, cap at `MAX_INPUT_CHARS`.
+- [x] `POST /api/parse` (multipart → `{text}`) enforcing `MAX_UPLOAD_BYTES` and the extension allow-list.
+- [x] Write the three sample transcripts (Section 9) + `/api/samples` endpoints.
+- [x] Tests: each parser with fixtures; line numbering; speaker detection; oversize rejection.
 
-**Gate 2:** all samples load via `/api/samples/{id}`; parser tests pass.
+**Gate 2 — PASSED (2026-09-21).** All samples load via `/api/samples/{id}`; parser
+tests pass (60 tests total, `ruff` clean). Sample sizes, against the ~5000 char cap:
+`northwind-sprint-review` **4937**, `contoso-escalation` **4886**,
+`rough-standup-notes` **2381**.
 
 ---
 
