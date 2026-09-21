@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
 import { Button, Screen } from "../components/Chrome";
 import {
-  Chip,
   ConfidenceBadge,
   Distribution,
   ItemSummary,

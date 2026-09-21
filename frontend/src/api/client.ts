@@ -40,13 +40,15 @@ export function clearAccessCode(): void {
 
 /** A failure the UI can act on, rather than a stack trace. */
 export class ApiError extends Error {
-  constructor(
-    message: string,
-    readonly status: number,
-    /** Seconds to wait, when the server said. */
-    readonly retryAfter?: number,
-  ) {
+  readonly status: number;
+  /** Seconds to wait, when the server said so. */
+  readonly retryAfter?: number;
+
+  constructor(message: string, status: number, retryAfter?: number) {
     super(message);
+    this.name = "ApiError";
+    this.status = status;
+    this.retryAfter = retryAfter;
   }
 
   get isAuth() {
