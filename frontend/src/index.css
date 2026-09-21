@@ -1,0 +1,124 @@
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap");
+@import "tailwindcss";
+
+/* StatusPilot design tokens.
+   Two families doing different jobs: Plex Sans is the application; Newsreader is the
+   *document*. The generated status report and minutes are things a PM will send to a
+   client, so they are set like documents rather than like app screens. */
+@theme {
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-doc: "Newsreader", ui-serif, Georgia, serif;
+
+  --color-ink: #232433;
+  --color-ink-soft: #55576b;
+  --color-ink-faint: #8a8c9e;
+  --color-paper: #ffffff;
+  --color-wash: #f5f5f8;
+  --color-line: #e3e3ea;
+
+  --color-indigo: #4f46e5;
+  --color-indigo-deep: #312e81;
+  --color-indigo-wash: #eef2ff;
+
+  /* True RAG. These are the domain's own colours, not decoration. */
+  --color-rag-red: #b42318;
+  --color-rag-amber: #b54708;
+  --color-rag-green: #067647;
+  --color-rag-red-wash: #fef3f2;
+  --color-rag-amber-wash: #fffaeb;
+  --color-rag-green-wash: #ecfdf3;
+}
+
+:root {
+  color-scheme: light;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-wash);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  /* Stop iOS inflating text in landscape. */
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Every interactive element must be reachable and visibly focused. */
+:focus-visible {
+  outline: 2px solid var(--color-indigo);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* The signature device: a measure showing where belief actually sits. Used for
+   confidence, for kind distribution, and for RAG. A number alone ("62% sure") tells
+   you less than seeing the mass spread across options. */
+.measure {
+  position: relative;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--color-line);
+  overflow: hidden;
+}
+.measure > span {
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  border-radius: 999px;
+}
+
+/* Generated documents are set to read, not to scan. */
+.doc {
+  font-family: var(--font-doc);
+  font-size: 1.0625rem;
+  line-height: 1.65;
+  color: var(--color-ink);
+}
+.doc h2 {
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--color-ink-soft);
+  margin: 1.75rem 0 0.5rem;
+}
+.doc h2:first-child {
+  margin-top: 0;
+}
+.doc h3 {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  margin: 1.25rem 0 0.375rem;
+}
+.doc p {
+  margin: 0 0 0.85rem;
+  max-width: 68ch;
+}
+.doc ul {
+  margin: 0 0 0.85rem;
+  padding-left: 1.1rem;
+  list-style: disc;
+}
+.doc li {
+  margin-bottom: 0.3rem;
+  max-width: 66ch;
+}
+.doc strong {
+  font-weight: 600;
+}
