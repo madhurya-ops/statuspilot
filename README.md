@@ -54,11 +54,26 @@ one extraction with a 2,520-token prompt and a 4,500 cap dropped
 | Generate | ~4,500 |
 | **Full report** | **~11,500** |
 
-Against an **8,000 tokens/minute** ceiling, **one live report does not fit in a single
-minute**. The bucket refills at ~133 tokens/second, so generation waits ~26 s after
-extraction. That is why the three bundled samples serve **precomputed** results,
-labelled visibly in the UI as a cached sample run, while pasted or uploaded text
-always goes live.
+Groq's free tier has **two** token limits, and the one that bites is invisible:
+
+| Limit | Value | In a response header? |
+|---|---|---|
+| Tokens per minute | 8,000 | yes |
+| **Tokens per day** | **200,000** | **no — only in the 429 body** |
+
+Against the **per-minute** ceiling, one live report does not fit in a single minute:
+the bucket refills at ~133 tokens/second, so generation waits 16–23 s after
+extraction.
+
+The **per-day** cap allows roughly **17 full live reports** and refills at 2.31
+tokens/second — one report is ~83 minutes of refill. Nothing in the `x-ratelimit-*`
+headers hints at it; they read completely healthy at 99.6 % of the daily budget
+consumed. StatusPilot tells the two apart and says which one it hit, because "wait
+20 seconds" and "wait until tomorrow" are not the same message.
+
+Both are why the three bundled samples serve **precomputed** results, labelled
+visibly in the UI as a cached sample run, while pasted or uploaded text always goes
+live.
 
 Jev is not a cost constraint: ~870 input tokens per candidate and roughly **$0.0015**
 for a 40-candidate run, against published limits of 250 k tokens/second and 1,200
