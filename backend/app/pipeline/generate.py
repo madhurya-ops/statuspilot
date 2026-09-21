@@ -199,8 +199,7 @@ async def run_generation(
         attendees=", ".join(payload.meta.attendees) or "Not recorded",
         agenda=", ".join(payload.meta.agenda) or "Not recorded",
         discussion="\n".join(f"- {p}" for p in payload.discussion_points) or "(none)",
-        client_items=format_items(client_items),
-        all_items=format_items(payload.items),
+        items=format_items(payload.items),
     )
 
     written, usage = await provider.complete_json(

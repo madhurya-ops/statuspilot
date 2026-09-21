@@ -212,3 +212,46 @@ but each iteration costs ~14 k tokens and roughly five minutes of pacing.
   and it should band as "Inferred" rather than "Stated".
 - **Attendee extraction on rough notes** returned `me`, `dan`, `sasha`, `priya`,
   `infra guy` — faithful to an input that literally says "me, dan, sasha".
+
+---
+
+## The dynamic completion cap — what it actually bought
+
+Scaling `max_completion_tokens` from the prompt instead of fixing it at 4,500 was
+meant to cut the tokens reserved-but-unused, and so shorten the refill wait before
+generation. Measured honestly, **it helps on small inputs and does nothing on
+full-size ones.**
+
+Groq charges `actual_prompt + cap`. The cap is chosen from an estimated prompt; the
+estimate only picks the cap, it is not what gets billed.
+
+| Sample | Actual prompt | Cap chosen | **Requested** | vs fixed 4,500 cap |
+|---|---:|---:|---:|---|
+| `northwind-sprint-review` | 2,502 | 4,500 (ceiling) | **7,002** | no change |
+| `contoso-escalation` | 2,520 | 4,500 (ceiling) | **7,020** | no change |
+| `rough-standup-notes` | ~2,000 | ~4,016 | **~6,024** | **−500** |
+
+At a 2.0 ratio, any prompt above 2,250 tokens lands on the ceiling, so the two
+meeting-shaped samples are unchanged. Only the shortest sample sees a saving.
+
+**The ratio cannot simply be lowered to claw this back.** At 1.4 the caps would be
+~3,500, but `rough-standup-notes` genuinely needs ~1.85x its prompt in completion
+tokens, so it truncates — and a truncation retry re-requests `prompt + ceiling`,
+costing **~11.6 k** requested tokens against an 8 k/min budget versus ~6.2 k for one
+correctly-sized call. Over-reserving is the cheaper error.
+
+### The real extract → generate wait
+
+Generation's prompt grows with the number of approved items, and is larger than first
+estimated:
+
+| Items | Generate requested | Remaining after extract | **Wait** |
+|---:|---:|---:|---:|
+| 12 | ~3,500 | ~1,000 | **~19 s** |
+| 22 | ~5,800 | ~980 | **~36 s** |
+| 24 | ~6,000 | ~980 | **~38 s** |
+
+At ~133 tokens/second refill, a large meeting waits **over half a minute** between
+extraction and generation. That is the number the processing screen must show on the
+countdown — and the reason the three bundled samples are served from cache rather
+than run live during a demo.

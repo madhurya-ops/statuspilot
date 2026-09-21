@@ -158,11 +158,12 @@ Agenda: {agenda}
 Discussion points:
 {discussion}
 
-ITEMS CLEARED FOR THE CLIENT (use these in the status report):
-{client_items}
+ITEMS
+Each line is tagged. [client] items are cleared to appear in the client status
+report. [internal] items must NOT appear in the status report in any form — not
+quoted, paraphrased, alluded to, or summarised. Both kinds belong in the minutes.
 
-ALL ITEMS (use these in the minutes):
-{all_items}
+{items}
 
 Write the minutes and the status report. Add nothing that is not above.
 """
@@ -175,16 +176,29 @@ CLIENT". Do not reference, paraphrase, allude to, or summarise anything else.
 """
 
 
+CLIENT_SAFE_TAG = "client_safe"
+
+
 def format_items(items) -> str:
-    """Render approved items for a prompt, one per line, facts only."""
+    """Render approved items for the writing prompt — only what writing prose needs.
+
+    Deliberately omits `source_lines`, confidences, probabilities and the raw severity
+    float. None of it helps the model write a sentence, and the tables that *do* use
+    those fields are built in code from the same items, so nothing is lost.
+
+    Each item appears exactly **once**, tagged. An earlier version sent the
+    client-safe subset and then the full list, so every client-safe item was paid for
+    twice in a prompt that is already the binding constraint on the demo's pacing.
+    """
     if not items:
         return "(none)"
     lines = []
     for item in items:
-        owner = item.owner or "Not assigned"
-        due = item.due_date or "No date"
-        lines.append(
-            f"- [{item.kind}/{item.severity}] {item.text} "
-            f"(owner: {owner}; due: {due}; lines: {item.source_lines})"
-        )
+        tag = "client" if item.audience == CLIENT_SAFE_TAG else "internal"
+        parts = [item.text.rstrip(".")]
+        if item.owner:
+            parts.append(f"owner {item.owner}")
+        if item.due_date:
+            parts.append(f"due {item.due_date}")
+        lines.append(f"- [{tag}][{item.kind}/{item.severity}] " + "; ".join(parts))
     return "\n".join(lines)

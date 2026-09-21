@@ -141,9 +141,35 @@ class TestGeneration:
         ]
         await run_generation(payload=_request(items), provider=writer, settings=get_settings())
         prompt = writer.prompts[0]
-        cleared = prompt.split("ITEMS CLEARED FOR THE CLIENT")[1].split("ALL ITEMS")[0]
-        assert "Migration defect blocks UAT" in cleared
-        assert "never reviews anything" not in cleared
+        client_line = next(ln for ln in prompt.split("\n") if "Migration defect" in ln)
+        internal_line = next(ln for ln in prompt.split("\n") if "never reviews" in ln)
+        assert client_line.startswith("- [client]")
+        assert internal_line.startswith("- [internal]")
+
+    async def test_each_item_appears_exactly_once_in_the_prompt(self):
+        """An earlier version sent the client subset and then the full list, paying
+        for every client-safe item twice in the prompt that gates the demo's pacing."""
+        from app.config import get_settings
+
+        writer = FakeWriter(["## Summary\n" + "Migration testing continues. " * 12])
+        items = [
+            _item("c1", text="Migration defect blocks UAT", audience="client_safe"),
+            _item("c2", text="Vendor API is late", audience="client_safe"),
+            _item("c3", text="Internal sizing was wrong", audience="internal_only"),
+        ]
+        await run_generation(payload=_request(items), provider=writer, settings=get_settings())
+        prompt = writer.prompts[0]
+        for text in ("Migration defect blocks UAT", "Vendor API is late"):
+            assert prompt.count(text) == 1, f"{text!r} appears {prompt.count(text)} times"
+
+    async def test_the_prompt_omits_fields_that_do_not_help_writing(self):
+        from app.config import get_settings
+
+        writer = FakeWriter(["## Summary\n" + "Migration testing continues. " * 12])
+        item = _item("c1", audience="client_safe", source_lines=[41, 42, 43])
+        await run_generation(payload=_request([item]), provider=writer, settings=get_settings())
+        prompt = writer.prompts[0]
+        assert "41" not in prompt and "source_lines" not in prompt
 
     async def test_regenerates_once_when_the_report_leaks(self, monkeypatch):
         from app.config import get_settings
