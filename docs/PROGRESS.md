@@ -752,3 +752,68 @@ full 200,000.
    against — some samples instant, others live and slow — did not occur.
 3. **Nothing was wasted beyond ~2,000 tokens** on the Northwind extraction and
    classification that completed before generation was refused.
+
+---
+
+# SPEND PLAN — demo 23 Sept, 12:00
+
+**Anchored 22 Sept 00:24 IST. Demo is 35.6 hours away, not "tomorrow morning".**
+This replaces the single-day budget written on the 21st, which assumed build day and
+demo day were the same day.
+
+## The one fact that governs everything
+
+Groq's limit is a **leaky bucket, not a daily reset**. Measured from the 429's own
+`retry-after`: **~2.75 tokens/second, ~9,900/hour**. It refills continuously whether or
+not anyone is looking at a calendar.
+
+**Consequence: time is the budget.** A spend is fully repaid after
+`tokens ÷ 9,900` hours. Nothing needs rationing as long as it happens early enough.
+
+| Spend | Repaid after |
+|---|---|
+| Cache rebuild (~24,000) | 2.4 h |
+| Phase 9 live verification (~40,000) | 4.0 h |
+| Both together (~64,000) | 6.5 h |
+| One smoke test (~8,000) | 0.8 h |
+
+**Everything on this project repays itself in under 7 hours, and we have 35.**
+
+## Recovery forecast from 175 tokens now
+
+| Time | Available |
+|---|---:|
+| 22 Sep 04:24 | ~39,800 |
+| 22 Sep 08:24 | ~79,400 |
+| 22 Sep 12:24 | ~119,000 |
+| **23 Sep 00:24** | **~200,000 (full)** |
+
+## The plan
+
+**Tonight (22 Sept, 00:30 onward): spend nothing.** Only 175 tokens exist. There is no
+useful work to buy, and every hour of not spending is ~9,900 banked.
+
+**22 Sept, from ~08:00 — the whole build day, in this order:**
+1. **Cache rebuild** (~24,000). Read the true figure from a deliberate 429 first, then
+   run. Commit the JSON in its own commit.
+2. **Gate 5 prose** — free. Reads the committed cache; no API calls.
+3. **Phase 9** hardening and live verification (~40,000 cap). Use mocks for everything
+   mocks can prove; spend only where the live path genuinely differs.
+4. **Phase 10** README and demo script — free.
+
+Total ~64,000, fully repaid by ~15:00 the same day.
+
+**22 Sept evening: stop Groq spending.** By 23 Sept 00:24 the bucket is full.
+
+**23 Sept morning: one live smoke test at most** (~8,000, repaid in 50 minutes). Then
+leave it alone.
+
+**At 12:00 on 23 Sept: ~200,000 available**, of which the demo needs ~3,000 for the
+live paste. The three bundled samples cost **zero** — they come from the committed
+cache.
+
+## The rule that matters
+
+**Do not spend after ~05:00 on 23 Sept** without recomputing. Before that, anything
+this project needs repays itself before you stand up. After it, arithmetic gets tight
+for no reason — there is nothing that cannot be done the day before.
