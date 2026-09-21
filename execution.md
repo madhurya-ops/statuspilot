@@ -84,6 +84,13 @@ The skill is installed in the repo at **`.claude/skills/typesafe-ai/SKILL.md`** 
 
 **Report back at Gate 4** with one short paragraph: which docs pages you read, and anything in Section 6 of this file that the docs told you to change. Changing Section 6 to match the docs is expected and welcome — edit this file and say what you changed.
 
+**Open items already booked for Gate 4** (raised in Phase 0 from reading `api.md`; agreed 2026-09-21). Bring these to the user *together*, as one proposal:
+
+1. **Score answers carry no label.** The live API returns a Score as `score` — a probability-weighted float that can land *between* levels — plus a `legend` and `probabilities`, never a `"Low"|"Medium"|"High"` string. Section 7's `Decision.label` therefore cannot be filled directly from a Score answer; a banding function in code must derive it.
+2. **Keep the raw float.** `ClassifiedItem` gains `severity_value: float` (the raw Score) *alongside* the banded label. The float is a better sort key for prioritising action items than a three-way band — do not discard it.
+3. **The RAG rule needs the same treatment.** Section 6's Red rule says `client_sentiment` = level 0. That is exact equality on a float and will essentially never hold. Propose a threshold (e.g. `score < 0.5`) as part of the same Section 7 edit.
+4. **Document the banding.** `docs/jev_design_notes.md` must state exactly how every Score float is banded, in terms the "How it works" page (Screen 5) can repeat honestly to a PM.
+
 **Design rules taken from the skill (apply them in `decide/questions.py`):**
 - **State as named JSON fields** when the context has several parts (ours does), not one blob of prose.
 - **Question IDs are not sent to the model.** Every question's meaning must be complete inside `instructions` + `criteria`.
@@ -127,7 +134,10 @@ FastAPI backend on Vercel (stateless Python function)
 
 ## 4. Tech Stack (approved dependencies)
 
-**Backend (Python 3.12):**
+**Backend (Python 3.13 — see note):**
+
+> **Python version, settled in Phase 0 (2026-09-21).** Vercel's Python runtime supports **3.12 (default), 3.13 and 3.14**, selected by `requires-python` in `backend/pyproject.toml` — **not** by `vercel.json`, which this file's Phase 1 step implied. The local machine runs **3.13.5**, so we pin **3.13** everywhere (local venv, `requires-python`, any CI matrix): it is a supported Vercel version *and* it matches local, which removes the "works locally, breaks on deploy" class of bug that pinning 3.12 would reintroduce.
+
 `fastapi`, `pydantic` v2, `pydantic-settings`, `httpx`, `openai` (client for Groq's OpenAI-compatible endpoint), `python-docx`, `openpyxl`, `fpdf2` (pure-Python PDF; **not** WeasyPrint, which needs system libraries), `python-multipart`.
 Dev: `pytest`, `pytest-asyncio`, `respx`, `ruff`, `uvicorn`.
 
@@ -491,7 +501,7 @@ Three transcripts, 60–120 lines, speaker-labelled (`Name: text`):
 - [ ] Write both `.env.example` files (Section 5) and a local `backend/.env` with the user's **Groq** and **TypeSafe** keys.
 - [ ] Look up current Groq model IDs (https://console.groq.com/docs/models) and set `GROQ_MODEL` + `GROQ_MODEL_FALLBACK`.
 - [ ] Smoke-test both keys from the shell: one Groq chat completion, one Jev `systemone` call with a single Noul question. **Print only status codes and latencies, never the keys.**
-- [ ] Create the Vercel account/projects linked to the repo.
+- [x] ~~Create the Vercel account/projects linked to the repo.~~ **Deferred to Phase 1** (agreed 2026-09-21). The `vercel` CLI is not installed and we are not adding it; both projects are created through the Vercel dashboard's GitHub integration at the point where Phase 1 actually deploys `statuspilot-api`.
 
 **Gate 0:** both smoke tests return 200. Report the Groq model IDs chosen and the Jev `model` string echoed in the response.
 
@@ -501,9 +511,10 @@ Three transcripts, 60–120 lines, speaker-labelled (`Name: text`):
 - [ ] `config.py` loading every env var in Section 5 via pydantic-settings.
 - [ ] `main.py`: FastAPI app, CORS from `ALLOWED_ORIGINS`, `GET /api/health` → `{status, version, llm_primary, decision_engine, groq_model}` (no secrets).
 - [ ] `security.py`: `X-Access-Code` dependency on every route except `/api/health` (401 otherwise); in-memory per-IP rate limiter (`RATE_LIMIT_PER_MIN`, documented as best-effort on serverless); request-size guard.
-- [ ] `vercel.json`: `maxDuration` 60 s keyed on the FastAPI entrypoint per current Vercel docs.
+- [ ] `vercel.json`: `maxDuration` 60 s keyed on the FastAPI entrypoint per current Vercel docs. **The Python version does not go here** — it goes in `pyproject.toml` as `requires-python = ">=3.13"` (see the note in Section 4).
 - [ ] `requirements.txt` / `requirements-dev.txt`, pinned.
 - [ ] Tests: health; access-code rejection; CORS header present.
+- [ ] Create the Vercel projects via the dashboard's GitHub integration (deferred here from Phase 0): `statuspilot-api` with root directory `backend/`. `statuspilot-web` (root `frontend/`) can wait until Phase 6.
 - [ ] **Deploy `statuspilot-api` now**, add env vars in the Vercel dashboard, and open `/api/health` from the phone.
 
 **Gate 1:** live health URL works from the phone; `ruff check` and `pytest` pass.
