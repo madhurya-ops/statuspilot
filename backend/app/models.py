@@ -77,6 +77,11 @@ class LLMUsage(BaseModel):
     latency_ms: int = 0
     attempts: int = 1
     escalated: bool = False
+    # "stop" = the model finished on its own; "length" = it hit the completion cap
+    # and the output is truncated. Recorded because a low candidate count means very
+    # different things in the two cases: prompt behaviour vs. a budget that is too
+    # tight, and only one of those is fixed by changing the prompt.
+    finish_reason: str | None = None
 
 
 # What the extraction model is asked to produce, per candidate. No `id`: ids are

@@ -123,22 +123,32 @@ class GroqProvider:
             raise LLMError("Groq request timed out") from err
 
         elapsed_ms = int((time.monotonic() - started) * 1000)
+        choice = response.choices[0]
         usage = LLMUsage(
             model=self._model,
             input_tokens=getattr(response.usage, "prompt_tokens", 0) or 0,
             output_tokens=getattr(response.usage, "completion_tokens", 0) or 0,
             latency_ms=elapsed_ms,
+            finish_reason=getattr(choice, "finish_reason", None),
         )
+        if usage.finish_reason == "length":
+            log.warning(
+                "groq output truncated at the completion cap stage=%s model=%s out=%d",
+                stage,
+                self._model,
+                usage.output_tokens,
+            )
 
-        content = response.choices[0].message.content or ""
+        content = choice.message.content or ""
         # Sizes and outcomes only. Never the prompt, never the completion.
         log.info(
-            "groq model=%s stage=%s in=%d out=%d ms=%d",
+            "groq model=%s stage=%s in=%d out=%d ms=%d finish=%s",
             self._model,
             stage,
             usage.input_tokens,
             usage.output_tokens,
             elapsed_ms,
+            usage.finish_reason,
         )
         try:
             parsed = schema_model.model_validate(json.loads(content))

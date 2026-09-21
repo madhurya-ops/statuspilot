@@ -38,38 +38,54 @@ Model `openai/gpt-oss-20b`, `reasoning_effort=low`, `temperature=0`,
 
 ---
 
-## Recall against the planted inventory
+## Recall against the planted inventory — two numbers, not one
 
-| Sample | Planted | Found | Recall | Candidates returned |
-|---|---:|---:|---:|---:|
-| `northwind-sprint-review` | 17 | **11** | 65 % | 13 |
-| `contoso-escalation` | 19 | **14** | 74 % | 20 |
-| `rough-standup-notes` | 27 | **16** | 59 % | 16 |
-| **Total** | **63** | **41** | **65 %** | 49 |
+Every planted item falls in exactly one bucket:
 
-### What was missed
+- **Captured** — it exists as its **own candidate**, with its own `source_lines`.
+- **Merged** — its content **is in the output**, inside another candidate's `text` or
+  `evidence`, but it has no candidate of its own. Granularity is lost; content is not.
+- **Absent** — it is **nowhere** in the output. This is the only true miss.
 
-**Northwind (6):** N3 Jonas chasing legal (folded into N2) · N6 the orphaned-document
-*issue* as distinct from the action that fixes it · N7 the three cosmetic defects ·
-N9 the risk that late data costs the first UAT week · N12 the dependency on Northwind
-legal · N17 inconsistent rules-API error responses.
+| Sample | Planted | Captured | Merged | Absent | **Strict recall** | **Content coverage** |
+|---|---:|---:|---:|---:|---:|---:|
+| `northwind-sprint-review` | 17 | 11 | 3 | 3 | 65 % | **82 %** |
+| `contoso-escalation` | 19 | 13 | 3 | 3 | 68 % | **84 %** |
+| `rough-standup-notes` | 27 | 16 | 7 | 4 | 59 % | **85 %** |
+| **Total** | **63** | **40** | **13** | **10** | **63 %** | **84 %** |
 
-**Contoso (5):** C5 Diane taking the slip to the executive committee on Tuesday ·
-C13 damaged client confidence after a second slip · C14 the assumption underpinning
-the 29 May date · C16 the dependency on Contoso supplying 11 testers · C19 the
-decision to keep the client's late sign-off out of the written note.
+**Strict recall (63 %)** = captured as its own candidate. This is the number that
+predicts how good the RAID log and action-item tables will look, because each row in
+those tables comes from one candidate. A merged item does not get its own row.
 
-**Rough notes (11):** S8 "KT pending w/ infra - chk" · S10/S12/S18/S23/S24/S25 folded
-into the action that addresses them · S11 the stale staging box · S20 contract
-renewal · S22 the "might be fine for prod" assumption · S27 leaving the legacy export
-in place.
+**Content coverage (84 %)** = captured **or** merged, i.e. the share of planted
+material that reaches the output at all and is therefore visible to Jev and to the
+PM. This is the number that predicts whether the status report's *narrative* misses
+anything.
 
-**The dominant failure mode is merging, not hallucinating.** Most misses are a
-problem and its remedy collapsed into one candidate, or a dependency absorbed into
-the task that chases it. Nothing was invented: every candidate in all three runs cited
-real line numbers, and no owner appeared that is absent from the transcript.
+Both belong in front of a PM. Quoting only 84 % would overstate how complete the
+tables are; quoting only 63 % would understate how much of the meeting survives.
 
----
+> A previous revision of this file reported 41 captured. A careful re-scoring against
+> the bucket definitions gives **40**; C15 (the vendor dependency, whose "Contoso
+> contract, no leverage" clause at L23–24 is uncited) is **merged**, not captured.
+
+### Absent — the ten genuine misses
+
+**Northwind (3):** N3 Jonas chasing legal (L24–27 uncited) · N7 the three cosmetic
+defects (L15 uncited) · N17 inconsistent rules-API error responses (L9–10 uncited).
+
+**Contoso (3):** C5 Diane taking the slip to the executive committee on Tuesday
+(L30 uncited) · C13 damaged client confidence after a second slip (L37–38 uncited) ·
+C19 the decision to keep the client's late sign-off out of the note — L47 is cited
+but only L46's content is carried in `evidence`.
+
+**Rough notes (4):** S8 "KT pending w/ infra - chk" (L9) · S11 the stale staging box,
+open since February (L10–11) · S20 the parallel contract renewal (L24–25) · S22 the
+"40-minute reindex might be fine for prod" assumption (L42).
+
+**Nothing was hallucinated in any run.** Every candidate cited real line numbers and
+no owner appeared that is absent from the transcript.
 
 ## Prompt iteration — and an honest note about the trade
 
@@ -85,18 +101,42 @@ criticism and blame, stating that a later step judges tone.
 
 **Result: L46 is now extracted**, with `evidence` preserving the remark verbatim —
 which is what Section 6's `audience` question actually judges. But the overall score
-moved **68 % → 65 %**, and the change was not uniform:
+moved **68 % → 63 % strict**, and the change was not uniform:
 
-| Sample | Before | After |
+| Sample | Strict, before | Strict, after |
 |---|---:|---:|
 | `northwind-sprint-review` | 53 % | **65 %** |
-| `contoso-escalation` | 74 % | 74 % |
+| `contoso-escalation` | 74 % | 68 % |
 | `rough-standup-notes` | **74 %** | 59 % |
 
-The structured meetings improved; the messy notes **regressed**, and output tokens on
-that sample fell from 2,754 to 1,374 — it simply did less work. The anti-merging
-rules appear to be written for meeting-shaped input and do not transfer to bullet
-notes. This is a real trade, not a win, and it is recorded as such.
+### Was the rough-notes regression a truncation artifact? No.
+
+Output tokens on that sample halved, 2,754 → 1,374, which is the signature of a
+response cut off at the completion cap. It was not.
+
+| Run | `max_completion_tokens` | Output tokens | Headroom |
+|---|---:|---:|---:|
+| Before the prompt change | 6,000 | 2,754 | 54 % unused |
+| After the prompt change | 3,200 | 1,374 | **57 % unused** |
+
+**A truncated response stops *at* the cap.** Both runs finished with more than half
+their budget unspent, so neither could have had `finish_reason: "length"` — the model
+stopped because it considered itself done. The cap was lowered between the runs, but
+never reached in either, so it cannot explain the drop.
+
+The regression is therefore **genuine prompt behaviour**: the anti-merging rules
+("a problem AND the task that fixes it are separate candidates") are phrased for
+meeting dialogue and do not transfer to bullet notes, where a single bullet often
+*is* both. Accepted and documented rather than papered over.
+
+> `finish_reason` was not recorded at the time; the conclusion above rests on the
+> token arithmetic, which is decisive. The field is now captured on every call
+> (`LLMUsage.finish_reason`), logged, and warned on when it equals `"length"`, so
+> this question is answered directly rather than inferred next time.
+
+Note also that the three buckets soften the picture: rough-notes **content coverage
+is 85 %**, the highest of the three samples. The regression is concentrated in
+granularity — items merging into neighbours — rather than in content being lost.
 
 **Recommendation:** accept for now. The critical demo path is fixed, and
 `rough-standup-notes` still yields 16 candidates, which is ample for the Gate 4
