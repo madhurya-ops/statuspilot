@@ -587,19 +587,32 @@ tests pass (60 tests total, `ruff` clean). Sample sizes, against the ~5000 char 
 ---
 
 ### PHASE 3 — Groq layer + extraction · Day 1, ~2 h
-- [ ] `llm/base.py`: `LLMProvider` protocol — `async complete_json(system, user, schema_model) -> BaseModel`.
-- [ ] `llm/groq_client.py`: `openai` SDK pointed at `https://api.groq.com/openai/v1`; **always** `response_format: {"type": "json_schema", strict: true}` (verified supported in Phase 0 — do **not** build the "otherwise JSON mode + schema in the prompt" branch); passes `reasoning_effort` from the per-stage env var; 45 s timeout; reads `retry-after` on 429.
-- [ ] `llm/mock.py`: canned valid JSON per sample transcript.
-- [ ] `llm/router.py`: two **separate** paths, which must not be conflated —
+- [x] `llm/base.py`: `LLMProvider` protocol — `async complete_json(system, user, schema_model) -> BaseModel`.
+- [x] `llm/groq_client.py`: `openai` SDK pointed at `https://api.groq.com/openai/v1`; **always** `response_format: {"type": "json_schema", strict: true}` (verified supported in Phase 0 — do **not** build the "otherwise JSON mode + schema in the prompt" branch); passes `reasoning_effort` from the per-stage env var; 45 s timeout; reads `retry-after` on 429.
+- [x] `llm/mock.py`: canned valid JSON per sample transcript.
+- [x] `llm/router.py`: two **separate** paths, which must not be conflated —
       - **429/5xx (rate limit):** read `retry-after`, back off 1s/2s/4s (max 3 tries), stay on `GROQ_MODEL`. **Never escalate model** — both models share one token bucket, so a swap buys nothing. Surface "Busy — retrying" to the UI.
       - **Repeated JSON/validation failure (quality):** one repair retry on `GROQ_MODEL`, then escalate to `GROQ_MODEL_ESCALATION`.
       - Logs provider, model, latency, outcome, and the `x-ratelimit-remaining-tokens` header only. Never prompt or transcript content.
-- [ ] `llm/prompts.py` + `pipeline/extract.py` with every post-validation rule in Section 8.
-- [ ] `POST /api/extract` `{text}` → `ExtractResponse`.
-- [ ] Tests (mock): schema validity; out-of-range lines dropped; invented owners nulled; **429 backs off without changing model**; **JSON-failure path escalates to `GROQ_MODEL_ESCALATION`**; `MAX_CANDIDATES` cap.
-- [ ] Live run against Groq on all 3 samples; show the user candidate counts and 5 examples per sample.
+- [x] `llm/prompts.py` + `pipeline/extract.py` with every post-validation rule in Section 8.
+- [x] `POST /api/extract` `{text}` → `ExtractResponse`.
+- [x] Tests (mock): schema validity; out-of-range lines dropped; invented owners nulled; **429 backs off without changing model**; **JSON-failure path escalates to `GROQ_MODEL_ESCALATION`**; `MAX_CANDIDATES` cap.
+- [x] Live run against Groq on all 3 samples; show the user candidate counts and 5 examples per sample.
 
-**Gate 3:** extraction works live on all samples; tests pass.
+**Gate 3 — PASSED (2026-09-21).** Extraction works live on all three samples; 93
+tests pass; `ruff` clean. Full numbers in `docs/extraction_recall.md`.
+Extraction costs **~4,300 tokens** per ~5,000-char transcript, so a full run
+(extract + generate) sits at or just over the entire 8,000/min budget — which
+confirms the Phase 9 sample cache is load-bearing, not decorative.
+Recall against the pre-committed ground truth: **41/63 (65%)**.
+
+**Two constraints discovered here that the plan did not anticipate:**
+1. `max_completion_tokens` is billed against TPM as **requested** tokens
+   (`Limit 8000, Used 5645, Requested 5274`), so an over-generous reservation makes a
+   single request exceed the budget on its own. Held at 3200 for extraction.
+2. The extraction schema must be `ExtractResponse` **minus `lines`** — as Section 8
+   already said. Including `lines` made strict mode require the model to re-emit the
+   whole transcript, returning 400 `json_validate_failed`.
 
 ---
 

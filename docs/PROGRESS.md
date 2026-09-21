@@ -264,3 +264,63 @@ includes `"One thing: we need sign-off"`.
 - [x] Parser tests pass
 - [x] `ruff check` and `pytest` pass (60)
 - [x] Verified over real HTTP locally
+
+---
+
+## Phase 3 — Groq layer & extraction
+
+**Status:** ✅ complete — awaiting Gate 3 approval
+**Date:** 2026-09-21
+
+### Built
+
+| File | What it does |
+|---|---|
+| `app/llm/base.py` | `LLMProvider` protocol, `LLMError` / `RateLimited` / `JSONInvalid` |
+| `app/llm/groq_client.py` | Groq via the `openai` SDK, strict `json_schema`, per-stage `reasoning_effort`, completion budget, error-code surfacing |
+| `app/llm/mock.py` | Deterministic offline provider derived from the transcript |
+| `app/llm/router.py` | The two separate failure paths |
+| `app/llm/prompts.py` | Extraction prompt with untrusted-input framing |
+| `app/pipeline/extract.py` | Every Section 8 post-validation rule |
+| `app/routers/extract.py` | `POST /api/extract` |
+| `docs/sample_ground_truth.md` | 63 planted items, **committed before the first live run** |
+| `docs/extraction_recall.md` | Scored results and token costs |
+
+### Verification
+
+- `ruff` clean; **93 tests pass**; no test touches the network.
+- Three live Groq runs, paced 95 s apart. No 429, no escalation, single attempt each.
+
+### Three bugs found and fixed
+
+1. **The extraction schema included `lines`.** Section 8 says "validated against
+   `ExtractResponse` **minus `lines`**" and the first implementation ignored that.
+   Strict mode therefore required the model to re-emit the entire transcript as
+   output, exhausting `max_completion_tokens` and returning
+   400 `json_validate_failed` on two of three samples. Split out `ExtractionPayload`
+   / `CandidateDraft`; the server fills `lines` itself. Regression test added.
+2. **`max_completion_tokens` is billed against TPM as *requested* tokens.** The 429
+   body is explicit: `Limit 8000, Used 5645, Requested 5274`. Reserving 6,000 for a
+   2,500-token prompt needs 8,500 against an 8,000 ceiling — one request exceeding
+   the whole budget. Reduced to 3,200.
+3. **The router could never escalate.** A guard skipped the escalation model whenever
+   `LLM_PRIMARY=mock`, which is the configuration every test runs under, so the
+   escalation path was both dead in tests and untestable. Guard removed.
+
+Also removed pydantic docstrings from the request schema: a class docstring is
+emitted as a JSON-schema `description` and billed as input tokens on every call.
+
+### Honest note on the prompt iteration
+
+The first run scored 68 % but **failed to extract the Contoso L46 blame remark**,
+which Section 9 requires to classify `internal_only`. The revised prompt fixes that —
+but overall recall moved **68 % → 65 %**, because `rough-standup-notes` regressed from
+74 % to 59 % while `northwind` improved from 53 % to 65 %. Recorded as a trade, not a
+win. Details in `docs/extraction_recall.md`.
+
+### Gate 3
+
+- [x] Extraction works live on all three samples
+- [x] 93 tests pass, `ruff` clean
+- [x] Ground truth committed before the live run
+- [x] Recall and per-sample token cost reported
