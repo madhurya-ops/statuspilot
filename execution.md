@@ -284,13 +284,13 @@ DECISION_ENGINE=jev               # jev | llm | mock
 TYPESAFE_API_KEY=
 TYPESAFE_BASE_URL=https://api.typesafe.ai/v1
 JEV_MODEL=jev-latest
-JEV_CONCURRENCY=5                 # parallel candidate requests; keep modest
+JEV_CONCURRENCY=10                # measured in Phase 4; see docs/jev_design_notes.md
 JEV_TIMEOUT_S=20
 
 # --- Routing thresholds (policy lives in code, values here) ---
 CONF_AUTO=0.80                    # >= this → auto-accept
 CONF_REVIEW=0.50                  # < this → must review; between → "suggested"
-NOUL_YES=0.65                     # >= this → treat as explicitly stated
+NOUL_YES=0.75                     # >= this → treat as explicitly stated (raised from 0.65 in Phase 4)
 NOUL_NO=0.35                      # <= this → treat as not stated; between → "inferred"
 
 # --- App ---
@@ -352,8 +352,24 @@ Every question is asked for every candidate, including ones that turn out to be 
 | `resourcing` | choice | `adequate`, `stretched`, `blocked` |
 | `client_sentiment` | score | `["Negative / escalating", "Neutral / mixed", "Positive / satisfied"]` |
 
+**Banding a Score into a label (settled 2026-09-21).** A Score answer is a
+probability-weighted **position**, not a label, and lands between levels — a real
+measured answer was `score: 1.74` with `confidence: 0.62`. Band by **rounding to the
+nearest level**, so band *i* covers `[i - 0.5, i + 0.5)`:
+
+| `score` (0-2 scale) | Band |
+|---|---|
+| `< 0.5` | Low |
+| `0.5 - 1.49` | Medium |
+| `>= 1.5` | High |
+
+Round-to-nearest is symmetric, so no band is quietly wider than another, and it treats
+the float as the position estimate the docs say it is. **Always keep the raw float**
+(`severity_value`) — see Section 7.
+
 Combination rule (shown to the user on the "How it works" page):
-- **Red** if any of: `schedule = off_track`, `scope = uncontrolled`, `resourcing = blocked`, or `client_sentiment` = level 0.
+- **Red** if any of: `schedule = off_track`, `scope = uncontrolled`, `resourcing = blocked`, or **`client_sentiment < 0.5`**.
+  - *(Corrected 2026-09-21: the original rule said `client_sentiment` **= level 0**, which is exact equality on a float and would essentially never fire. `< 0.5` is the band equivalent of "the model actually says Negative / escalating", consistent with the round-to-nearest banding above.)*
 - **Amber** if any dimension sits in its middle state.
 - **Green** otherwise.
 - `rag_confidence` = the minimum confidence across the four answers. Below `CONF_REVIEW`, the PM confirms RAG in the review queue.
@@ -363,6 +379,11 @@ Combination rule (shown to the user on the "How it works" page):
 - `review` — either < `CONF_REVIEW`.
 - `suggested` — anything in between (pre-accepted, with a "Check" hint).
 - **Audience fail-safe:** if `audience` confidence is below `CONF_AUTO`, force `internal_only`. Never leak a doubtful item into a client report.
+- **Noul banding (`NOUL_YES` raised 0.65 → 0.75 on 2026-09-21):** at 0.65, a note reading
+  `priya: reminder timesheets due friday` scored 0.67 and banded **Stated**, even though
+  Priya is the person *reminding others*, not the owner. Measured across all three samples,
+  0.75 changes exactly two items and improves both; every genuinely-stated owner scores
+  ≥ 0.80 and is unaffected.
 - **Noul banding:** `owner_explicit` ≥ `NOUL_YES` → "Stated"; ≤ `NOUL_NO` → "Not specified"; in between → "Inferred" (the model is genuinely unsure, which is not the same as "half stated"). Same for `due_explicit`.
 - `discussion_only` with high confidence → dropped from outputs but listed under "Dropped items (3)" so the PM can restore any of them.
 
@@ -390,14 +411,18 @@ class Candidate(BaseModel):
     evidence: str          # verbatim quote, <= 300 chars
 
 class Decision(BaseModel):
-    label: str
-    confidence: float | None          # None for noul
+    label: str                        # for a score, the BANDED label (see below)
+    confidence: float | None          # None for noul - Jev returns none for that type
     probabilities: dict[str, float] | None
+    value: float | None = None        # raw score float; None for choice/noul
 
 class ClassifiedItem(BaseModel):
     candidate: Candidate
     kind: Decision
-    severity: Decision                # label = "Low" | "Medium" | "High"
+    severity: Decision                # label = "Low" | "Medium" | "High" (banded)
+    severity_value: float             # raw Score float, 0..2. THE SORT KEY - two items
+                                      # can both band "High" at 1.52 and 2.0, and the
+                                      # action list must not rank those equally.
     audience: Decision
     owner_explicit: float             # raw noul value
     due_explicit: float
@@ -628,21 +653,33 @@ Recall against the pre-committed ground truth: **41/63 (65%)**.
 ---
 
 ### PHASE 4 — Jev judgments + routing + RAG · Day 1, ~2.5 h
-- [ ] **First: read the docs pages listed in Section 2A** and write `docs/jev_design_notes.md` (which pages, which cookbook is closest, what you changed in Section 6 and why).
-- [ ] `decide/state.py`: builds the named JSON state per candidate (Section 6), including 2 lines of surrounding context.
-- [ ] `decide/questions.py`: all question specs as data, so wording is tunable in one place.
-- [ ] **Before settling `JEV_CONCURRENCY`: log TypeSafe's rate-limit response headers** from a real call and record the ceiling in `docs/jev_design_notes.md`. Jev is a **separate budget** from Groq's; do not discover its limit mid-fan-out in front of an audience. Set `JEV_CONCURRENCY` from the measured number, not the placeholder 5.
-- [ ] `decide/jev.py`: async `httpx`; one request per candidate carrying all item questions; `asyncio.Semaphore(JEV_CONCURRENCY)`; `JEV_TIMEOUT_S`; 2 retries on 429/5xx with backoff; parses choice/score/noul into `Decision`s; aggregates `usage` + latency into `RunStats`.
-- [ ] `decide/routing.py`: thresholds, audience fail-safe, Noul banding (Section 6).
-- [ ] `pipeline/rag.py`: the RAG request + combination rule + generated reason text.
-- [ ] `decide/llm_fallback.py` and `decide/mock.py` (mock includes low-confidence items).
-- [ ] `pipeline/classify.py`: runs the configured engine; **if Jev fails for the whole run, fall back to Groq automatically** and set `stats.engine = "llm"`.
-- [ ] `POST /api/classify` → `ClassifyResponse`.
-- [ ] Tests (respx-mocked Jev): parsing all three answer types; routing boundaries (0.49 / 0.50 / 0.79 / 0.80); Noul bands (0.34 / 0.35 / 0.64 / 0.65); audience fail-safe; RAG rule table; whole-run fallback; concurrency cap respected.
-- [ ] Live Jev run on all 3 samples. Report per sample: counts by kind, auto/suggested/review split, RAG result, latency, token usage. Confirm Contoso → Red and the internal aside → `internal_only`.
-- [ ] If results are off, **tune question wording and criteria descriptions in `questions.py`** (and re-read the relevant primitive page), not the thresholds. Report what changed.
+- [x] **First: read the docs pages listed in Section 2A** and write `docs/jev_design_notes.md` (which pages, which cookbook is closest, what you changed in Section 6 and why).
+- [x] `decide/state.py`: builds the named JSON state per candidate (Section 6), including 2 lines of surrounding context.
+- [x] `decide/questions.py`: all question specs as data, so wording is tunable in one place.
+- [x] **Before settling `JEV_CONCURRENCY`: log TypeSafe's rate-limit response headers** from a real call and record the ceiling in `docs/jev_design_notes.md`. Jev is a **separate budget** from Groq's; do not discover its limit mid-fan-out in front of an audience. Set `JEV_CONCURRENCY` from the measured number, not the placeholder 5.
+- [x] `decide/jev.py`: async `httpx`; one request per candidate carrying all item questions; `asyncio.Semaphore(JEV_CONCURRENCY)`; `JEV_TIMEOUT_S`; 2 retries on 429/5xx with backoff; parses choice/score/noul into `Decision`s; aggregates `usage` + latency into `RunStats`.
+- [x] `decide/routing.py`: thresholds, audience fail-safe, Noul banding (Section 6).
+- [x] `pipeline/rag.py`: the RAG request + combination rule + generated reason text.
+- [x] `decide/llm_fallback.py` and `decide/mock.py` (mock includes low-confidence items).
+- [x] `pipeline/classify.py`: runs the configured engine; **if Jev fails for the whole run, fall back to Groq automatically** and set `stats.engine = "llm"`.
+- [x] `POST /api/classify` → `ClassifyResponse`.
+- [x] Tests (respx-mocked Jev): parsing all three answer types; routing boundaries (0.49 / 0.50 / 0.79 / 0.80); Noul bands (0.34 / 0.35 / 0.64 / 0.65); audience fail-safe; RAG rule table; whole-run fallback; concurrency cap respected.
+- [x] Live Jev run on all 3 samples. Report per sample: counts by kind, auto/suggested/review split, RAG result, latency, token usage. Confirm Contoso → Red and the internal aside → `internal_only`.
+- [x] If results are off, **tune question wording and criteria descriptions in `questions.py`** (and re-read the relevant primitive page), not the thresholds. Report what changed.
 
-**Gate 4:** live classification works; tests pass; `rough_notes_standup` yields ≥ 3 review items; `docs/jev_design_notes.md` written.
+**Gate 4 — PASSED (2026-09-21).** Live classification works on all three samples;
+**159 tests pass**; `ruff` clean; `docs/jev_design_notes.md` written.
+
+| Criterion | Result |
+|---|---|
+| Contoso → Red | **Red (0.92)** — "a milestone has slipped, and the client is dissatisfied or escalating" |
+| Internal aside (L46) → `internal_only` | **Yes, confidence 0.79** |
+| `rough_notes_standup` ≥ 3 review items | **13** |
+| `JEV_CONCURRENCY` set from measurement | **10** (see `docs/jev_design_notes.md`) |
+
+Jev latency 2.4-5.5 s for 75-125 judgments. `client_sentiment` scored **0.02** on
+Contoso, so the corrected `< 0.5` threshold fires — the original `== level 0` rule
+never would have.
 
 ---
 

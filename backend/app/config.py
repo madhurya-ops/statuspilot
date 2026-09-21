@@ -46,7 +46,7 @@ class Settings(BaseSettings):
     # --- Routing thresholds (policy lives in code, values here) ---
     conf_auto: float = Field(default=0.80, ge=0.0, le=1.0)
     conf_review: float = Field(default=0.50, ge=0.0, le=1.0)
-    noul_yes: float = Field(default=0.65, ge=0.0, le=1.0)
+    noul_yes: float = Field(default=0.75, ge=0.0, le=1.0)
     noul_no: float = Field(default=0.35, ge=0.0, le=1.0)
 
     # --- App ---

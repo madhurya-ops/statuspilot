@@ -107,6 +107,11 @@ class LLMRouter:
                     latency_ms=usage.latency_ms,
                     attempts=attempts,
                     escalated=is_escalation,
+                    # Must be propagated: under strict json_schema a truncated
+                    # response still parses, because the constrained decoder closes
+                    # the JSON. Candidates are then silently lost and the only
+                    # evidence is this field.
+                    finish_reason=usage.finish_reason,
                 )
                 return parsed, totals
 

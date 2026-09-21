@@ -34,8 +34,11 @@ REQUEST_TIMEOUT_S = 45.0
 # "Limit 8000, Used 5645, Requested 5274". Reserving 6000 for a ~2500-token prompt
 # therefore needs 8500 against an 8000/min ceiling, so a single request could exceed
 # the budget on its own. Measured extraction output is ~1700-2800 tokens, so 3200
-# leaves headroom without reserving budget we never spend.
-MAX_COMPLETION_TOKENS = {"extract": 3200, "generate": 2500}
+# leaves headroom without reserving budget we never spend. Raised 3200 -> 3600 after
+# a northwind extraction finished with finish_reason="length" at exactly 3200;
+# raised again 3600 -> 4500 when rough-standup-notes also truncated. Worst measured
+# input is 2520, so 2520 + 4500 = 7020, still inside 8000.
+MAX_COMPLETION_TOKENS = {"extract": 4500, "generate": 2500}
 DEFAULT_MAX_COMPLETION_TOKENS = 2500
 
 
@@ -167,12 +170,24 @@ def _error_code(err: Exception) -> str:
     Only the code and type are read — never `failed_generation`, which contains
     transcript-derived content.
     """
-    body = getattr(err, "body", None)
-    if isinstance(body, dict):
-        error = body.get("error")
-        if isinstance(error, dict):
-            return str(error.get("code") or error.get("type") or "unknown")
+    for source in (getattr(err, "body", None), _json_body(err)):
+        if isinstance(source, dict):
+            error = source.get("error", source)
+            if isinstance(error, dict):
+                code = error.get("code") or error.get("type")
+                if code:
+                    return str(code)
     return "unknown"
+
+
+def _json_body(err: Exception) -> Any:
+    response = getattr(err, "response", None)
+    if response is None:
+        return None
+    try:
+        return response.json()
+    except Exception:
+        return None
 
 
 def _retry_after(err: Exception) -> float | None:

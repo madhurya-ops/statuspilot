@@ -121,3 +121,80 @@ Section 6 bands the value itself rather than thresholding a confidence:
 The middle band is "genuinely unsure whether it was stated", **not** "half stated".
 Measured example: `owner_explicit = 0.73` for *"I will own the transformation fix"*
 with `stated_owner: "Raj Menon"` → **Stated**, correctly.
+
+---
+
+## What changed after the first live run
+
+### The `audience` question was rewritten — and it was the difference between a product and a demo
+
+The first live classification produced **0, 1 and 0 client-safe items** out of 13, 21
+and 16. The client status report would have been empty.
+
+Two causes compounded:
+
+1. **`audience` is a two-option Choice, and `confidence = 2 * p_max - 1` when k = 2.**
+   A perfectly sensible 75/25 answer yields confidence 0.50; 66/34 yields 0.32.
+   Binary questions compress confidence far harder than a seven-option one.
+2. **The audience fail-safe forces `internal_only` below `CONF_AUTO` (0.80)**, which
+   for a binary question means demanding **p >= 0.90**. Jev's median `p_max` was 0.66.
+
+But the root cause was **the question contradicting its own criteria**. The
+instructions asked *"Should this item appear in a status report sent to the client?"* —
+a judgment about **report-worthiness** — while the criteria described **harm**
+("internal opinion or blame... a remark about the client's own behaviour"). An
+ordinary technical fact such as *"the UAT environment still points at the old
+endpoint"* is plainly `client_safe` by the criteria, yet reads as an internal detail
+by the instructions. Jev split the difference, and on a binary question splitting the
+difference destroys confidence.
+
+Per Section 2A's rule — **tune question wording, not thresholds** — the instructions
+were rewritten to ask about harm, matching the criteria, and the criteria were made
+explicit that *bad news is not by itself unsafe*.
+
+| | Median `p_max` on `audience` | Client-safe items |
+|---|---:|---:|
+| Before | 0.66 / 0.78 / 0.70 | 0 / 1 / 0 |
+| **After** | **0.96 / 0.86** | **7 / 7 / 0** |
+
+The Contoso client-safe set is now exactly what a PM would send: the slipped go-live,
+the migration defect, the affected record count, the new date, the UAT window, and who
+owns the fix. The blame remark at L46 stays `internal_only` at 0.79.
+
+`rough-standup-notes` returns **zero** client-safe items. That is correct, not a bug:
+it is an internal engineering standup with no client present, and nothing in it is
+phrased for a client to read.
+
+### `NOUL_YES` raised 0.65 -> 0.75
+
+The bullet `priya: reminder timesheets due friday` scored `owner_explicit = 0.67` and
+banded **Stated**, although Priya is the person *reminding others*, not the owner.
+Measured across all three samples, moving the threshold to 0.75 changes exactly two
+items and improves both:
+
+| Owner | `noul` | at 0.65 | at 0.75 |
+|---|---:|---|---|
+| priya — "Submit timesheets by Friday" | 0.67 | stated | **inferred** |
+| sasha — "Investigate why reindex time increased" | 0.72 | stated | **inferred** |
+
+Every genuinely-stated owner scores >= 0.80 ("I'll take that one", "said she'd fix it")
+and is untouched. The two that move are both cases where the speaker of a note was
+being read as its owner — exactly what the Inferred band exists for.
+
+### Truncation was silently losing candidates
+
+Under strict `json_schema`, a response that hits `max_completion_tokens` **still
+parses**, because the constrained decoder closes the JSON. There is no error: the run
+simply returns fewer candidates. `rough-standup-notes` returned **11** candidates on a
+truncated run and **22** on the same input once the cap was raised.
+
+Two fixes: the completion cap went 3,200 -> 4,500 (worst measured input is 2,520, so
+2,520 + 4,500 = 7,020, still inside the 8,000/min ceiling), and `finish_reason` — which
+the router had been silently dropping when it rebuilt `LLMUsage` — is now propagated,
+logged, and warned on.
+
+> This also qualifies an earlier conclusion. The Phase 3 analysis that the
+> rough-notes recall regression was *not* truncation remains correct **for the run it
+> examined** (1,374 output tokens against a 3,200 cap, 57 % unused). Truncation was a
+> real and separate problem in later runs, and it was invisible precisely because it
+> does not raise an error.

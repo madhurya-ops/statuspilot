@@ -19,11 +19,19 @@ from app.models import CandidateDraft, ExtractionPayload, LLMUsage, MeetingMeta
 T = TypeVar("T", bound=BaseModel)
 
 # Phrases that signal a commitment, a problem, or an agreement.
+# Two families, because the bundled samples are two shapes of input. Meeting dialogue
+# announces commitments ("I'll take that"); bullet notes state bare conditions
+# ("staging box still on the old image"). A signal list written only for the first
+# finds almost nothing in the second, which would leave the review queue untested.
 _SIGNALS = (
+    # meeting dialogue
     "will ", "i'll", "to fix", "to raise", "to provide", "to deliver", "to confirm",
     "to update", "to escalate", "to reissue", "risk", "issue", "defect", "assum",
     "depend", "waiting on", "blocked", "decision", "agreed", "slip", "delay",
     "action", "chase", "by thursday", "by monday", "overdue",
+    # bullet notes
+    "maybe", "should", "never", "nobody", "still ", "pending", "stale", "unclear",
+    "chk", "tbd", "need ", "missing", "down to", "went up", "no plan", "?",
 )
 
 _LINE = re.compile(r"^L(?P<n>\d+):\s*(?P<body>.*)$")

@@ -324,3 +324,63 @@ win. Details in `docs/extraction_recall.md`.
 - [x] 93 tests pass, `ruff` clean
 - [x] Ground truth committed before the live run
 - [x] Recall and per-sample token cost reported
+
+---
+
+## Phase 4 — Jev judgments, routing & RAG
+
+**Status:** ✅ complete — awaiting Gate 4 approval
+**Date:** 2026-09-21
+
+### Built
+
+`decide/` — `base.py` (engine protocol), `questions.py` (all specs as data),
+`state.py` (named-JSON state per candidate), `jev.py` (async httpx, semaphore,
+retries, answer parsing), `routing.py` (banding, thresholds, audience fail-safe),
+`llm_fallback.py` (Groq with the published confidence formula), `mock.py`.
+`pipeline/rag.py` (composite scoring), `pipeline/classify.py` (whole-run fallback),
+`routers/classify.py`.
+
+### Live results
+
+| Sample | Items | Judgments | Jev latency | RAG | Routing |
+|---|---:|---:|---:|---|---|
+| northwind | 14 | 75 | 3.5 s | Amber (0.89) | 7 auto · 7 suggested · 0 review |
+| contoso | 24 | 125 | 4.0 s | **Red (0.92)** | 4 auto · 10 suggested · 10 review |
+| rough-standup | 17 | 90 | 5.5 s | Amber (0.54) | 4 suggested · **13 review** |
+
+### Four bugs found and fixed
+
+1. **The client status report would have been empty.** First live run produced 0, 1
+   and 0 client-safe items. The `audience` question's instructions asked about
+   report-*worthiness* while its criteria described *harm*; on a two-option Choice
+   (`confidence = 2·p_max − 1`) that ambiguity collapses confidence, and the fail-safe
+   then forced almost everything internal. Rewording per Section 2A's "tune wording,
+   not thresholds" rule took median `p_max` from 0.66 to 0.96.
+2. **Truncation silently lost candidates.** Under strict `json_schema` a response that
+   hits the completion cap still *parses* — the constrained decoder closes the JSON —
+   so there is no error, just fewer items. `rough-standup-notes` returned 11 candidates
+   truncated and 22 once the cap was raised to 4,500.
+3. **`finish_reason` was dropped by the router** when it rebuilt `LLMUsage`, which is
+   why bug 2 was invisible. Now propagated, logged and warned on.
+4. **`band_score` used banker's rounding.** Python's `round(0.5) == 0`, so 0.5 banded
+   Low while 1.5 banded High. Replaced with `math.floor(x + 0.5)`.
+
+Also: the mock decision engine and mock extractor were rewritten for bullet-note
+input. Their signal lists were meeting-shaped, so `rough-standup-notes` produced only
+7 candidates and 1 review item offline — the review queue was effectively untested.
+
+### Threshold change
+
+`NOUL_YES` 0.65 → **0.75**. `priya: reminder timesheets due friday` scored 0.67 and
+banded "Stated", though Priya is reminding others rather than owning the task. Across
+all three samples the change moves exactly two items and improves both; every
+genuinely-stated owner scores ≥ 0.80.
+
+### Gate 4
+
+- [x] Live classification works on all three samples
+- [x] Contoso → Red; internal aside → `internal_only` (0.79)
+- [x] `rough-standup-notes` yields 13 review items (≥ 3)
+- [x] 159 tests pass, `ruff` clean
+- [x] `docs/jev_design_notes.md` written

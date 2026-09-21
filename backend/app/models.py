@@ -4,6 +4,8 @@
 them arrive; this file grows through Phases 2-5.
 """
 
+from typing import Literal
+
 from pydantic import BaseModel, Field
 
 
@@ -110,3 +112,55 @@ class ExtractionPayload(BaseModel):
     meta: MeetingMeta
     discussion_points: list[str] = Field(default_factory=list)
     candidates: list[CandidateDraft] = Field(default_factory=list)
+
+
+class Decision(BaseModel):
+    """One typed judgment from the decision engine.
+
+    `confidence` is None for Noul answers: Jev returns no confidence for that type,
+    only a probability. That is why Noul values are banded rather than thresholded on
+    a confidence (see `decide/routing.py`).
+    """
+
+    label: str
+    confidence: float | None = None
+    probabilities: dict[str, float] | None = None
+    value: float | None = None  # raw Score float; None for choice and noul
+
+
+class ClassifiedItem(BaseModel):
+    candidate: Candidate
+    kind: Decision
+    severity: Decision
+    audience: Decision
+    # The raw Score float, kept alongside the banded label. Two items can both band
+    # "High" at 1.52 and 2.0; the action list must not rank those equally.
+    severity_value: float
+    owner_explicit: float
+    due_explicit: float
+    owner_status: Literal["stated", "inferred", "not_specified"]
+    due_status: Literal["stated", "inferred", "not_specified"]
+    routing: Literal["auto", "suggested", "review"]
+    engine: Literal["jev", "llm", "mock"]
+
+
+class RagResult(BaseModel):
+    status: Literal["Red", "Amber", "Green"]
+    confidence: float
+    dimensions: dict[str, Decision] = Field(default_factory=dict)
+    reason: str = ""
+
+
+class RunStats(BaseModel):
+    engine: str
+    requests: int = 0
+    latency_ms: int = 0
+    input_tokens: int | None = None
+    output_tokens: int | None = None
+
+
+class ClassifyResponse(BaseModel):
+    items: list[ClassifiedItem] = Field(default_factory=list)
+    rag: RagResult
+    stats: RunStats
+    dropped: list[ClassifiedItem] = Field(default_factory=list)
