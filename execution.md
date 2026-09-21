@@ -53,17 +53,60 @@ The user has **Groq** and **TypeSafe (Jev)** API keys. Gemini is **not** used. D
 
 | Role | Provider | Configuration | Notes |
 |---|---|---|---|
-| **Extraction + writing** | **Groq** (free tier) | `GROQ_MODEL` — a current large instruct model (e.g. a Llama 3.3 70B-class or GPT-OSS-class model) | OpenAI-compatible: `https://api.groq.com/openai/v1` via the `openai` Python SDK |
-| **Writing fallback** | **Groq**, second model | `GROQ_MODEL_FALLBACK` — a smaller/faster model | Same client, different model ID. Used on 429 or repeated JSON failures. |
+| **Extraction + writing** | **Groq** (free tier) | `GROQ_MODEL=openai/gpt-oss-20b` | OpenAI-compatible: `https://api.groq.com/openai/v1` via the `openai` Python SDK. Chosen for **speed and a small token footprint**, not raw capability — see the note below. |
+| **Quality escalation** | **Groq**, larger model | `GROQ_MODEL_ESCALATION=openai/gpt-oss-120b` | Same client, different model ID. Used **only** on repeated JSON/validation failure. **Never on 429** — see "Handling 429". |
 | **Typed judgments** | **Jev** (`jev-latest`) | `TYPESAFE_API_KEY` | `POST https://api.typesafe.ai/v1/systemone` |
 | **Judgment fallback** | Groq LLM | `DECISION_ENGINE=llm` | Keeps the demo alive if TypeSafe is unreachable mid-demo |
 | **Tests / offline** | `mock` | `LLM_PRIMARY=mock`, `DECISION_ENGINE=mock` | Deterministic, no network, no cost |
 
-**Groq free-tier reality (verify in the console before Phase 3):** roughly 30 requests/minute and a four-figure daily request cap, shared **per organization**, not per key. Creating extra keys does not raise the limit. Our pipeline uses ~2 Groq calls per report, so a demo is comfortably inside the limit — but the **Jev fan-out is the request-heavy part**, so cap concurrency (`JEV_CONCURRENCY`) and never retry in a tight loop.
+### Groq free-tier reality — measured in Phase 0, not assumed
 
-**Handling 429:** read the `retry-after` header when present, back off exponentially (1s, 2s, 4s; max 3 tries), then switch to `GROQ_MODEL_FALLBACK`. Surface a clean "Busy, try again" to the UI rather than a stack trace.
+Read from live `x-ratelimit-*` response headers on 2026-09-21. **This supersedes the
+earlier estimate in this file, which reasoned about requests per minute and was
+misleading.**
 
-**Model IDs are env vars, never hardcoded.** In Phase 0, check https://console.groq.com/docs/models for the current IDs and write them into `backend/.env`.
+| Header | Value |
+|---|---|
+| `x-ratelimit-limit-requests` | 1000 |
+| `x-ratelimit-limit-tokens` | **8000 per minute** |
+
+**The binding constraint is tokens per minute, not requests per minute.** A full run
+(extract + generate) costs roughly 8 k tokens, so the free tier sustains **about one
+run per minute**. Three consequences, all of them load-bearing:
+
+1. **Both models draw on the same bucket.** `gpt-oss-20b` and `gpt-oss-120b` reported
+   the *identical* remaining count, so the limit is shared across models, not per
+   model. **Switching model on a 429 therefore buys nothing** and the original
+   fallback-on-429 design has been removed.
+2. **`MAX_INPUT_CHARS` is capped at 12000** (~3 k tokens). The original 60000 was
+   ~15 k tokens — nearly twice the per-minute budget — so a max-size transcript could
+   not have completed a single extraction call.
+3. **The gpt-oss models are reasoning models**: completion tokens include hidden
+   reasoning tokens billed against the same budget. Measured on one identical prompt,
+   `reasoning_effort` moved output tokens **low 96 · medium 240 · high 403** — a 4x
+   swing. We default to `low` everywhere, via two separate env vars so extraction and
+   generation can be tuned independently.
+
+The **Jev fan-out is a separate budget** with its own ceiling, which is unknown until
+measured. Phase 4 logs TypeSafe's rate-limit response headers *before* settling
+`JEV_CONCURRENCY`.
+
+**Handling 429 (Groq):** read the `retry-after` header when present, back off
+exponentially (1s, 2s, 4s; max 3 tries), and surface a clean **"Busy — retrying"**
+state in the UI rather than a stack trace. **Never swap models for a rate limit.**
+
+**Handling repeated JSON/validation failure:** one repair retry on `GROQ_MODEL`, then
+escalate to `GROQ_MODEL_ESCALATION`. This is a *quality* escalation and is the only
+thing that model is for.
+
+**Structured output:** all candidate models were verified in Phase 0 to support
+`response_format: {"type": "json_schema", strict: true}`. Use it everywhere. The
+"JSON mode + schema in the prompt otherwise" fallback branch is **dead code — do not
+build it.**
+
+**Model IDs are env vars, never hardcoded.** Read them from live
+`GET /openai/v1/models`, not the docs page, which is client-rendered and lists models
+the account may not have. Note there is **no Llama 3.3 70B** on this account.
 
 ---
 
@@ -222,8 +265,10 @@ statuspilot/
 # --- LLM (Groq only) ---
 LLM_PRIMARY=groq                  # groq | mock
 GROQ_API_KEY=
-GROQ_MODEL=                       # current large instruct model ID
-GROQ_MODEL_FALLBACK=              # smaller/faster model ID, used on 429 or JSON failure
+GROQ_MODEL=openai/gpt-oss-20b     # primary: fast, small token footprint
+GROQ_MODEL_ESCALATION=openai/gpt-oss-120b  # quality escalation on repeated JSON failure ONLY, never on 429
+GROQ_REASONING_EFFORT_EXTRACT=low # low | medium | high — gpt-oss reasoning tokens bill against the 8k TPM budget
+GROQ_REASONING_EFFORT_GENERATE=low
 
 # --- Judgments (Jev) ---
 DECISION_ENGINE=jev               # jev | llm | mock
@@ -242,7 +287,7 @@ NOUL_NO=0.35                      # <= this → treat as not stated; between →
 # --- App ---
 DEMO_ACCESS_CODE=
 ALLOWED_ORIGINS=http://localhost:5173
-MAX_INPUT_CHARS=60000
+MAX_INPUT_CHARS=12000            # ~3k tokens; the Groq free tier allows 8k tokens/min
 MAX_UPLOAD_BYTES=1000000
 MAX_CANDIDATES=40                 # hard cap on Jev fan-out per run
 RATE_LIMIT_PER_MIN=10
@@ -426,7 +471,7 @@ class Documents(BaseModel):
 - If `evidence` isn't a substring (after whitespace normalisation) of the cited lines, replace it with those lines' text, truncated.
 - If an `owner` name appears nowhere in the transcript, null it (anti-hallucination).
 - Cap at `MAX_CANDIDATES`, keeping the highest-signal ones (those with owners/dates first).
-- Invalid JSON → one repair retry, then `GROQ_MODEL_FALLBACK`.
+- Invalid JSON → one repair retry, then `GROQ_MODEL_ESCALATION`.
 
 **Generation** (JSON: `{mom_markdown, status_report_markdown}`):
 - Input: meta, discussion points, approved items, RAG result, project name, period.
@@ -440,7 +485,9 @@ class Documents(BaseModel):
 
 ## 9. Sample Transcripts (synthetic; `backend/app/samples/`)
 
-Three transcripts, 60–120 lines, speaker-labelled (`Name: text`):
+Three transcripts, 60–120 lines, speaker-labelled (`Name: text`), each **capped at
+~5000 characters** so a full run (extract + generate) fits inside the 8 k tokens/min
+Groq budget with headroom.
 
 1. **`sprint_review_northwind.txt`** — "Northwind Bank – Loan Origination Portal, Sprint 14 review." Mostly on track (Green/Amber). Clear owners and dates. Contains one dependency on the client's UAT team and one assumption about test-data availability.
 2. **`client_escalation_contoso.txt`** — "Contoso Insurance – Claims Migration, weekly client call." Slipped go-live, a migration defect blocking UAT, a delayed vendor API. Should come out **Red**. Includes an internal aside after the client drops off ("honestly their team never reviews on time") that must classify `internal_only`.
@@ -462,7 +509,7 @@ Three transcripts, 60–120 lines, speaker-labelled (`Name: text`):
 - **Paste box** (large textarea) + "Paste from clipboard" button (`navigator.clipboard.readText()`, hidden if unsupported).
 - **Upload**: `.txt`, `.docx`, `.vtt`, `.srt` (file picker on mobile; drag-and-drop zone on desktop).
 - Collapsed optional fields: project name, reporting period.
-- Character counter; "Generate" disabled below 200 chars; warning above `MAX_INPUT_CHARS`.
+- Character counter that shows **remaining budget context**, not a bare number — e.g. "4,200 / 12,000 characters · about 1,000 tokens" — so the limit reads as a real constraint rather than an arbitrary cutoff. "Generate" disabled below 200 chars; warning above `MAX_INPUT_CHARS`.
 
 **Screen 2 — Processing**
 - Stepper: ① Reading transcript → ② Extracting items (Groq) → ③ Judging with Jev → ④ Ready for review, each showing a tick and its duration.
@@ -495,15 +542,17 @@ Three transcripts, 60–120 lines, speaker-labelled (`Name: text`):
 ## 11. Phase Plan
 
 ### PHASE 0 — Setup · Day 1, ~30 min
-- [ ] Create the GitHub repo `statuspilot`, clone it, create the folder structure from Section 5.
-- [ ] **Commit `.claude/skills/typesafe-ai/SKILL.md`** so the skill travels with the repo.
-- [ ] `.gitignore`: `.env`, `node_modules`, `__pycache__`, `dist`, `.venv`, `.pytest_cache`, `.ruff_cache`.
-- [ ] Write both `.env.example` files (Section 5) and a local `backend/.env` with the user's **Groq** and **TypeSafe** keys.
-- [ ] Look up current Groq model IDs (https://console.groq.com/docs/models) and set `GROQ_MODEL` + `GROQ_MODEL_FALLBACK`.
-- [ ] Smoke-test both keys from the shell: one Groq chat completion, one Jev `systemone` call with a single Noul question. **Print only status codes and latencies, never the keys.**
+- [x] Create the GitHub repo `statuspilot`, clone it, create the folder structure from Section 5.
+- [x] **Commit `.claude/skills/typesafe-ai/SKILL.md`** so the skill travels with the repo.
+- [x] `.gitignore`: `.env`, `node_modules`, `__pycache__`, `dist`, `.venv`, `.pytest_cache`, `.ruff_cache`.
+- [x] Write both `.env.example` files (Section 5) and a local `backend/.env` with the user's **Groq** and **TypeSafe** keys.
+- [x] Look up current Groq model IDs from live `GET /openai/v1/models` (**not** the client-rendered docs page) and set `GROQ_MODEL` + `GROQ_MODEL_ESCALATION`. → `openai/gpt-oss-20b` primary, `openai/gpt-oss-120b` escalation.
+- [x] Smoke-test both keys from the shell: one Groq chat completion, one Jev `systemone` call with a single Noul question. **Print only status codes and latencies, never the keys.**
 - [x] ~~Create the Vercel account/projects linked to the repo.~~ **Deferred to Phase 1** (agreed 2026-09-21). The `vercel` CLI is not installed and we are not adding it; both projects are created through the Vercel dashboard's GitHub integration at the point where Phase 1 actually deploys `statuspilot-api`.
 
-**Gate 0:** both smoke tests return 200. Report the Groq model IDs chosen and the Jev `model` string echoed in the response.
+**Gate 0 — PASSED (2026-09-21).** Both smoke tests returned 200.
+Groq: `GROQ_MODEL=openai/gpt-oss-20b`, `GROQ_MODEL_ESCALATION=openai/gpt-oss-120b`.
+Jev: echoed `jev-1.13.0` for `jev-latest`; usage 295 in / 21 out.
 
 ---
 
@@ -534,12 +583,15 @@ Three transcripts, 60–120 lines, speaker-labelled (`Name: text`):
 
 ### PHASE 3 — Groq layer + extraction · Day 1, ~2 h
 - [ ] `llm/base.py`: `LLMProvider` protocol — `async complete_json(system, user, schema_model) -> BaseModel`.
-- [ ] `llm/groq_client.py`: `openai` SDK pointed at `https://api.groq.com/openai/v1`; JSON response format where supported, otherwise JSON mode + schema in the prompt; 45 s timeout; reads `retry-after` on 429.
+- [ ] `llm/groq_client.py`: `openai` SDK pointed at `https://api.groq.com/openai/v1`; **always** `response_format: {"type": "json_schema", strict: true}` (verified supported in Phase 0 — do **not** build the "otherwise JSON mode + schema in the prompt" branch); passes `reasoning_effort` from the per-stage env var; 45 s timeout; reads `retry-after` on 429.
 - [ ] `llm/mock.py`: canned valid JSON per sample transcript.
-- [ ] `llm/router.py`: backoff retries on 429/5xx → one JSON repair retry → `GROQ_MODEL_FALLBACK`. Logs provider, model, latency, outcome only.
+- [ ] `llm/router.py`: two **separate** paths, which must not be conflated —
+      - **429/5xx (rate limit):** read `retry-after`, back off 1s/2s/4s (max 3 tries), stay on `GROQ_MODEL`. **Never escalate model** — both models share one token bucket, so a swap buys nothing. Surface "Busy — retrying" to the UI.
+      - **Repeated JSON/validation failure (quality):** one repair retry on `GROQ_MODEL`, then escalate to `GROQ_MODEL_ESCALATION`.
+      - Logs provider, model, latency, outcome, and the `x-ratelimit-remaining-tokens` header only. Never prompt or transcript content.
 - [ ] `llm/prompts.py` + `pipeline/extract.py` with every post-validation rule in Section 8.
 - [ ] `POST /api/extract` `{text}` → `ExtractResponse`.
-- [ ] Tests (mock): schema validity; out-of-range lines dropped; invented owners nulled; 429 fallback; JSON repair path; `MAX_CANDIDATES` cap.
+- [ ] Tests (mock): schema validity; out-of-range lines dropped; invented owners nulled; **429 backs off without changing model**; **JSON-failure path escalates to `GROQ_MODEL_ESCALATION`**; `MAX_CANDIDATES` cap.
 - [ ] Live run against Groq on all 3 samples; show the user candidate counts and 5 examples per sample.
 
 **Gate 3:** extraction works live on all samples; tests pass.
@@ -550,6 +602,7 @@ Three transcripts, 60–120 lines, speaker-labelled (`Name: text`):
 - [ ] **First: read the docs pages listed in Section 2A** and write `docs/jev_design_notes.md` (which pages, which cookbook is closest, what you changed in Section 6 and why).
 - [ ] `decide/state.py`: builds the named JSON state per candidate (Section 6), including 2 lines of surrounding context.
 - [ ] `decide/questions.py`: all question specs as data, so wording is tunable in one place.
+- [ ] **Before settling `JEV_CONCURRENCY`: log TypeSafe's rate-limit response headers** from a real call and record the ceiling in `docs/jev_design_notes.md`. Jev is a **separate budget** from Groq's; do not discover its limit mid-fan-out in front of an audience. Set `JEV_CONCURRENCY` from the measured number, not the placeholder 5.
 - [ ] `decide/jev.py`: async `httpx`; one request per candidate carrying all item questions; `asyncio.Semaphore(JEV_CONCURRENCY)`; `JEV_TIMEOUT_S`; 2 retries on 429/5xx with backoff; parses choice/score/noul into `Decision`s; aggregates `usage` + latency into `RunStats`.
 - [ ] `decide/routing.py`: thresholds, audience fail-safe, Noul banding (Section 6).
 - [ ] `pipeline/rag.py`: the RAG request + combination rule + generated reason text.
@@ -618,7 +671,24 @@ Three transcripts, 60–120 lines, speaker-labelled (`Name: text`):
 - [ ] Check 375 px, 430 px, desktop. No horizontal scroll.
 - [ ] Grep `frontend/dist/` for `gsk_` and any TypeSafe key prefix — must be absent.
 - [ ] Confirm backend logs contain no transcript text.
-- [ ] Run each sample 3 times; fix instability; note Groq/Jev rate-limit behaviour under repeated runs.
+- [ ] **Demo safety net — precomputed sample runs.** The Groq free tier sustains
+      roughly **one run per minute**, which is a real risk while standing in front of a
+      PM. For the **three bundled samples only**:
+      - Commit a precomputed result per sample (`backend/app/samples/cached/<id>.json`:
+        the full `ExtractResponse` + `ClassifyResponse` + `Documents`), generated by a
+        script that is run deliberately, never on request.
+      - Serve it when the input **exactly matches** a bundled sample (compare a hash of
+        the normalised text, not the sample id, so pasting a sample's text also hits it).
+      - **Label it visibly in the UI** as a cached sample run — a badge on the
+        processing screen and on the results header. Never pass it off as live.
+      - **Pasted or uploaded text always goes live to the API.** A rate limit can then
+        never kill the demo, and the live path can still be proved with the audience's
+        own text.
+      - A `CACHED_SAMPLES=0` env var disables the cache entirely, so the samples can be
+        run live on demand.
+- [ ] Run each sample 3 times **against the live API with the cache disabled**, pacing
+      the runs at least 60 s apart (or run them through the cache) so the exercise does
+      not itself trigger the rate limit it is meant to test. Note Groq/Jev behaviour.
 
 **Gate 9:** no console errors; all checks pass.
 
@@ -645,7 +715,7 @@ Three transcripts, 60–120 lines, speaker-labelled (`Name: text`):
 
 **Cut in this order:** PDF export → DOCX export → `.vtt`/`.srt`/`.docx` upload (keep `.txt`) → recent-runs history → swipe gestures → "How it works" page (keep a modal).
 
-**Never cut:** confidence badges, the review queue, source traceability, the client-safe filter. Those are the demo.
+**Never cut:** confidence badges, the review queue, source traceability, the client-safe filter, and the **precomputed sample runs** (Phase 9) — the last one is what stops a rate limit from killing the demo. Those are the demo.
 
 ---
 

@@ -6,7 +6,7 @@ One entry per phase. Kept per the build agreement in `execution.md`.
 
 ## Phase 0 — Setup
 
-**Status:** complete — awaiting Gate 0 approval
+**Status:** ✅ complete — Gate 0 approved 2026-09-21
 **Date:** 2026-09-21
 
 ### Done
@@ -40,7 +40,7 @@ failure — the identical request through `curl` returned 200. Recorded because 
 same trap will appear in Phase 3 if any code path ends up using `urllib`; the
 backend uses the `openai` SDK (httpx under the hood), which sends its own UA.
 
-### Findings that affect the plan — raised at Gate 0, not yet applied
+### Findings that affect the plan — raised at Gate 0, **approved and applied**
 
 1. **No Llama 3.3 70B on this account.** Section 2's example model class is stale.
    The available instruct models are `openai/gpt-oss-120b`, `openai/gpt-oss-20b`,
@@ -85,9 +85,34 @@ backend uses the `openai` SDK (httpx under the hood), which sends its own UA.
 
 - [x] Groq smoke test returns 200
 - [x] Jev smoke test returns 200, `model` echoed as `jev-1.13.0`
-- [ ] `GROQ_MODEL` / `GROQ_MODEL_FALLBACK` written to `backend/.env` — *awaiting
-      the user's confirmation of the two proposed IDs*
+- [x] `GROQ_MODEL=openai/gpt-oss-20b` / `GROQ_MODEL_ESCALATION=openai/gpt-oss-120b`
+      written to `backend/.env` and `.env.example`
 - [x] Repo structure, `.gitignore`, `.env.example` files
 - [x] `typesafe-ai` skill committed
 - [x] GitHub repo created
 - [x] Vercel — deferred to Phase 1 by agreement
+
+### Section 2 rewrite applied after Gate 0 approval
+
+The user chose **speed over capability**: `gpt-oss-20b` primary, `gpt-oss-120b` as
+escalation — the reverse of the assistant's proposal. Rationale: this is a showcase,
+and 20b at ~1000 tok/s makes the demo feel instant, which matters more to a PM
+audience than extraction subtlety.
+
+The user also carried a finding to its conclusion that the assistant had not:
+**both models share one token bucket, so swapping model on a 429 buys nothing.**
+The fallback-on-429 design is therefore removed outright, and the second model is
+reserved for quality escalation only.
+
+| Change | Where |
+|---|---|
+| `GROQ_MODEL_FALLBACK` renamed `GROQ_MODEL_ESCALATION`; used **only** on repeated JSON/validation failure | §2, §5, §8, Phase 3 |
+| 429 handling: back off 1s/2s/4s on the same model, "Busy — retrying" in the UI, **never** swap models | §2, Phase 3 |
+| Dead "JSON mode + schema in prompt otherwise" branch deleted; `json_schema` strict everywhere | §2, Phase 3 |
+| `MAX_INPUT_CHARS` 60000 → **12000** | §5 |
+| `GROQ_REASONING_EFFORT_EXTRACT` / `_GENERATE`, both `low` | §5 |
+| Sample transcripts capped at ~5000 chars | §9 |
+| Character counter shows remaining budget, not a bare number | §10, Screen 1 |
+| **Precomputed sample runs** as a demo safety net, with `CACHED_SAMPLES` toggle and a visible "cached" badge; pasted/uploaded text always live | Phase 9, §12 |
+| "Run each sample 3 times" paced ≥60 s apart or run through the cache | Phase 9 |
+| Log TypeSafe's rate-limit headers **before** settling `JEV_CONCURRENCY` | Phase 4 |
