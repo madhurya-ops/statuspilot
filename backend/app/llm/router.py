@@ -19,8 +19,15 @@ from typing import TypeVar
 from pydantic import BaseModel
 
 from app.config import Settings
-from app.llm.base import JSONInvalid, LLMError, LLMProvider, RateLimited
-from app.llm.groq_client import GroqProvider
+from app.llm.base import (
+    JSONInvalid,
+    LLMError,
+    LLMProvider,
+    RateLimited,
+    Transient,
+    Truncated,
+)
+from app.llm.groq_client import COMPLETION_CEILING, GroqProvider
 from app.llm.mock import MockProvider
 from app.models import LLMUsage
 
@@ -64,13 +71,33 @@ class LLMRouter:
             provider = build_provider(settings, model=model)
             prompt = user if not is_escalation else user + REPAIR_HINT
             schema_failures = 0
+            forced_cap: int | None = None
 
             while True:
                 attempts += 1
                 try:
                     parsed, usage = await provider.complete_json(
-                        system=system, user=prompt, schema_model=schema_model, stage=stage
+                        system=system,
+                        user=prompt,
+                        schema_model=schema_model,
+                        stage=stage,
+                        max_completion_tokens=forced_cap,
                     )
+                except Transient as err:
+                    # Timeouts and 5xx are worth one more attempt on the same model.
+                    if attempts >= MAX_RATE_LIMIT_ATTEMPTS:
+                        log.warning("groq transient failure, giving up after %d", attempts)
+                        raise
+                    delay = BACKOFF_SECONDS[min(attempts - 1, len(BACKOFF_SECONDS) - 1)]
+                    log.warning(
+                        "groq transient (%s) stage=%s attempt=%d backoff=%.1fs",
+                        err,
+                        stage,
+                        attempts,
+                        delay,
+                    )
+                    await self._sleep(delay)
+                    continue
                 except RateLimited as err:
                     # Same model, always. Escalating here would spend the same bucket.
                     if attempts >= MAX_RATE_LIMIT_ATTEMPTS:
@@ -84,6 +111,21 @@ class LLMRouter:
                     )
                     await self._sleep(delay)
                     continue
+                except Truncated:
+                    # The dynamic cap under-estimated this response. Retry once at the
+                    # ceiling rather than reserving the ceiling on every call: a rare
+                    # retry is cheaper than permanent over-reservation, and truncation
+                    # is invisible otherwise because the JSON still parses.
+                    if forced_cap is None:
+                        forced_cap = COMPLETION_CEILING.get(stage, 2500)
+                        log.warning(
+                            "groq truncated stage=%s, retrying at the ceiling cap %d",
+                            stage,
+                            forced_cap,
+                        )
+                        continue
+                    log.warning("groq truncated stage=%s even at the ceiling cap", stage)
+                    raise
                 except JSONInvalid:
                     schema_failures += 1
                     if schema_failures == 1 and not is_escalation:

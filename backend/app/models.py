@@ -164,3 +164,58 @@ class ClassifyResponse(BaseModel):
     rag: RagResult
     stats: RunStats
     dropped: list[ClassifiedItem] = Field(default_factory=list)
+
+
+class ApprovedItem(BaseModel):
+    """An item after the PM has reviewed it. Sent back from the client."""
+
+    id: str
+    text: str
+    kind: str
+    severity: str
+    severity_value: float = 0.0
+    audience: str
+    owner: str | None = None
+    owner_status: Literal["stated", "inferred", "not_specified"] = "not_specified"
+    due_date: str | None = None
+    due_status: Literal["stated", "inferred", "not_specified"] = "not_specified"
+    source_lines: list[int] = Field(default_factory=list)
+    edited_by_user: bool = False
+
+
+class GenerateRequest(BaseModel):
+    meta: MeetingMeta
+    discussion_points: list[str] = Field(default_factory=list)
+    items: list[ApprovedItem] = Field(default_factory=list)
+    rag: RagResult
+    project_name: str | None = None
+    reporting_period: str | None = None
+
+
+class Documents(BaseModel):
+    mom_markdown: str
+    status_report_markdown: str
+    # Built in code from `items`, never parsed out of LLM prose. This is what makes
+    # "no invented items" enforceable rather than aspirational.
+    action_items: list[ApprovedItem] = Field(default_factory=list)
+    raid_log: dict[str, list[ApprovedItem]] = Field(default_factory=dict)
+    # True when no item is client_safe. A real path: `rough-standup-notes` yields 0 of
+    # 17. The UI must render an explanation, never a blank panel.
+    status_report_empty: bool = False
+    cached: bool = False
+    leak_stripped: bool = False
+
+
+class GenerateResponse(Documents):
+    pass
+
+
+class BudgetStatus(BaseModel):
+    """Groq's per-minute token budget, for an honest wait instead of a spinner."""
+
+    limit_tokens: int
+    remaining_tokens: int
+    refill_per_second: float
+    wait_seconds: float
+    needed_tokens: int
+    known: bool

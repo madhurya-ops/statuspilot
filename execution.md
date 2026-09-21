@@ -684,9 +684,9 @@ never would have.
 ---
 
 ### PHASE 5 — Document generation · Day 1 evening, ~1.5 h
-- [ ] `pipeline/generate.py`: builds action-item and RAID tables in code; calls Groq for `mom_markdown` and `status_report_markdown`; the status report receives client-safe items only.
-- [ ] Post-check: if the status report echoes an internal-only item (fuzzy match), regenerate once with a stricter instruction; if it still leaks, strip the offending sentence and log that it happened (type only, no content).
-- [ ] **Empty client-facing output is a first-class state, not a blank panel.** When
+- [x] `pipeline/generate.py`: builds action-item and RAID tables in code; calls Groq for `mom_markdown` and `status_report_markdown`; the status report receives client-safe items only.
+- [x] Post-check: if the status report echoes an internal-only item (fuzzy match), regenerate once with a stricter instruction; if it still leaks, strip the offending sentence and log that it happened (type only, no content).
+- [x] **Empty client-facing output is a first-class state, not a blank panel.** When
       **no** item is `client_safe`, the status report must say so in words. Measured:
       `rough-standup-notes` yields **0 of 17** client-safe items, which is correct — it
       is an internal engineering standup with no client present — but a PM tapping that
@@ -695,14 +695,14 @@ never would have.
       *"No client-facing items. This was an internal standup with no client present,
       so there is nothing here that would go to a client."* A `status_report_empty:
       bool` flag on `Documents` lets the UI render the state deliberately (Phase 7).
-- [ ] **Pace the extract → generate pair.** Measured in Phase 4: extraction *requests*
+- [x] **Pace the extract → generate pair.** Measured in Phase 4: extraction *requests*
       ~7,020 of the 8,000/min budget, leaving ~980, so generation must wait for the
       bucket to refill (~133 tokens/sec, roughly **26 s**). `/api/generate` surfaces
       this as an honest wait rather than a 429 — the processing UI shows the step as
       waiting, with the reason.
-- [ ] `POST /api/generate` → `Documents`.
-- [ ] Tests: tables built correctly; internal items excluded from the generation input; mock output passes through.
-- [ ] **Demo safety net — precomputed sample runs.** *Moved forward from Phase 9 on
+- [x] `POST /api/generate` → `Documents`.
+- [x] Tests: tables built correctly; internal items excluded from the generation input; mock output passes through.
+- [x] **Demo safety net — precomputed sample runs.** *Moved forward from Phase 9 on
       2026-09-21.* Phase 3 measured a full report at **7-9 k tokens** against an
       **8 k tokens/min** ceiling, i.e. roughly **one run per minute**. That makes
       repeated phone testing in Phases 6-9 hit 429s every second run, so this is a

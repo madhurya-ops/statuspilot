@@ -177,9 +177,13 @@ class FakeProvider:
     def __init__(self, outcomes):
         self.outcomes = list(outcomes)
         self.calls: list[str] = []
+        self.caps: list[int | None] = []
 
-    async def complete_json(self, *, system, user, schema_model, stage):
+    async def complete_json(
+        self, *, system, user, schema_model, stage, max_completion_tokens=None
+    ):
         self.calls.append(user)
+        self.caps.append(max_completion_tokens)
         outcome = self.outcomes.pop(0)
         if isinstance(outcome, Exception):
             raise outcome
@@ -337,3 +341,90 @@ class TestExtractEndpoint:
         sample = client.get("/api/samples/rough-standup-notes", headers=auth).json()
         body = client.post("/api/extract", headers=auth, json={"text": sample["text"]}).json()
         assert len(body["candidates"]) <= get_settings().max_candidates
+
+
+class TestDynamicCompletionCap:
+    """The cap is scaled from the prompt because Groq charges its TPM limit on
+    `prompt + max_completion_tokens`, not on tokens consumed."""
+
+    def test_scales_with_the_prompt(self):
+        from app.llm.groq_client import completion_cap
+
+        assert completion_cap("extract", 2060) == 4120  # 2060 * 2.0
+        assert completion_cap("extract", 1500) == 3000  # 1500 * 2.0
+
+    def test_clamps_to_floor_and_ceiling(self):
+        from app.llm.groq_client import COMPLETION_CEILING, COMPLETION_FLOOR, completion_cap
+
+        assert completion_cap("extract", 10) == COMPLETION_FLOOR["extract"]
+        assert completion_cap("extract", 99_999) == COMPLETION_CEILING["extract"]
+
+    def test_prompt_estimate_never_underestimates(self):
+        """Worst measured density was 3.196 chars/token; the estimator uses 3.1."""
+        from app.llm.groq_client import estimate_prompt_tokens
+
+        for chars, actual in ((8820, 2502), (8779, 2520), (6223, 1948)):
+            assert estimate_prompt_tokens("x" * chars, "") >= actual
+
+    async def test_a_truncated_response_is_retried_at_the_ceiling(self, slept, monkeypatch):
+        """Truncation is invisible under strict json_schema: the JSON still parses and
+        items are silently lost. It must be retried, not accepted."""
+        from app.llm.base import Truncated
+        from app.llm.groq_client import COMPLETION_CEILING
+
+        _, fake_sleep = slept
+        fake = FakeProvider([Truncated("hit the cap"), _ok()])
+        monkeypatch.setattr("app.llm.router.build_provider", lambda *a, **k: fake)
+        result, _ = await LLMRouter(get_settings(), sleep=fake_sleep).complete_json(
+            system="s", user="u", schema_model=ExtractionPayload, stage="extract"
+        )
+        assert result.meta.title == "T"
+        assert fake.caps == [None, COMPLETION_CEILING["extract"]]
+
+    async def test_truncation_at_the_ceiling_propagates(self, slept, monkeypatch):
+        from app.llm.base import Truncated
+
+        _, fake_sleep = slept
+        fake = FakeProvider([Truncated("cap"), Truncated("cap")])
+        monkeypatch.setattr("app.llm.router.build_provider", lambda *a, **k: fake)
+        with pytest.raises(Truncated):
+            await LLMRouter(get_settings(), sleep=fake_sleep).complete_json(
+                system="s", user="u", schema_model=ExtractionPayload, stage="extract"
+            )
+
+
+class TestTruncationHasTwoFaces:
+    """Groq signals a hit completion cap two different ways. Both must retry."""
+
+    def test_400_json_validate_failed_from_truncation_is_detected(self):
+        from app.llm.groq_client import _error_code, _mentions_truncation
+
+        class FakeErr(Exception):
+            body = {
+                "error": {
+                    "message": "Failed to generate JSON. See 'failed_generation'.",
+                    "code": "json_validate_failed",
+                    "failed_generation": (
+                        "max completion tokens reached before generating a valid document"
+                    ),
+                }
+            }
+            response = None
+
+        err = FakeErr()
+        assert _error_code(err) == "json_validate_failed"
+        assert _mentions_truncation(err) is True
+
+    def test_a_genuine_schema_failure_is_not_read_as_truncation(self):
+        from app.llm.groq_client import _mentions_truncation
+
+        class FakeErr(Exception):
+            body = {
+                "error": {
+                    "code": "json_validate_failed",
+                    "failed_generation": '{"meta": {"title": 42}}',
+                }
+            }
+            response = None
+
+        assert _mentions_truncation(FakeErr()) is False

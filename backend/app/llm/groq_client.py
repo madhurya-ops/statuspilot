@@ -5,18 +5,20 @@ Phase 0 verified on every candidate model. There is deliberately no "JSON mode p
 schema in the prompt" fallback branch — it was dead code.
 """
 
+import contextlib
 import json
 import logging
+import math
 import time
 from typing import Any, TypeVar
 
 import httpx
-from openai import APIStatusError, AsyncOpenAI
+from openai import APIConnectionError, APIStatusError, APITimeoutError, AsyncOpenAI
 from openai import RateLimitError as OpenAIRateLimit
 from pydantic import BaseModel, ValidationError
 
 from app.config import Settings
-from app.llm.base import JSONInvalid, LLMError, RateLimited
+from app.llm.base import JSONInvalid, LLMError, RateLimited, Transient, Truncated
 from app.models import LLMUsage
 
 log = logging.getLogger(__name__)
@@ -26,20 +28,44 @@ T = TypeVar("T", bound=BaseModel)
 GROQ_BASE_URL = "https://api.groq.com/openai/v1"
 REQUEST_TIMEOUT_S = 45.0
 
-# Explicit, because the provider default truncated extraction mid-document and
-# returned 400 json_validate_failed rather than a short answer.
+# Groq charges its tokens-per-minute limit on **requested** tokens
+# (`prompt + max_completion_tokens`), not consumed ones. Measured directly: one
+# extraction with a 2,520-token prompt and a 4,500 cap took
+# `x-ratelimit-remaining-tokens` from 7,927 to 980 — a deduction of exactly
+# prompt + cap — while consuming only 5,415. A fixed cap therefore reserves, and pays
+# for, tokens it never uses, and that waste directly lengthens the refill wait before
+# the next call.
 #
-# But keep it TIGHT. Groq counts `max_completion_tokens` against the tokens-per-minute
-# limit as *requested* tokens, not as tokens actually used: a 429 body reads
-# "Limit 8000, Used 5645, Requested 5274". Reserving 6000 for a ~2500-token prompt
-# therefore needs 8500 against an 8000/min ceiling, so a single request could exceed
-# the budget on its own. Measured extraction output is ~1700-2800 tokens, so 3200
-# leaves headroom without reserving budget we never spend. Raised 3200 -> 3600 after
-# a northwind extraction finished with finish_reason="length" at exactly 3200;
-# raised again 3600 -> 4500 when rough-standup-notes also truncated. Worst measured
-# input is 2520, so 2520 + 4500 = 7020, still inside 8000.
-MAX_COMPLETION_TOKENS = {"extract": 4500, "generate": 2500}
-DEFAULT_MAX_COMPLETION_TOKENS = 2500
+# So the cap is scaled from the prompt instead.
+#
+# The ratio must be generous, because a truncation retry is FAR more expensive than
+# over-reserving: the retry re-requests prompt + ceiling, so one truncated extraction
+# costs ~11.6k requested tokens against an 8k/min budget, versus ~6.2k for a single
+# correctly-sized call. Measured completion/prompt ratios across live runs span
+# 0.65-1.85 — bullet notes pack many more items per prompt token than meeting
+# dialogue, and `rough-standup-notes` needed 3,804 completion tokens on a 2,060-token
+# prompt. 2.0 covers the worst case with margin; `Truncated` remains as a safety net
+# for anything beyond it.
+COMPLETION_RATIO = {"extract": 2.0, "generate": 1.6}
+COMPLETION_FLOOR = {"extract": 2000, "generate": 2000}
+COMPLETION_CEILING = {"extract": 4500, "generate": 3500}
+
+# Conservative: the worst measured density across the three samples was 3.196
+# characters per token (rough-standup-notes: 6,223 chars -> 1,948 tokens). 3.1 leaves
+# margin below that, so the estimate never underestimates the prompt and the cap is
+# never scaled down off a too-small number.
+CHARS_PER_TOKEN = 3.1
+
+
+def estimate_prompt_tokens(system: str, user: str) -> int:
+    return math.ceil((len(system) + len(user)) / CHARS_PER_TOKEN)
+
+
+def completion_cap(stage: str, prompt_tokens: int) -> int:
+    ratio = COMPLETION_RATIO.get(stage, 1.4)
+    floor = COMPLETION_FLOOR.get(stage, 1200)
+    ceiling = COMPLETION_CEILING.get(stage, 2500)
+    return max(floor, min(ceiling, math.ceil(prompt_tokens * ratio)))
 
 
 def strict_schema(model: type[BaseModel]) -> dict[str, Any]:
@@ -92,17 +118,24 @@ class GroqProvider:
         )
 
     async def complete_json(
-        self, *, system: str, user: str, schema_model: type[T], stage: str
+        self,
+        *,
+        system: str,
+        user: str,
+        schema_model: type[T],
+        stage: str,
+        max_completion_tokens: int | None = None,
     ) -> tuple[T, LLMUsage]:
         started = time.monotonic()
+        cap = max_completion_tokens or completion_cap(
+            stage, estimate_prompt_tokens(system, user)
+        )
         try:
-            response = await self._client.chat.completions.create(
+            raw = await self._client.chat.completions.with_raw_response.create(
                 model=self._model,
                 temperature=0,
                 reasoning_effort=self._effort(stage),
-                max_completion_tokens=MAX_COMPLETION_TOKENS.get(
-                    stage, DEFAULT_MAX_COMPLETION_TOKENS
-                ),
+                max_completion_tokens=cap,
                 response_format=strict_schema(schema_model),
                 messages=[
                     {"role": "system", "content": system},
@@ -118,14 +151,27 @@ class GroqProvider:
                 raise RateLimited(
                     "Groq rate limit", status=429, retry_after=_retry_after(err)
                 ) from err
+            code = _error_code(err)
+            # Truncation has two faces. When the constrained decoder manages to close
+            # the JSON, Groq returns 200 with finish_reason="length". When it cannot,
+            # it returns 400 json_validate_failed whose body says "max completion
+            # tokens reached before generating a valid document". Both are the same
+            # problem and both must retry at the ceiling, not surface as a dead error.
+            if code == "json_validate_failed" and _mentions_truncation(err):
+                raise Truncated("Response hit the completion cap (400)") from err
+            if err.status_code >= 500:
+                raise Transient(f"Groq returned {err.status_code}") from err
             raise LLMError(
-                f"Groq returned {err.status_code}: {_error_code(err)}",
-                status=err.status_code,
+                f"Groq returned {err.status_code}: {code}", status=err.status_code
             ) from err
-        except httpx.TimeoutException as err:
-            raise LLMError("Groq request timed out") from err
+        except (APITimeoutError, httpx.TimeoutException) as err:
+            raise Transient("Groq request timed out") from err
+        except APIConnectionError as err:
+            raise Transient("Could not reach Groq") from err
 
         elapsed_ms = int((time.monotonic() - started) * 1000)
+        _record_budget(raw.headers)
+        response = raw.parse()
         choice = response.choices[0]
         usage = LLMUsage(
             model=self._model,
@@ -136,20 +182,23 @@ class GroqProvider:
         )
         if usage.finish_reason == "length":
             log.warning(
-                "groq output truncated at the completion cap stage=%s model=%s out=%d",
+                "groq output truncated at cap=%d stage=%s model=%s out=%d",
+                cap,
                 stage,
                 self._model,
                 usage.output_tokens,
             )
+            raise Truncated(f"Response hit the completion cap of {cap}")
 
         content = choice.message.content or ""
         # Sizes and outcomes only. Never the prompt, never the completion.
         log.info(
-            "groq model=%s stage=%s in=%d out=%d ms=%d finish=%s",
+            "groq model=%s stage=%s in=%d out=%d cap=%d ms=%d finish=%s",
             self._model,
             stage,
             usage.input_tokens,
             usage.output_tokens,
+            cap,
             elapsed_ms,
             usage.finish_reason,
         )
@@ -180,6 +229,16 @@ def _error_code(err: Exception) -> str:
     return "unknown"
 
 
+def _mentions_truncation(err: Exception) -> bool:
+    """Does the error body blame the completion cap?"""
+    for source in (getattr(err, "body", None), _json_body(err)):
+        if isinstance(source, dict):
+            blob = json.dumps(source).lower()
+            if "max completion tokens" in blob or "max_completion_tokens" in blob:
+                return True
+    return False
+
+
 def _json_body(err: Exception) -> Any:
     response = getattr(err, "response", None)
     if response is None:
@@ -199,3 +258,27 @@ def _retry_after(err: Exception) -> float | None:
         return float(raw) if raw is not None else None
     except (TypeError, ValueError):
         return None
+
+
+# Last rate-limit snapshot seen on any Groq response. Groq reports the remaining
+# per-minute token budget on every call, so the app can tell the user exactly how long
+# the next stage must wait instead of showing a bare spinner or a 429.
+_BUDGET: dict[str, float] = {}
+
+
+def _record_budget(headers: Any) -> None:
+    if headers is None:
+        return
+    for key, name in (
+        ("x-ratelimit-limit-tokens", "limit"),
+        ("x-ratelimit-remaining-tokens", "remaining"),
+    ):
+        value = headers.get(key)
+        if value is not None:
+            with contextlib.suppress(TypeError, ValueError):
+                _BUDGET[name] = float(value)
+    _BUDGET["at"] = time.time()
+
+
+def budget_snapshot() -> dict[str, float]:
+    return dict(_BUDGET)

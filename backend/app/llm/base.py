@@ -32,6 +32,19 @@ class JSONInvalid(LLMError):
     """The model returned something that does not satisfy the schema."""
 
 
+class Transient(LLMError):
+    """A timeout or 5xx: worth one more attempt, on the same model."""
+
+
+class Truncated(LLMError):
+    """The response hit `max_completion_tokens`.
+
+    Needs its own type because under strict `json_schema` a truncated response still
+    *parses* — the constrained decoder closes the JSON — so it looks like success
+    while silently dropping items. Retried once at the ceiling cap.
+    """
+
+
 class LLMProvider(Protocol):
     """Returns a validated pydantic model, never raw text.
 
@@ -45,4 +58,5 @@ class LLMProvider(Protocol):
         user: str,
         schema_model: type[T],
         stage: str,
+        max_completion_tokens: int | None = None,
     ) -> tuple[T, LLMUsage]: ...

@@ -384,3 +384,68 @@ genuinely-stated owner scores ≥ 0.80.
 - [x] `rough-standup-notes` yields 13 review items (≥ 3)
 - [x] 159 tests pass, `ruff` clean
 - [x] `docs/jev_design_notes.md` written
+
+---
+
+## Phase 5 — Document generation, leak post-check, empty state, sample cache
+
+**Status:** ✅ complete — awaiting Gate 5 approval
+**Date:** 2026-09-21
+
+### Built
+
+| File | What it does |
+|---|---|
+| `app/pipeline/generate.py` | Tables built in code; leak detection, regenerate, strip; empty/skeleton report handling |
+| `app/pipeline/cache.py` | Fingerprint on normalised text, schema-validated load, save |
+| `app/routers/generate.py` | `POST /api/generate`, `GET /api/cached/{id}`, `POST /api/cached/lookup` |
+| `app/routers/budget.py` | `GET /api/budget` — remaining tokens and the real wait, for an honest countdown |
+| `scripts/build_sample_cache.py` | Deliberate, paced cache build. Refuses to run against mock engines. |
+
+### The dynamic completion cap
+
+Groq bills its TPM limit on `prompt + max_completion_tokens`, so a fixed cap pays for
+tokens it never uses. The cap is now scaled from an estimated prompt size
+(`chars / 3.1`, conservative against the worst measured density of 3.196).
+
+**Ratio 1.4 was wrong and the first build proved it.** `rough-standup-notes` needs
+~1.85x its prompt in completion tokens — bullet notes pack far more items per prompt
+token than meeting dialogue — so it truncated, retried at the ceiling, and cost
+~11.6k requested tokens instead of ~6.2k. **A truncation retry is far more expensive
+than over-reserving**, so the extract ratio is 2.0.
+
+| Stage | Ratio | Floor | Ceiling |
+|---|---:|---:|---:|
+| extract | 2.0 | 2,000 | 4,500 |
+| generate | 1.6 | 2,000 | 3,500 |
+
+### Four bugs found and fixed
+
+1. **Truncation has two faces.** When the constrained decoder closes the JSON, Groq
+   returns 200 with `finish_reason: "length"`. When it cannot, it returns **400
+   `json_validate_failed`** whose body reads *"max completion tokens reached before
+   generating a valid document"*. Only the first was handled, so the second surfaced
+   as a dead error with no retry.
+2. **The leak detector produced false positives, and its stripper deleted real
+   content.** It emptied an entire "Next steps" section of the Northwind report. The
+   cause was matching on shared project vocabulary: an internal note about
+   *"anonymised data available by end of March"* overlapped a perfectly proper client
+   sentence about anonymised test data. Fixed by **excluding any term that also
+   appears in a client-safe item** — a word the report is supposed to use cannot be
+   evidence of a leak — plus a 4-term minimum and a 75 % overlap requirement.
+3. **A near-empty report is worse than an empty one.** `rough-standup-notes` cleared
+   one client-safe item and produced five bare headings, which reads as a broken app.
+   The empty-state explanation now triggers on *no substantive body*, not only on
+   zero client-safe items, and names how many items were withheld.
+4. **Timeouts were not retried.** The OpenAI SDK raises `APITimeoutError`, which the
+   client did not catch, so it escaped the router unretried and killed a cache build.
+   Added a `Transient` class covering timeouts, connection errors and 5xx.
+
+### Gate 5
+
+- [x] Tables built in code from approved items, sorted on the raw severity float
+- [x] Leak post-check: regenerate once, then strip, with `leak_stripped` reported
+- [x] Explicit empty state for the status report
+- [x] Precomputed sample cache with `cached: true` and a `CACHED_SAMPLES` switch
+- [x] Pasted text always goes live (cache keyed on the sample text fingerprint)
+- [x] 194 tests pass, `ruff` clean

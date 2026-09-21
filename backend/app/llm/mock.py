@@ -45,7 +45,13 @@ class MockProvider:
         self.model = "mock"
 
     async def complete_json(
-        self, *, system: str, user: str, schema_model: type[T], stage: str
+        self,
+        *,
+        system: str,
+        user: str,
+        schema_model: type[T],
+        stage: str,
+        max_completion_tokens: int | None = None,
     ) -> tuple[T, LLMUsage]:
         started = time.monotonic()
         if schema_model is ExtractionPayload:
