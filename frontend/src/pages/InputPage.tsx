@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { api } from "../api/client";
+import { api, ApiError } from "../api/client";
 import { Banner, Button, Screen } from "../components/Chrome";
 import type { Action, SessionState } from "../state/session";
 
@@ -26,7 +26,17 @@ export function InputPage({
     api
       .samples()
       .then((samples) => dispatch({ type: "setSamples", samples }))
-      .catch(() => dispatch({ type: "error", message: "Could not load the sample transcripts." }));
+      // Surface what actually went wrong. A generic message here hid a 429 from the
+      // app's own rate limiter and sent debugging in the wrong direction.
+      .catch((err) =>
+        dispatch({
+          type: "error",
+          message:
+            err instanceof ApiError
+              ? err.message
+              : "Could not load the sample transcripts.",
+        }),
+      );
   }, [dispatch, state.samples.length]);
 
   const chars = state.text.length;
@@ -40,8 +50,11 @@ export function InputPage({
       const sample = await api.sample(id);
       dispatch({ type: "setText", text: sample.text });
       onRun(sample.text);
-    } catch {
-      dispatch({ type: "error", message: "Could not load that sample." });
+    } catch (err) {
+      dispatch({
+        type: "error",
+        message: err instanceof ApiError ? err.message : "Could not load that sample.",
+      });
     } finally {
       setLoadingSample(null);
     }

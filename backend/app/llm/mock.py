@@ -56,6 +56,12 @@ class MockProvider:
         started = time.monotonic()
         if schema_model is ExtractionPayload:
             payload = self._extract(user)
+        elif set(schema_model.model_fields) >= {"mom_markdown", "status_report_markdown"}:
+            # Generation. Derived from the prompt's own item lines so the offline flow
+            # produces documents that actually reflect the items, including the
+            # client/internal split — without which Phases 6-7 cannot be built or
+            # demonstrated with the API budget exhausted.
+            payload = schema_model.model_validate(self._write(user))
         else:
             raise JSONInvalid(f"MockProvider has no canned output for {schema_model.__name__}")
 
@@ -66,6 +72,48 @@ class MockProvider:
             latency_ms=int((time.monotonic() - started) * 1000),
         )
         return schema_model.model_validate(payload.model_dump()), usage
+
+    def _write(self, user: str) -> dict[str, str]:
+        """Build minutes and a status report from the tagged item lines in the prompt."""
+        client: list[str] = []
+        internal: list[str] = []
+        for raw in user.split("\n"):
+            line = raw.strip()
+            if line.startswith("- [client]"):
+                client.append(_item_text(line))
+            elif line.startswith("- [internal]"):
+                internal.append(_item_text(line))
+
+        status = _field(user, "Overall status:") or "Amber"
+        attendees = _field(user, "Attendees:") or "Not recorded"
+        everything = client + internal
+
+        mom = [
+            f"# {_field(user, 'Meeting:') or 'Meeting'}",
+            f"## Attendees\n{attendees}",
+            "## Key discussion points",
+        ]
+        mom.append("\n".join(f"- {t}" for t in everything[:6]) or "- Nothing recorded.")
+        mom.append("## Action items")
+        mom.append("\n".join(f"- {t}" for t in everything) or "- None.")
+
+        report = [f"## Overall status: {status.split(chr(8212))[0].strip()}"]
+        report.append(
+            "This report covers the items cleared for sharing with the client."
+        )
+        report.append("## Summary")
+        report.append(
+            " ".join(f"{t}." for t in client[:3])
+            or "No client-facing items were identified."
+        )
+        report.append("## Progress this period")
+        report.append("\n".join(f"- {t}" for t in client[:4]) or "- Nothing to report.")
+        report.append("## Next steps")
+        report.append("\n".join(f"- {t}" for t in client[4:8]) or "- Continue as planned.")
+        return {
+            "mom_markdown": "\n\n".join(mom),
+            "status_report_markdown": "\n\n".join(report),
+        }
 
     def _extract(self, user: str) -> ExtractionPayload:
         numbered: list[tuple[int, str]] = []
@@ -118,3 +166,16 @@ class MockProvider:
             discussion_points=[body for _, body in numbered[:5]],
             candidates=candidates,
         )
+
+
+def _item_text(line: str) -> str:
+    """Strip the `- [tag][kind/severity] ` prefix from a prompt item line."""
+    body = line.split("]", 2)[-1].strip()
+    return body.split(";")[0].strip() or body
+
+
+def _field(user: str, label: str) -> str:
+    for raw in user.split("\n"):
+        if raw.startswith(label):
+            return raw[len(label) :].strip()
+    return ""

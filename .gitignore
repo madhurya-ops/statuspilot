@@ -24,3 +24,6 @@ dist/
 # os / editor
 .DS_Store
 Thumbs.db
+
+# playwright mcp scratch
+.playwright-mcp/
