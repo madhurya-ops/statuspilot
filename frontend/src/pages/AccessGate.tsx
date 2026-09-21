@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { api, setAccessCode } from "../api/client";
+import { clearAccessCode, setAccessCode, validateAccessCode } from "../api/client";
 import { Button } from "../components/Chrome";
 
 /** One field, one button. Not an auth system — a shared code so a public URL
@@ -14,14 +14,18 @@ export function AccessGate({ onUnlocked }: { onUnlocked: () => void }) {
     if (!code.trim() || busy) return;
     setBusy(true);
     setError(null);
-    setAccessCode(code.trim());
-    try {
-      await api.samples();
-      onUnlocked();
-    } catch {
+    const candidate = code.trim();
+    // Validate first, store second. Storing first meant a failed check still left
+    // the code behind, so a refresh walked straight past the gate.
+    const accepted = await validateAccessCode(candidate);
+    if (!accepted) {
+      clearAccessCode();
       setError("That code wasn't recognised. Check it and try again.");
       setBusy(false);
+      return;
     }
+    setAccessCode(candidate);
+    onUnlocked();
   }
 
   return (

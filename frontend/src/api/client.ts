@@ -66,6 +66,32 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * Check a code against the server **without storing it**.
+ *
+ * The gate used to persist the code and then validate. When the validation call
+ * failed for any reason — CORS, a network blip, the server being down — the UI said
+ * "not recognised" while the rejected code sat in sessionStorage, so a refresh logged
+ * the user straight in past a gate that had just refused them. Nothing is written
+ * until the server has actually accepted it.
+ */
+export async function validateAccessCode(code: string): Promise<boolean> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+  try {
+    const response = await fetch(`${BASE}/api/samples`, {
+      signal: controller.signal,
+      headers: { "X-Access-Code": code },
+    });
+    return response.ok;
+  } catch {
+    // A transport failure is not a valid code. Store nothing.
+    return false;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);

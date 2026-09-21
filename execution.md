@@ -195,7 +195,10 @@ FastAPI backend on Vercel (stateless Python function)
 
 **Deployment:** one GitHub monorepo, **two Vercel projects**:
 - `statuspilot-api` — root directory `backend/` (FastAPI, Python runtime)
-- `statuspilot-web` — root directory `frontend/` (Vite React static build)
+- `statuspilot-web` — root directory `frontend/` (Vite React static build).
+  **Live at https://statuspilot-topaz.vercel.app** — Vercel assigned a different
+  hostname from the project name, so the deployed origin is `statuspilot-topaz`, not
+  `statuspilot-web`. That hostname is what `ALLOWED_ORIGINS` must contain.
 - The frontend calls the backend through `VITE_API_BASE_URL`; the backend allows only that origin via CORS (`ALLOWED_ORIGINS`).
 
 **Vercel limits (Hobby):** a FastAPI app builds into a **single** function; the Python bundle limit is 500 MB (we'll be far under); `maxDuration` goes in `vercel.json` keyed on the entrypoint (e.g. `app/main.py`). Keep every endpoint under ~60 s.
@@ -756,10 +759,28 @@ the "cached sample run" label while pasted text still goes live. Commit and push
 - [x] Scaffold Vite + React + TS + Tailwind in `frontend/`.
 - [x] `api/client.ts` (typed calls, access-code header, error normalisation, 60 s timeout) and `state/session.ts` (`useReducer` for the whole flow).
 - [x] Access gate, Input screen, Processing screen per Section 10.
-- [ ] Deploy `statuspilot-web`, set `VITE_API_BASE_URL`, add its origin to the backend's `ALLOWED_ORIGINS`.
+- [x] Deploy `statuspilot-web`, set `VITE_API_BASE_URL`, add its origin to the backend's `ALLOWED_ORIGINS`.
+      → **https://statuspilot-topaz.vercel.app**, calling
+      **https://backend-zeta-orcin-78.vercel.app**. Verified working on the user's phone.
 - [ ] Phone test: a sample chip runs through to "Ready for review".
 
-**Gate 6:** the live app reaches the review step from the phone.
+**Gate 6 — PASSED (2026-09-22).** The live app reaches the review step, and the whole
+flow works, from the user's phone.
+Frontend **https://statuspilot-topaz.vercel.app** → backend
+**https://backend-zeta-orcin-78.vercel.app**.
+
+Three defects found in that phone walkthrough and fixed:
+1. The access gate stored the code **before** validating it, so a blocked validation
+   call showed "not recognised" while leaving the rejected code in `sessionStorage` —
+   a refresh then walked straight past the gate. Validation now precedes storage and a
+   failure clears it. Five tests cover it.
+2. The bottom action bars broke at 375 px: labels wrapped, buttons touched the screen
+   edge, and three different button weights competed in one row. Each bar now has one
+   primary action; "Accept all remaining" moved beside the counter it acts on, and
+   "Start over" moved out of the export row into the header.
+3. The raw severity float leaked into the review cards ("High 1.98"), reading like a
+   debug value. The UI shows the band only; the float stays in the data and the XLSX,
+   which is what it was for.
 
 ---
 

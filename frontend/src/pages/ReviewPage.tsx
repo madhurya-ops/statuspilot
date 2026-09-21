@@ -35,24 +35,9 @@ export function ReviewPage({
       wide
       action={
         <div>
-          <div className="flex gap-2">
-            <Button full disabled={!allHandled} onClick={onBuild}>
-              Build reports
-            </Button>
-            {!allHandled ? (
-              <Button
-                variant="secondary"
-                onClick={() => {
-                  dispatch({ type: "acceptRemaining" });
-                  // "Accept all" means all of it. Leaving the status unconfirmed kept
-                  // Build disabled at 9/9 with nothing explaining why.
-                  if (needsRagConfirm && rag) dispatch({ type: "setRag", status: rag.status });
-                }}
-              >
-                Accept all
-              </Button>
-            ) : null}
-          </div>
+          <Button full disabled={!allHandled} onClick={onBuild}>
+            Build reports
+          </Button>
           {/* A disabled button must say what it is waiting for. */}
           {!allHandled ? (
             <p className="mt-1.5 text-center text-[0.6875rem] text-ink-faint">
@@ -72,6 +57,20 @@ export function ReviewPage({
           {handled} / {queue.length}
         </span>
       </header>
+
+      {!allHandled ? (
+        <button
+          onClick={() => {
+            dispatch({ type: "acceptRemaining" });
+            // "Accept all" means all of it: leaving the status unconfirmed kept
+            // Build disabled at 9/9 with nothing on screen explaining why.
+            if (needsRagConfirm && rag) dispatch({ type: "setRag", status: rag.status });
+          }}
+          className="mt-2 text-xs font-semibold text-indigo"
+        >
+          Accept all remaining
+        </button>
+      ) : null}
 
       <p className="mt-1.5 text-[0.8125rem] leading-relaxed text-ink-soft">
         These are the ones Jev wasn't confident about. Everything else was accepted

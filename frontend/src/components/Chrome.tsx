@@ -54,16 +54,22 @@ export function Button({
   disabled,
   type = "button",
   full,
+  grow,
 }: {
   children: ReactNode;
   onClick?: () => void;
   variant?: "primary" | "secondary" | "quiet" | "danger";
   disabled?: boolean;
   type?: "button" | "submit";
+  /** Occupies the whole line. Use alone, never beside another button. */
   full?: boolean;
+  /** Takes the remaining space in a row, leaving siblings at their natural width. */
+  grow?: boolean;
 }) {
+  // whitespace-nowrap: a wrapped label turns a 44px target into a ragged two-line
+  // block, which is what made "Start over" and "Accept all" look broken at 375px.
   const base =
-    "inline-flex min-h-[2.75rem] items-center justify-center gap-2 rounded-lg px-4 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-45";
+    "inline-flex min-h-[2.75rem] shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-lg px-4 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-45";
   const tones = {
     primary: "bg-indigo text-white hover:bg-indigo-deep",
     secondary: "border border-line bg-paper text-ink hover:bg-wash",
@@ -75,7 +81,7 @@ export function Button({
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className={`${base} ${tones[variant]} ${full ? "w-full" : ""}`}
+      className={`${base} ${tones[variant]} ${full ? "w-full" : ""} ${grow ? "min-w-0 flex-1" : ""}`}
     >
       {children}
     </button>

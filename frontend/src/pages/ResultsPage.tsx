@@ -49,19 +49,16 @@ export function ResultsPage({
       wide
       action={
         <div className="flex gap-2">
-          <Button full onClick={copyReport}>
-            {copied ? "Copied" : "Copy status report"}
+          <Button grow onClick={copyReport}>
+            {copied ? "Copied" : "Copy report"}
           </Button>
           <Button variant="secondary" onClick={() => setExporting(true)}>
             Export
           </Button>
-          <Button variant="quiet" onClick={() => dispatch({ type: "reset" })}>
-            Start over
-          </Button>
         </div>
       }
     >
-      <header className="flex flex-wrap items-center justify-between gap-2">
+      <header className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
         <RagPill status={rag} confidence={state.classified?.rag.confidence} />
         <div className="flex items-center gap-2">
           {docs.cached ? <CachedTag /> : null}
@@ -70,6 +67,12 @@ export function ResultsPage({
             className="text-xs font-semibold text-indigo"
           >
             How it works
+          </button>
+          <button
+            onClick={() => dispatch({ type: "reset" })}
+            className="text-xs font-semibold text-ink-soft"
+          >
+            Start over
           </button>
         </div>
       </header>

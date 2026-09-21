@@ -17,7 +17,7 @@ os.environ.update(
         "GROQ_API_KEY": "",
         "TYPESAFE_API_KEY": "",
         "DEMO_ACCESS_CODE": "test-code",
-        "ALLOWED_ORIGINS": "http://localhost:5173,https://statuspilot-web.vercel.app",
+        "ALLOWED_ORIGINS": "http://localhost:5173,https://statuspilot-topaz.vercel.app",
         "RATE_LIMIT_PER_MIN": "10",
     }
 )

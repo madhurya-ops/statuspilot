@@ -640,3 +640,59 @@ priority rather than by a band that ties 1.52 with 2.0.
 ### Tests
 
 **220 backend tests pass**, `ruff` clean, `tsc` clean, `vite build` clean.
+
+---
+
+## Gate 6 — PASSED (2026-09-22)
+
+Live: **https://statuspilot-topaz.vercel.app** → **https://backend-zeta-orcin-78.vercel.app**.
+Full flow confirmed on the user's phone. **Zero Groq tokens spent on this work.**
+
+> Vercel assigned the hostname `statuspilot-topaz`, not `statuspilot-web` as the
+> project is named. Docs and the backend CORS test now use the real origin.
+
+### Three defects from the phone walkthrough
+
+**1. The access gate stored the code before validating it.**
+`setAccessCode()` ran first, then the validation call. When that call failed for *any*
+reason — CORS, network, server down — the UI said "not recognised" while the rejected
+code sat in `sessionStorage`, so a refresh logged straight in past a gate that had just
+refused. `validateAccessCode()` now checks with an explicit header and stores nothing;
+the caller persists only on success, and a failure clears any prior value.
+**Five tests** cover it, including the transport-failure case that caused the bug and
+`sessionStorage` being unavailable.
+
+**2. The action bars broke at 375 px.** Labels wrapped to two lines, buttons touched
+the screen edge, and three button weights competed in one row.
+- `Button` is now `shrink-0 whitespace-nowrap`; a wrapped label turns a 44 px target
+  into a ragged block.
+- A new `grow` variant fills the remaining space. `full` is `w-full`, which had pushed
+  "Export" clean off the right edge.
+- **Review:** one primary ("Build reports"); "Accept all remaining" moved beside the
+  progress counter it acts on.
+- **Results:** "Copy report" + "Export"; **"Start over" moved to the header** — it is
+  not an export action and did not belong beside two that are.
+- Measured at 375 px: buttons span 16→274 and 282→359 of 375. 16 px gutters, no
+  overflow, no wrapping.
+
+**3. The raw severity float leaked into the UI.** Review cards read "High 1.98", which
+looks like a debug value. The band alone is shown; the float remains in
+`ClassifiedItem`, drives ordering in code, and has its own column in the XLSX — which
+is what it was for.
+
+### New dev dependency
+
+**`vitest`, `jsdom`, `@testing-library/react`, `@testing-library/dom`** — added to write
+the access-gate tests the user asked for. Dev-only, not in the shipped bundle, and not
+in Section 4's approved list. Easy to remove if unwanted.
+
+### Token budget — Day 2
+
+| | Tokens |
+|---|---:|
+| Allocation | 200,000 |
+| Spent so far today | **0** |
+| Remaining | **200,000** |
+| Reserve (untouchable) | 60,000 |
+
+Yesterday's ~7,100 overspend came out of yesterday's window and does not carry over.

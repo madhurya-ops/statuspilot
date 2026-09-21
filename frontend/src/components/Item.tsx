@@ -92,12 +92,7 @@ export function ItemSummary({ item }: { item: ClassifiedItem }) {
   return (
     <div className="flex flex-wrap items-center gap-1.5">
       <Chip>{item.kind.label.replace(/_/g, " ")}</Chip>
-      <Chip tone={SEVERITY_TONE[item.severity.label] ?? ""}>
-        {item.severity.label}
-        <span className="ml-1 font-normal tabular-nums opacity-70">
-          {item.severity_value.toFixed(2)}
-        </span>
-      </Chip>
+      <Chip tone={SEVERITY_TONE[item.severity.label] ?? ""}>{item.severity.label}</Chip>
       <Chip
         tone={
           item.audience.label === "client_safe"
