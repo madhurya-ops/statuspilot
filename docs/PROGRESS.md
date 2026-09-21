@@ -449,3 +449,47 @@ than over-reserving**, so the extract ratio is 2.0.
 - [x] Precomputed sample cache with `cached: true` and a `CACHED_SAMPLES` switch
 - [x] Pasted text always goes live (cache keyed on the sample text fingerprint)
 - [x] 194 tests pass, `ruff` clean
+
+### Gate 5 — BLOCKED on the Groq daily token cap (2026-09-21)
+
+Everything in Phase 5 is built, tested (201 passing) and pushed. Two items could not
+be completed:
+
+- the precomputed sample cache could not be built;
+- the generated Contoso and Northwind prose could not be shown.
+
+Both need Groq calls, and **the account is at 199,232 of a 200,000 tokens-per-day
+cap.**
+
+**The cap is invisible in headers.** At the moment of exhaustion,
+`x-ratelimit-remaining-requests` read 998/1000 and `x-ratelimit-remaining-tokens`
+read 8000/8000. Only the 429 body names it:
+
+```
+Rate limit reached ... on tokens per day (TPD):
+Limit 200000, Used 199232, Requested 2877. Please try again in 15m11.088s.
+```
+
+| | |
+|---|---|
+| Refill | 2.31 tokens/second |
+| One full report (~11,500 requested) | **83 minutes** |
+| Three-sample cache build (~35,000) | **~4 hours** |
+| Full live reports per day | **~17** |
+
+Consumed across Phase 3–5 development: extraction prompt iterations, four
+classification runs, and three cache-build attempts — two of which stalled on an
+unbounded `retry-after` and were killed, wasting their spend. Cumulative daily usage
+was not being tracked, only per-minute headroom.
+
+**Agreed plan:** pause Groq work; rebuild the cache first thing when the window
+resets, then show the prose and take Gate 5. Build Phase 6 against the mock providers
+meanwhile, which costs nothing.
+
+**Fixed as a result:**
+- `RateLimited.scope` distinguishes `"minute"` from `"day"`, and the API returns a
+  different message for each — a daily exhaustion says so and points at the cached
+  samples rather than offering a pointless retry.
+- The router refuses to sleep longer than 30 s inside a request. Groq asked for 612 s
+  and then 931 s; honouring that literally stalled two builds, and on Vercel
+  (`maxDuration` 60 s) it would kill the function mid-sleep.

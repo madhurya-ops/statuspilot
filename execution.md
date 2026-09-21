@@ -65,10 +65,26 @@ Read from live `x-ratelimit-*` response headers on 2026-09-21. **This supersedes
 earlier estimate in this file, which reasoned about requests per minute and was
 misleading.**
 
-| Header | Value |
-|---|---|
-| `x-ratelimit-limit-requests` | 1000 |
-| `x-ratelimit-limit-tokens` | **8000 per minute** |
+| Limit | Value | Visible in a header? |
+|---|---|---|
+| Requests per minute / day | 1000 | yes |
+| Tokens per minute (TPM) | **8,000** | yes |
+| **Tokens per day (TPD)** | **200,000** | **NO — only in the 429 body** |
+
+> **The TPD cap is the one that bites, and it is invisible until it refuses.**
+> Discovered on 2026-09-21 by exhausting it: `Limit 200000, Used 199232`. At that
+> moment `x-ratelimit-remaining-requests` read 998/1000 and
+> `x-ratelimit-remaining-tokens` read 8000/8000 — every header said healthy. Only the
+> 429 body names TPD.
+>
+> It refills at **2.31 tokens/second**, so one full report (~11,500 requested) is
+> **83 minutes** of refill and the three-sample cache build (~35,000) is **~4 hours**.
+> **The free tier sustains roughly 17 full live reports per day.**
+>
+> Consequences: budget development runs, not just demo runs. Build the sample cache
+> **before** any other spend on a given day. The app distinguishes the two limits
+> (`RateLimited.scope`) so a daily exhaustion says so plainly instead of offering a
+> pointless retry.
 
 **The binding constraint is tokens per minute, not requests per minute.** A full run
 (extract + generate) costs roughly 8 k tokens, so the free tier sustains **about one

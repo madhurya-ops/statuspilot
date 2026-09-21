@@ -25,7 +25,19 @@ class LLMError(Exception):
 
 
 class RateLimited(LLMError):
-    """429. Back off on the *same* model — never escalate; the token bucket is shared."""
+    """429. Back off on the *same* model — never escalate; the token bucket is shared.
+
+    `scope` distinguishes the two limits, which need completely different responses:
+      * "minute" — the 8,000 tokens/minute bucket. Wait seconds and retry.
+      * "day"    — the **200,000 tokens/day** cap. Retrying is pointless for hours,
+                   and the user must be told that plainly rather than watching a
+                   spinner. This limit appears in **no response header**; it is only
+                   visible in the 429 body, which is why it can exhaust silently.
+    """
+
+    def __init__(self, message: str, *, status=None, retry_after=None, scope="minute"):
+        super().__init__(message, status=status, retry_after=retry_after)
+        self.scope = scope
 
 
 class JSONInvalid(LLMError):

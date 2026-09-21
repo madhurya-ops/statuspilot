@@ -34,10 +34,7 @@ async def generate(
     except RateLimited as err:
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            detail=(
-                "The free-tier token budget is still refilling. "
-                "Please try again in a moment."
-            ),
+            detail=_rate_limit_detail(err),
             headers={"Retry-After": str(int(err.retry_after or 20))},
         ) from err
     except LLMError as err:
@@ -92,3 +89,20 @@ def cached_lookup(
     if sample_id and cache_module.has_cache(sample_id):
         return {"cached": True, "sample_id": sample_id}
     return {"cached": False, "sample_id": None}
+
+
+def _rate_limit_detail(err: RateLimited) -> str:
+    """Two limits, two very different things to tell the user."""
+    if getattr(err, "scope", "minute") == "day":
+        minutes = int((err.retry_after or 0) // 60)
+        when = f" It resets in about {minutes} minutes." if minutes else ""
+        return (
+            "The free-tier daily token budget for this project is used up."
+            + when
+            + " Bundled sample reports still work — they are precomputed."
+        )
+    seconds = int(err.retry_after or 20)
+    return (
+        f"The free-tier token budget is refilling — about {seconds}s. "
+        "This is a rate limit, not an error."
+    )

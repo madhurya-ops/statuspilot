@@ -38,6 +38,15 @@ T = TypeVar("T", bound=BaseModel)
 BACKOFF_SECONDS = (1.0, 2.0, 4.0)
 MAX_RATE_LIMIT_ATTEMPTS = 3
 
+# Never sleep longer than this inside a request, however long `retry-after` asks for.
+#
+# Groq returned `retry-after: 612` during a cache build and the router honoured it
+# literally, stalling for ten minutes with no output. On Vercel that is worse than a
+# stall: `maxDuration` is 60 s, so the function would be killed mid-sleep and the user
+# would get a timeout instead of an explanation. Beyond this ceiling the wait is no
+# longer something to sit through — it is something to tell the user about.
+MAX_BACKOFF_SECONDS = 30.0
+
 REPAIR_HINT = (
     "\n\nYour previous response did not match the required JSON schema. "
     "Return only valid JSON matching the schema exactly, with no commentary."
@@ -106,6 +115,14 @@ class LLMRouter:
                     delay = err.retry_after or BACKOFF_SECONDS[
                         min(attempts - 1, len(BACKOFF_SECONDS) - 1)
                     ]
+                    if delay > MAX_BACKOFF_SECONDS:
+                        # Surface it rather than sleep through it. `retry_after` is
+                        # carried on the exception so the UI can show a real figure.
+                        log.warning(
+                            "groq asked for a %.0fs wait; surfacing instead of sleeping",
+                            delay,
+                        )
+                        raise
                     log.warning(
                         "groq 429 stage=%s attempt=%d backoff=%.1fs", stage, attempts, delay
                     )

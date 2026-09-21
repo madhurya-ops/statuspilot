@@ -19,6 +19,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from app.config import get_settings  # noqa: E402
 from app.ingest.lines import normalize_text, to_lines  # noqa: E402
 from app.ingest.samples import get_sample, list_samples  # noqa: E402
+from app.llm.base import RateLimited  # noqa: E402
 from app.llm.router import LLMRouter  # noqa: E402
 from app.models import ApprovedItem, GenerateRequest  # noqa: E402
 from app.pipeline import cache as cache_module  # noqa: E402
@@ -54,6 +55,27 @@ def approve_all(classified) -> list[ApprovedItem]:
     ]
 
 
+async def with_patience(label: str, factory):
+    """Run a stage, waiting out a long rate-limit window **visibly**.
+
+    The router refuses to sleep more than 30 s inside a request, because on Vercel a
+    longer sleep is a killed function rather than a wait. This script is offline
+    tooling, so here a long wait is fine — but it must announce itself. A silent
+    ten-minute stall is what made an earlier build look hung.
+    """
+    for attempt in range(1, 4):
+        try:
+            return await factory()
+        except RateLimited as err:
+            wait = min(float(err.retry_after or 60.0), 660.0) + 2.0
+            print(
+                f"   {label}: rate limited, waiting {wait:.0f}s (attempt {attempt}/3)",
+                flush=True,
+            )
+            await asyncio.sleep(wait)
+    raise SystemExit(f"{label}: still rate limited after 3 waits")
+
+
 async def main() -> int:
     settings = get_settings()
     if settings.llm_primary != "groq" or settings.decision_engine != "jev":
@@ -68,21 +90,30 @@ async def main() -> int:
         lines = to_lines(text)
 
         started = time.monotonic()
-        extracted, _ = await run_extraction(
-            text=text, lines=lines, provider=LLMRouter(settings), settings=settings
-        )
-        classified = await run_classification(extracted=extracted, settings=settings)
-        documents, _ = await run_generation(
-            payload=GenerateRequest(
-                meta=extracted.meta,
-                discussion_points=extracted.discussion_points,
-                items=approve_all(classified),
-                rag=classified.rag,
-                project_name=None,
-                reporting_period=None,
+        print(f"{summary.id}: extracting...", flush=True)
+        extracted, _ = await with_patience(
+            summary.id,
+            lambda t=text, ln=lines: run_extraction(
+                text=t, lines=ln, provider=LLMRouter(settings), settings=settings
             ),
-            provider=LLMRouter(settings),
-            settings=settings,
+        )
+        print(f"{summary.id}: classifying {len(extracted.candidates)} candidates...", flush=True)
+        classified = await run_classification(extracted=extracted, settings=settings)
+        print(f"{summary.id}: generating...", flush=True)
+        documents, _ = await with_patience(
+            summary.id,
+            lambda ex=extracted, cl=classified: run_generation(
+                payload=GenerateRequest(
+                    meta=ex.meta,
+                    discussion_points=ex.discussion_points,
+                    items=approve_all(cl),
+                    rag=cl.rag,
+                    project_name=None,
+                    reporting_period=None,
+                ),
+                provider=LLMRouter(settings),
+                settings=settings,
+            ),
         )
         documents.cached = True
         path = cache_module.save(summary.id, extracted, classified, documents)

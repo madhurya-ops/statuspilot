@@ -49,7 +49,7 @@ async def extract(
         # already backed off; a 429 here means it genuinely could not get through.
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            detail="The model is rate limited right now. Please try again in a moment.",
+            detail=_rate_limit_detail(err),
             headers={"Retry-After": str(int(err.retry_after or 20))},
         ) from err
     except JSONInvalid as err:
@@ -75,3 +75,20 @@ async def extract(
         usage.latency_ms,
     )
     return result
+
+
+def _rate_limit_detail(err: RateLimited) -> str:
+    """Two limits, two very different things to tell the user."""
+    if getattr(err, "scope", "minute") == "day":
+        minutes = int((err.retry_after or 0) // 60)
+        when = f" It resets in about {minutes} minutes." if minutes else ""
+        return (
+            "The free-tier daily token budget for this project is used up."
+            + when
+            + " Bundled sample reports still work — they are precomputed."
+        )
+    seconds = int(err.retry_after or 20)
+    return (
+        f"The free-tier token budget is refilling — about {seconds}s. "
+        "This is a rate limit, not an error."
+    )

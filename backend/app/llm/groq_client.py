@@ -143,13 +143,21 @@ class GroqProvider:
                 ],
             )
         except OpenAIRateLimit as err:
+            scope = _limit_scope(err)
             raise RateLimited(
-                "Groq rate limit", status=429, retry_after=_retry_after(err)
+                f"Groq rate limit ({scope})",
+                status=429,
+                retry_after=_retry_after(err),
+                scope=scope,
             ) from err
         except APIStatusError as err:
             if err.status_code == 429:
+                scope = _limit_scope(err)
                 raise RateLimited(
-                    "Groq rate limit", status=429, retry_after=_retry_after(err)
+                    f"Groq rate limit ({scope})",
+                    status=429,
+                    retry_after=_retry_after(err),
+                    scope=scope,
                 ) from err
             code = _error_code(err)
             # Truncation has two faces. When the constrained decoder manages to close
@@ -227,6 +235,21 @@ def _error_code(err: Exception) -> str:
                 if code:
                     return str(code)
     return "unknown"
+
+
+def _limit_scope(err: Exception) -> str:
+    """Which Groq limit was hit: the per-minute bucket or the per-day cap.
+
+    Only the 429 body says. The `x-ratelimit-*` headers cover requests/minute,
+    requests/day and tokens/minute — **not** tokens/day, so a TPD exhaustion looks
+    perfectly healthy in the headers right up until it refuses every request.
+    """
+    for source in (getattr(err, "body", None), _json_body(err)):
+        if isinstance(source, dict):
+            blob = json.dumps(source).lower()
+            if "per day" in blob or "tpd" in blob or "rpd" in blob:
+                return "day"
+    return "minute"
 
 
 def _mentions_truncation(err: Exception) -> bool:

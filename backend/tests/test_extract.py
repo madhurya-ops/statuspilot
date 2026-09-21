@@ -428,3 +428,77 @@ class TestTruncationHasTwoFaces:
             response = None
 
         assert _mentions_truncation(FakeErr()) is False
+
+
+class TestUnboundedRetryAfter:
+    """Groq once returned `retry-after: 612`, which the router honoured literally and
+    stalled for ten minutes. On Vercel (`maxDuration` 60 s) that is a killed function
+    and a bare timeout instead of an explanation."""
+
+    async def test_a_huge_retry_after_is_surfaced_not_slept_through(self, slept, monkeypatch):
+        recorded, fake_sleep = slept
+        fake = FakeProvider([RateLimited("429", status=429, retry_after=612.0), _ok()])
+        monkeypatch.setattr("app.llm.router.build_provider", lambda *a, **k: fake)
+        with pytest.raises(RateLimited) as err:
+            await LLMRouter(get_settings(), sleep=fake_sleep).complete_json(
+                system="s", user="u", schema_model=ExtractionPayload, stage="extract"
+            )
+        assert err.value.retry_after == 612.0
+        assert recorded == [], "must not have slept at all"
+
+    async def test_a_reasonable_retry_after_is_still_honoured(self, slept, monkeypatch):
+        recorded, fake_sleep = slept
+        fake = FakeProvider([RateLimited("429", status=429, retry_after=17.0), _ok()])
+        monkeypatch.setattr("app.llm.router.build_provider", lambda *a, **k: fake)
+        await LLMRouter(get_settings(), sleep=fake_sleep).complete_json(
+            system="s", user="u", schema_model=ExtractionPayload, stage="extract"
+        )
+        assert recorded == [17.0]
+
+
+class TestDailyVsMinuteLimit:
+    """Groq has a 200,000 tokens-per-day cap that appears in NO response header.
+    Only the 429 body names it, which is how it exhausted silently during Phase 5."""
+
+    def test_a_per_day_limit_is_recognised(self):
+        from app.llm.groq_client import _limit_scope
+
+        class Err(Exception):
+            body = {
+                "error": {
+                    "message": (
+                        "Rate limit reached for model `openai/gpt-oss-20b` on tokens "
+                        "per day (TPD): Limit 200000, Used 199232, Requested 2877."
+                    ),
+                    "code": "rate_limit_exceeded",
+                }
+            }
+            response = None
+
+        assert _limit_scope(Err()) == "day"
+
+    def test_a_per_minute_limit_is_not_mistaken_for_a_daily_one(self):
+        from app.llm.groq_client import _limit_scope
+
+        class Err(Exception):
+            body = {
+                "error": {
+                    "message": (
+                        "Rate limit reached on tokens per minute (TPM): "
+                        "Limit 8000, Used 5645, Requested 5274."
+                    ),
+                    "code": "rate_limit_exceeded",
+                }
+            }
+            response = None
+
+        assert _limit_scope(Err()) == "minute"
+
+    def test_the_two_scopes_produce_different_user_messages(self):
+        from app.llm.base import RateLimited
+        from app.routers.extract import _rate_limit_detail
+
+        daily = _rate_limit_detail(RateLimited("x", retry_after=900.0, scope="day"))
+        minute = _rate_limit_detail(RateLimited("x", retry_after=20.0, scope="minute"))
+        assert "daily" in daily.lower() and "precomputed" in daily
+        assert "refilling" in minute and "daily" not in minute.lower()
