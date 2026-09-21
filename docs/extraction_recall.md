@@ -10,54 +10,51 @@ Model `openai/gpt-oss-20b`, `reasoning_effort=low`, `temperature=0`,
 
 ## Token budget — measured, and the news is bad
 
-### Consumed vs *requested*
+### Consumed vs requested — a claim that did not survive retesting
 
-Groq's tokens-per-minute limit is charged on **requested** tokens, not consumed ones.
-Measured directly by reading `x-ratelimit-remaining-tokens` before and after one real
-extraction call:
+> **RETRACTED 2026-09-22.** This section previously asserted that Groq bills its
+> token limit on **requested** tokens (`prompt + max_completion_tokens`) rather than
+> consumed ones. **That does not reproduce and should not be relied on.**
 
-| | Tokens |
-|---|---:|
-| Remaining before | 7,927 |
-| Remaining after | **980** |
-| **Deducted** | **6,947** |
-| `prompt_tokens` | 2,520 |
-| `max_completion_tokens` | 4,500 |
-| **prompt + cap** | **7,020** |
-| *Actually consumed* (`prompt` + `completion`) | *5,415* |
+The original evidence was a single reading: `x-ratelimit-remaining-tokens` fell
+7,927 → 980 across one extraction that consumed 5,415, and `8000 − 980 = 7020 =
+2520 + 4500` exactly. An exact arithmetic match from one sample is a coincidence far
+more often than it is a law, and it was not retested.
 
-`8000 − 980 = 7020 = prompt + cap`, exactly. **1,605 tokens were reserved and never
-used, and were charged anyway.** The bucket refills continuously
-(`x-ratelimit-reset-tokens: 547ms`) at 8,000/60 ≈ **133 tokens/second**.
+Retested directly:
 
-### What a full report requests
+| Probe | `max_completion_tokens` | Outcome | Consumed |
+|---|---:|---|---:|
+| A | 9,000 (above the 8,000/min ceiling) | **accepted** | 103 |
+| B | 60,000 | **accepted** | 144 |
 
-| Stage | Prompt | Cap | **Requested** |
+If the cap were reserved against the bucket, both would have been refused instantly.
+Neither was, and neither moved `remaining-tokens` meaningfully. The original reading
+was most likely confounded by other usage inside the same minute.
+
+**What to rely on instead: actual consumption**, from the `usage` object on each
+response. That is measurable per call and needs no inference.
+
+### What a full report actually costs
+
+Measured consumption, not reservation:
+
+| Stage | Prompt | Completion | **Consumed** |
 |---|---:|---:|---:|
-| Extract | ~2,520 | 4,500 | **7,020** |
-| Generate | ~2,000 (est.) | 2,500 | **~4,500** |
-| **Full report** | | | **~11,500** |
+| Extract (~5,000-char transcript) | ~2,500 | ~2,300–2,900 | **~4,800–5,400** |
+| Generate (12–24 items) | ~1,400–2,500 | ~1,000–2,000 | **~2,500–4,000** |
+| **Full report** | | | **~8,000** |
 
-### A single live report no longer fits in one minute
+### The per-minute limit still bites; the per-day one is the real ceiling
 
-**It never did.** Phase 3 reported 7–9 k per report, but that was *consumed* tokens;
-on a *requested* basis it was already ~10 k even at the old 3,200 cap. Raising the cap
-to 4,500 made a real problem visible rather than creating it.
+At ~8,000 consumed per report against an **8,000 tokens/minute** bucket refilling at
+~133/second, a report uses close to a full minute's allowance. Extraction and
+generation back to back will still meet a short wait, which the UI labels honestly.
 
-Concretely: after one extraction, **980 tokens remain of 8,000**. Generation needs
-~4,500, so it must wait for the bucket to refill ~3,520 tokens — about **26 seconds** —
-and a full recovery to 8,000 takes ~53 s.
-
-Three consequences:
-
-1. **The precomputed sample cache is not optional.** Moved to Phase 5 for exactly this
-   reason. The three bundled samples must never touch the API during a demo.
-2. **A live run on pasted text needs a deliberate pause between extract and generate**,
-   surfaced honestly in the processing UI rather than as a 429. Booked for Phase 5.
-3. **`MAX_INPUT_CHARS = 12000` still holds, but with almost nothing to spare.**
-   12,000 characters ≈ 3,000 prompt tokens; 3,000 + 4,500 = **7,500 of 8,000**. A
-   single extraction of a maximum-size transcript fits — by 500 tokens. It cannot be
-   raised, and there is no headroom for a larger completion cap at that input size.
+The **200,000 tokens/day** cap is the harder limit and remains invisible in headers —
+it appears only in a 429 body. At ~8,000 consumed per report that is roughly **25 full
+live reports per day**, not the ~17 previously stated here on the retracted
+requested-tokens basis.
 
 ### Per-sample extraction cost
 
@@ -215,43 +212,18 @@ but each iteration costs ~14 k tokens and roughly five minutes of pacing.
 
 ---
 
-## The dynamic completion cap — what it actually bought
+## The dynamic completion cap
 
-Scaling `max_completion_tokens` from the prompt instead of fixing it at 4,500 was
-meant to cut the tokens reserved-but-unused, and so shorten the refill wait before
-generation. Measured honestly, **it helps on small inputs and does nothing on
-full-size ones.**
+Scaling `max_completion_tokens` from the prompt was introduced to cut "reserved but
+unused" tokens. **Since the reservation claim is retracted, that was not the benefit it
+appeared to be.**
 
-Groq charges `actual_prompt + cap`. The cap is chosen from an estimated prompt; the
-estimate only picks the cap, it is not what gets billed.
+The mechanism is kept anyway, because it earns its place for a different reason: a cap
+that is too small silently truncates. Under strict `json_schema` a truncated response
+still *parses* — the constrained decoder closes the JSON — so items are lost with no
+error. `rough-standup-notes` returned 11 candidates truncated and 22 once the cap was
+raised.
 
-| Sample | Actual prompt | Cap chosen | **Requested** | vs fixed 4,500 cap |
-|---|---:|---:|---:|---|
-| `northwind-sprint-review` | 2,502 | 4,500 (ceiling) | **7,002** | no change |
-| `contoso-escalation` | 2,520 | 4,500 (ceiling) | **7,020** | no change |
-| `rough-standup-notes` | ~2,000 | ~4,016 | **~6,024** | **−500** |
-
-At a 2.0 ratio, any prompt above 2,250 tokens lands on the ceiling, so the two
-meeting-shaped samples are unchanged. Only the shortest sample sees a saving.
-
-**The ratio cannot simply be lowered to claw this back.** At 1.4 the caps would be
-~3,500, but `rough-standup-notes` genuinely needs ~1.85x its prompt in completion
-tokens, so it truncates — and a truncation retry re-requests `prompt + ceiling`,
-costing **~11.6 k** requested tokens against an 8 k/min budget versus ~6.2 k for one
-correctly-sized call. Over-reserving is the cheaper error.
-
-### The real extract → generate wait
-
-Generation's prompt grows with the number of approved items, and is larger than first
-estimated:
-
-| Items | Generate requested | Remaining after extract | **Wait** |
-|---:|---:|---:|---:|
-| 12 | ~3,500 | ~1,000 | **~19 s** |
-| 22 | ~5,800 | ~980 | **~36 s** |
-| 24 | ~6,000 | ~980 | **~38 s** |
-
-At ~133 tokens/second refill, a large meeting waits **over half a minute** between
-extraction and generation. That is the number the processing screen must show on the
-countdown — and the reason the three bundled samples are served from cache rather
-than run live during a demo.
+The ratio is 2.0 for extraction because measured completion/prompt ratios span
+0.65–1.85: bullet notes pack far more items per prompt token than meeting dialogue.
+A truncation retry costs a whole extra call, so erring generous is the cheaper mistake.

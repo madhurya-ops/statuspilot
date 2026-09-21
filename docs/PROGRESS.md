@@ -473,7 +473,7 @@ Limit 200000, Used 199232, Requested 2877. Please try again in 15m11.088s.
 | | |
 |---|---|
 | Refill | 2.31 tokens/second |
-| One full report (~11,500 requested) | **83 minutes** |
+| One full report (~8,000 consumed) | — |
 | Three-sample cache build (~35,000) | **~4 hours** |
 | Full live reports per day | **~17** |
 
@@ -558,7 +558,7 @@ reliable reading is the `Used` figure in a 429 body:
 
 | Line | Allocation | Rule |
 |---|---:|---|
-| **1. Cache rebuild** | **~35,000** | **First spend of the day, before anything else.** |
+| **1. Cache rebuild** | **~24,000** | **First spend of the day, before anything else.** |
 | **2. Live verification, Phases 7–9** | **cap 40,000** | Mocks prove anything mocks can prove. Real tokens only where the live path genuinely differs from the mock path. |
 | **3. Demo reserve** | **60,000 — UNTOUCHABLE** | **Do not spend below this line without asking first.** |
 | 4. Contingency | ~65,000 | A failed cache build, or a regression needing a re-run. |
@@ -568,17 +568,20 @@ reliable reading is the `Used` figure in a 429 body:
 
 **What a spend costs, measured:**
 
-| Action | Requested tokens |
-|---|---:|
-| One extraction (~5,000-char transcript) | ~6,000–7,000 |
-| One generation (12–24 items) | ~3,100–4,100 |
-| **One full live report** | **~10,000–11,500** |
-| Full cache rebuild (3 samples) | ~35,000 |
-| Live demo paste (~1,070-char snippet) | **~4,000** |
+*(Figures corrected 2026-09-22 from **requested** to **consumed**; see the retraction
+in `docs/extraction_recall.md`.)*
 
-At ~10,000 per live report, the 60,000 reserve covers **six** live runs on demo day —
-enough for the paste moment plus five retries. The three bundled samples cost **zero**
-because they are served from the committed cache.
+| Action | Consumed tokens |
+|---|---:|
+| One extraction (~5,000-char transcript) | ~4,800–5,400 |
+| One generation (12–24 items) | ~2,500–4,000 |
+| **One full live report** | **~8,000** |
+| Full cache rebuild (3 samples) | ~24,000 |
+| Live demo paste (~1,070-char snippet) | **~3,000** |
+
+At ~8,000 per live report, the 60,000 reserve covers **seven** live runs on demo day —
+the paste moment plus six retries. The three bundled samples cost **zero**, being
+served from the committed cache.
 
 **Cheapest thing that proves the most:** the bundled samples. They exercise the whole
 pipeline end to end at no token cost once cached, which is why the cache is line 1.
@@ -696,3 +699,56 @@ in Section 4's approved list. Easy to remove if unwanted.
 | Reserve (untouchable) | 60,000 |
 
 Yesterday's ~7,100 overspend came out of yesterday's window and does not carry over.
+
+
+---
+
+## Cache rebuild attempt — FAILED, and it produced the first real TPD figure
+
+**2026-09-22, ~00:30 IST.** No partial cache left behind; the all-or-nothing build
+removed everything it had written.
+
+### The number
+
+```
+Rate limit reached ... on tokens per day (TPD):
+Limit 200000, Used 199825, Requested 1111.
+Please try again in 6m44.352s.
+```
+
+**175 tokens remaining of 200,000 — 99.9 % consumed.**
+
+### The local date rolling over means nothing
+
+The budget was reported as "200,000 available" purely because the machine's clock
+passed midnight IST. **Groq's window is not aligned to local midnight.** It behaves as
+a **rolling / leaky bucket**, which the 429 itself shows: 1,111 tokens became available
+in 6m44s, i.e.
+
+**~2.75 tokens/second (~9,900/hour)** — consistent with 200,000/day spread evenly, and
+not with a window that resets in one jump.
+
+That is why "try again in 15 minutes" appeared yesterday while the day looked
+exhausted: small amounts trickle back continuously.
+
+### When work becomes possible
+
+| Needs | Tokens | Available from |
+|---|---:|---|
+| One extraction | ~5,400 | ~2 hours |
+| One full live report | ~8,000 | ~1 hour |
+| **Full cache rebuild** | **~24,000** | **~2.4 hours** |
+
+Yesterday's heavy usage ran roughly 13:00–18:00 IST, so it ages out across the same
+window today. By mid-morning there should be substantial headroom, and by ~18:00 the
+full 200,000.
+
+### What this changes
+
+1. **Never infer budget from a clock.** The only reliable reading is the `Used` figure
+   in a 429 body, and that is only obtainable by being refused.
+2. **The all-or-nothing build did its job.** The rebuild was stopped mid-way through
+   the first sample and left **zero** files. The failure mode the user was protecting
+   against — some samples instant, others live and slow — did not occur.
+3. **Nothing was wasted beyond ~2,000 tokens** on the Northwind extraction and
+   classification that completed before generation was refused.

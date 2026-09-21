@@ -8,8 +8,8 @@ that keeps the token budget out of the way.
 
 ## Ordering — cached first, live last
 
-The Groq free tier allows **8,000 tokens per minute**, and one full report *requests*
-7,000–11,500. The three bundled samples are served from a committed cache and cost
+The Groq free tier allows **8,000 tokens per minute** and **200,000 per day**, and one
+full report consumes **~8,000**. The three bundled samples are served from a committed cache and cost
 **zero** tokens, so they can be tapped back to back. A live run costs the whole
 budget.
 
@@ -20,7 +20,7 @@ Run the demo in this order:
 | 1 | **Contoso sample** (cached) | 0 | The strongest story: Red status, a real slip, and the internal remark held back. Instant. |
 | 2 | **Rough standup sample** (cached) | 0 | The review queue and the "no client-facing items" state. Instant. |
 | 3 | **Northwind sample** (cached) | 0 | Optional, if there is time. Instant. |
-| 4 | **Paste the snippet below** (live) | ~4,000 | *"Now watch it do yours."* The bucket has been refilling untouched throughout steps 1–3. |
+| 4 | **Paste the snippet below** (live) | ~3,000 | *"Now watch it do yours."* The bucket has been refilling untouched throughout steps 1–3. |
 
 **The cached runs are labelled as cached in the UI** — say so out loud. "These three
 are precomputed so the demo can't be broken by a rate limit; this next one is live."

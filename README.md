@@ -43,16 +43,13 @@ transcript.
 
 ### Cost per report
 
-Groq's free tier charges its tokens-per-minute limit on **requested** tokens
-(`prompt + max_completion_tokens`), not consumed ones — measured, not assumed:
-one extraction with a 2,520-token prompt and a 4,500 cap dropped
-`x-ratelimit-remaining-tokens` from 7,927 to **980**, although it consumed 5,415.
+Measured from the `usage` figures Groq returns on each call:
 
-| Stage | Requested |
+| Stage | Consumed |
 |---|---:|
-| Extract | ~7,020 |
-| Generate | ~4,500 |
-| **Full report** | **~11,500** |
+| Extract (~5,000-character transcript) | ~5,000 |
+| Generate | ~3,000 |
+| **Full report** | **~8,000** |
 
 Groq's free tier has **two** token limits, and the one that bites is invisible:
 
@@ -61,19 +58,15 @@ Groq's free tier has **two** token limits, and the one that bites is invisible:
 | Tokens per minute | 8,000 | yes |
 | **Tokens per day** | **200,000** | **no — only in the 429 body** |
 
-Against the **per-minute** ceiling, one live report does not fit in a single minute:
-the bucket refills at ~133 tokens/second, so generation waits 16–23 s after
-extraction.
+A full report uses close to a whole minute's allowance, so extraction and generation
+back to back meet a short wait, which the UI labels with its reason and a countdown
+rather than showing a bare spinner. The daily cap allows roughly **25 full live
+reports**; nothing in the `x-ratelimit-*` headers hints at it, and they read
+completely healthy at 99.6 % of the daily budget consumed. StatusPilot tells the two
+apart, because "wait 20 seconds" and "wait until tomorrow" are not the same message.
 
-The **per-day** cap allows roughly **17 full live reports** and refills at 2.31
-tokens/second — one report is ~83 minutes of refill. Nothing in the `x-ratelimit-*`
-headers hints at it; they read completely healthy at 99.6 % of the daily budget
-consumed. StatusPilot tells the two apart and says which one it hit, because "wait
-20 seconds" and "wait until tomorrow" are not the same message.
-
-Both are why the three bundled samples serve **precomputed** results, labelled
-visibly in the UI as a cached sample run, while pasted or uploaded text always goes
-live.
+Both are why the three bundled samples serve **precomputed** results, labelled visibly
+in the UI as a cached sample run, while pasted or uploaded text always goes live.
 
 Jev is not a cost constraint: ~870 input tokens per candidate and roughly **$0.0015**
 for a 40-candidate run, against published limits of 250 k tokens/second and 1,200

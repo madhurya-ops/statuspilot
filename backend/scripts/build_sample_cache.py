@@ -77,6 +77,13 @@ async def with_patience(label: str, factory):
 
 
 async def main() -> int:
+    """Build all three, or leave none behind.
+
+    A half-built cache is worse than no cache: some samples would be instant and
+    others would fall through to the live path and be slow, which is exactly the
+    inconsistency you do not want in front of an audience. Any failure removes every
+    file this run wrote.
+    """
     settings = get_settings()
     if settings.llm_primary != "groq" or settings.decision_engine != "jev":
         print(f"Refusing to build a cache from {settings.llm_primary}/{settings.decision_engine}.")
@@ -84,6 +91,18 @@ async def main() -> int:
         return 1
 
     samples = list_samples()
+    written: list = []
+    try:
+        return await _build_all(settings, samples, written)
+    except BaseException:
+        for path in written:
+            path.unlink(missing_ok=True)
+        print(f"\nFAILED — removed {len(written)} partial cache file(s). None left behind.")
+        raise
+
+
+async def _build_all(settings, samples, written: list) -> int:
+    groq_in = groq_out = jev_in = jev_out = 0
     for index, summary in enumerate(samples):
         detail = get_sample(summary.id)
         text, _ = normalize_text(detail.text, settings.max_input_chars)
@@ -91,16 +110,18 @@ async def main() -> int:
 
         started = time.monotonic()
         print(f"{summary.id}: extracting...", flush=True)
-        extracted, _ = await with_patience(
+        extracted, ex_usage = await with_patience(
             summary.id,
             lambda t=text, ln=lines: run_extraction(
                 text=t, lines=ln, provider=LLMRouter(settings), settings=settings
             ),
         )
+        groq_in += ex_usage.input_tokens
+        groq_out += ex_usage.output_tokens
         print(f"{summary.id}: classifying {len(extracted.candidates)} candidates...", flush=True)
         classified = await run_classification(extracted=extracted, settings=settings)
         print(f"{summary.id}: generating...", flush=True)
-        documents, _ = await with_patience(
+        documents, gen_usage = await with_patience(
             summary.id,
             lambda ex=extracted, cl=classified: run_generation(
                 payload=GenerateRequest(
@@ -115,8 +136,13 @@ async def main() -> int:
                 settings=settings,
             ),
         )
+        groq_in += gen_usage.input_tokens
+        groq_out += gen_usage.output_tokens
+        jev_in += classified.stats.input_tokens or 0
+        jev_out += classified.stats.output_tokens or 0
         documents.cached = True
         path = cache_module.save(summary.id, extracted, classified, documents)
+        written.append(path)
         elapsed = time.monotonic() - started
 
         review = sum(1 for i in classified.items if i.routing == "review")
@@ -130,6 +156,10 @@ async def main() -> int:
             await asyncio.sleep(PACE_SECONDS)
 
     cache_module._index.cache_clear()
+    print()
+    print("ACTUAL CONSUMPTION (from usage figures, not estimates)")
+    print(f"  Groq  input {groq_in:>7,}  output {groq_out:>7,}  total {groq_in + groq_out:>7,}")
+    print(f"  Jev   input {jev_in:>7,}  output {jev_out:>7,}  total {jev_in + jev_out:>7,}")
     return 0
 
 

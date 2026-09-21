@@ -77,9 +77,15 @@ misleading.**
 > `x-ratelimit-remaining-tokens` read 8000/8000 — every header said healthy. Only the
 > 429 body names TPD.
 >
-> It refills at **2.31 tokens/second**, so one full report (~11,500 requested) is
-> **83 minutes** of refill and the three-sample cache build (~35,000) is **~4 hours**.
-> **The free tier sustains roughly 17 full live reports per day.**
+> A full report **consumes ~8,000 tokens** (extract ~5,000 + generate ~3,000), so the
+> daily cap sustains roughly **25 full live reports**.
+>
+> *(Corrected 2026-09-22. An earlier note here claimed Groq bills on **requested**
+> tokens — `prompt + max_completion_tokens` — and put a report at ~11,500 and the day
+> at ~17 reports. That rested on a single reading whose arithmetic matched exactly,
+> and it did not reproduce: requests asking for 9,000 and 60,000 completion tokens
+> were both accepted and consumed ~100 each. Rely on the `usage` figures, which are
+> measurable per call.)*
 >
 > Consequences: budget development runs, not just demo runs. Build the sample cache
 > **before** any other spend on a given day. The app distinguishes the two limits
