@@ -114,3 +114,35 @@ export async function waitForBudget(
     remaining -= 1;
   }
 }
+
+/** Review complete → generate the documents. Cached runs already have them. */
+export async function buildDocuments(
+  state: import("./session").SessionState,
+  dispatch: React.Dispatch<Action>,
+): Promise<void> {
+  if (state.documents) {
+    dispatch({ type: "go", screen: "results" });
+    return;
+  }
+  const { approvedItems } = await import("./session");
+  dispatch({ type: "busy", busy: true });
+  try {
+    const rag = state.ragOverride
+      ? { ...state.classified!.rag, status: state.ragOverride }
+      : state.classified!.rag;
+    const documents = await api.generate({
+      meta: state.extracted!.meta,
+      discussion_points: state.extracted!.discussion_points,
+      items: approvedItems(state.classified, state.decisions),
+      rag,
+      project_name: state.projectName || null,
+      reporting_period: state.reportingPeriod || null,
+    });
+    dispatch({ type: "documents", documents });
+    dispatch({ type: "go", screen: "results" });
+  } catch (err) {
+    const message =
+      err instanceof ApiError ? err.message : "Couldn't build the reports. Try again.";
+    dispatch({ type: "error", message });
+  }
+}

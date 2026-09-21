@@ -2,9 +2,12 @@ import { useCallback, useEffect, useState } from "react";
 import { getAccessCode } from "./api/client";
 import { Toast } from "./components/Chrome";
 import { AccessGate } from "./pages/AccessGate";
+import { HowItWorks } from "./pages/HowItWorks";
 import { InputPage } from "./pages/InputPage";
 import { ProcessingPage } from "./pages/ProcessingPage";
-import { runPipeline } from "./state/run";
+import { ResultsPage } from "./pages/ResultsPage";
+import { ReviewPage } from "./pages/ReviewPage";
+import { buildDocuments, runPipeline } from "./state/run";
 import { useSession } from "./state/session";
 
 export default function App() {
@@ -35,9 +38,15 @@ export default function App() {
         <InputPage state={state} dispatch={dispatch} onRun={run} />
       ) : null}
       {state.screen === "processing" ? <ProcessingPage state={state} /> : null}
-      {state.screen === "review" || state.screen === "results" ? (
-        <ProcessingPage state={state} />
+      {state.screen === "review" ? (
+        <ReviewPage
+          state={state}
+          dispatch={dispatch}
+          onBuild={() => void buildDocuments(state, dispatch)}
+        />
       ) : null}
+      {state.screen === "results" ? <ResultsPage state={state} dispatch={dispatch} /> : null}
+      {state.screen === "how" ? <HowItWorks dispatch={dispatch} /> : null}
       {state.error ? (
         <Toast message={state.error} onDismiss={() => dispatch({ type: "error", message: null })} />
       ) : null}
