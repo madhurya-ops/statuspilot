@@ -32,26 +32,37 @@ Two numbers, because one would mislead:
 
 | Metric | Score | What it means |
 |---|---:|---|
-| **Strict recall** | **63 %** | The planted item became **its own candidate**. This predicts how complete the RAID log and action-item **tables** are — each row needs its own candidate. |
-| **Content coverage** | **84 %** | The planted item reached the output **at all**, either as its own candidate or merged into a neighbouring one. This predicts whether the status report **narrative** misses anything. |
+| **Strict recall** | **70 %** | The planted item became **its own candidate**. This predicts how complete the RAID log and action-item **tables** are — each row needs its own candidate. |
+| **Content coverage** | **86 %** | The planted item reached the output **at all**, either as its own candidate or merged into a neighbouring one. This predicts whether the status report **narrative** misses anything. |
 
-The gap between them is granularity, not lost information: the model's main failure
-is merging a problem with the task that fixes it, rather than dropping either.
-**Ten of 63 items (16 %) were genuinely absent.** Nothing was hallucinated in any
-run — every candidate cited real transcript lines, and no owner appeared who is not
-in the transcript.
+The gap between them is granularity, not lost information: the model's main failure is
+merging a problem with the task that fixes it, rather than dropping either. **Nine of
+63 items (14 %) were genuinely absent.** Nothing was hallucinated in any run — every
+candidate cites real transcript lines, and no owner appears who is not in the
+transcript.
 
 ### Cost per report
 
-| | Tokens |
-|---|---:|
-| Extraction, ~5,000-character transcript | ~4,300 (2,500 in / 2,300 out) |
-| Full report (extract + generate) | **7–9 k** |
+Groq's free tier charges its tokens-per-minute limit on **requested** tokens
+(`prompt + max_completion_tokens`), not consumed ones — measured, not assumed:
+one extraction with a 2,520-token prompt and a 4,500 cap dropped
+`x-ratelimit-remaining-tokens` from 7,927 to **980**, although it consumed 5,415.
 
-On Groq's free tier the binding limit is **8,000 tokens per minute**, shared across
-models — so the app sustains roughly **one live report per minute**. That is why the
-three bundled samples serve **precomputed** results, labelled visibly in the UI as a
-cached sample run, while pasted or uploaded text always goes live.
+| Stage | Requested |
+|---|---:|
+| Extract | ~7,020 |
+| Generate | ~4,500 |
+| **Full report** | **~11,500** |
+
+Against an **8,000 tokens/minute** ceiling, **one live report does not fit in a single
+minute**. The bucket refills at ~133 tokens/second, so generation waits ~26 s after
+extraction. That is why the three bundled samples serve **precomputed** results,
+labelled visibly in the UI as a cached sample run, while pasted or uploaded text
+always goes live.
+
+Jev is not a cost constraint: ~870 input tokens per candidate and roughly **$0.0015**
+for a 40-candidate run, against published limits of 250 k tokens/second and 1,200
+requests/minute.
 
 **Status:** in development (Phase 3 complete). This README is expanded in Phase 10.
 

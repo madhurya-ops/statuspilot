@@ -8,37 +8,76 @@ Model `openai/gpt-oss-20b`, `reasoning_effort=low`, `temperature=0`,
 
 ---
 
-## Token cost per extraction call (the real numbers)
+## Token budget — measured, and the news is bad
 
-| Sample | Input | Output | **Total** | Latency |
+### Consumed vs *requested*
+
+Groq's tokens-per-minute limit is charged on **requested** tokens, not consumed ones.
+Measured directly by reading `x-ratelimit-remaining-tokens` before and after one real
+extraction call:
+
+| | Tokens |
+|---|---:|
+| Remaining before | 7,927 |
+| Remaining after | **980** |
+| **Deducted** | **6,947** |
+| `prompt_tokens` | 2,520 |
+| `max_completion_tokens` | 4,500 |
+| **prompt + cap** | **7,020** |
+| *Actually consumed* (`prompt` + `completion`) | *5,415* |
+
+`8000 − 980 = 7020 = prompt + cap`, exactly. **1,605 tokens were reserved and never
+used, and were charged anyway.** The bucket refills continuously
+(`x-ratelimit-reset-tokens: 547ms`) at 8,000/60 ≈ **133 tokens/second**.
+
+### What a full report requests
+
+| Stage | Prompt | Cap | **Requested** |
+|---|---:|---:|---:|
+| Extract | ~2,520 | 4,500 | **7,020** |
+| Generate | ~2,000 (est.) | 2,500 | **~4,500** |
+| **Full report** | | | **~11,500** |
+
+### A single live report no longer fits in one minute
+
+**It never did.** Phase 3 reported 7–9 k per report, but that was *consumed* tokens;
+on a *requested* basis it was already ~10 k even at the old 3,200 cap. Raising the cap
+to 4,500 made a real problem visible rather than creating it.
+
+Concretely: after one extraction, **980 tokens remain of 8,000**. Generation needs
+~4,500, so it must wait for the bucket to refill ~3,520 tokens — about **26 seconds** —
+and a full recovery to 8,000 takes ~53 s.
+
+Three consequences:
+
+1. **The precomputed sample cache is not optional.** Moved to Phase 5 for exactly this
+   reason. The three bundled samples must never touch the API during a demo.
+2. **A live run on pasted text needs a deliberate pause between extract and generate**,
+   surfaced honestly in the processing UI rather than as a 429. Booked for Phase 5.
+3. **`MAX_INPUT_CHARS = 12000` still holds, but with almost nothing to spare.**
+   12,000 characters ≈ 3,000 prompt tokens; 3,000 + 4,500 = **7,500 of 8,000**. A
+   single extraction of a maximum-size transcript fits — by 500 tokens. It cannot be
+   raised, and there is no headroom for a larger completion cap at that input size.
+
+### Per-sample extraction cost
+
+| Sample | Prompt | Completion | Consumed | **Requested** |
 |---|---:|---:|---:|---:|
-| `northwind-sprint-review` (4937 chars) | 2,502 | 2,252 | **4,754** | 3.2 s |
-| `contoso-escalation` (4886 chars) | 2,520 | 2,256 | **4,776** | 5.6 s |
-| `rough-standup-notes` (2381 chars) | 1,948 | 1,374 | **3,322** | 2.2 s |
+| `northwind-sprint-review` (4,937 chars) | 2,502 | ~2,300 | ~4,800 | **7,002** |
+| `contoso-escalation` (4,886 chars) | 2,520 | 2,895 | 5,415 | **7,020** |
+| `rough-standup-notes` (2,381 chars) | 1,948 | 1,593 | 3,541 | **6,448** |
 
-**Extraction alone costs ~4,300 tokens on a ~5,000-character transcript.**
-
-### What this means for the 8,000 tokens/minute ceiling
-
-1. **A full report will not fit twice in one minute.** Extraction is ~4.3 k and
-   generation (Phase 5) will add its own call. A single end-to-end run lands around
-   **7–9 k tokens**, i.e. at or just over the entire per-minute budget. The
-   **precomputed sample cache is not a nicety — it is what makes a live demo
-   survivable.** Confirmed empirically: three paced runs succeeded, and an earlier
-   unpaced attempt returned 429 mid-sequence.
-2. **`MAX_INPUT_CHARS=12000` is correctly sized, and is close to the true ceiling.**
-   12,000 chars ≈ 3,000 input tokens; plus the 3,200 reserved for completion that is
-   6,200 of 8,000 for a single call, before generation. Raising it would break
-   single-call extraction on this tier.
-3. **`max_completion_tokens` is billed against TPM as *requested* tokens.** A 429
-   body reads `Limit 8000, Used 5645, Requested 5274`. An early setting of 6,000
-   meant a ~2,500-token prompt needed 8,500 against an 8,000 ceiling — a single
-   request exceeding the budget by itself. This is the least obvious constraint on
-   the free tier and is why the value is now 3,200.
-
----
+Jev, by contrast, is not a constraint: ~870 input tokens per candidate, 250 k
+tokens/second and 1,200 requests/minute published, and ~$0.0015 for a 40-candidate
+run.
 
 ## Recall against the planted inventory — two numbers, not one
+
+**Re-measured 2026-09-21 against the current pipeline**, after the Phase 4 truncation
+fix. The earlier figures were taken on **silently truncated output** — under strict
+`json_schema` a response that hits the completion cap still parses, so
+`rough-standup-notes` was scored on 11 candidates when the same input actually yields
+22. Those numbers are superseded.
 
 Every planted item falls in exactly one bucket:
 
@@ -49,43 +88,54 @@ Every planted item falls in exactly one bucket:
 
 | Sample | Planted | Captured | Merged | Absent | **Strict recall** | **Content coverage** |
 |---|---:|---:|---:|---:|---:|---:|
-| `northwind-sprint-review` | 17 | 11 | 3 | 3 | 65 % | **82 %** |
-| `contoso-escalation` | 19 | 13 | 3 | 3 | 68 % | **84 %** |
-| `rough-standup-notes` | 27 | 16 | 7 | 4 | 59 % | **85 %** |
-| **Total** | **63** | **40** | **13** | **10** | **63 %** | **84 %** |
+| `northwind-sprint-review` | 17 | 12 | 1 | 4 | **71 %** | 76 % |
+| `contoso-escalation` | 19 | 15 | 2 | 2 | **79 %** | **89 %** |
+| `rough-standup-notes` | 27 | 17 | 7 | 3 | **63 %** | **89 %** |
+| **Total** | **63** | **44** | **10** | **9** | **70 %** | **86 %** |
 
-**Strict recall (63 %)** = captured as its own candidate. This is the number that
-predicts how good the RAID log and action-item tables will look, because each row in
-those tables comes from one candidate. A merged item does not get its own row.
+**Strict recall (70 %)** = the planted item became its **own candidate**. This predicts
+how complete the RAID log and action-item **tables** are, because each row needs one
+candidate. A merged item gets no row of its own.
 
-**Content coverage (84 %)** = captured **or** merged, i.e. the share of planted
-material that reaches the output at all and is therefore visible to Jev and to the
-PM. This is the number that predicts whether the status report's *narrative* misses
-anything.
+**Content coverage (86 %)** = the item reached the output **at all**, captured or
+merged — the share of planted material visible to Jev and to the PM. This predicts
+whether the status report **narrative** misses anything.
 
-Both belong in front of a PM. Quoting only 84 % would overstate how complete the
-tables are; quoting only 63 % would understate how much of the meeting survives.
+Both belong in front of a PM. 86 % alone would overstate how complete the tables are;
+70 % alone would understate how much of the meeting survives.
 
-> A previous revision of this file reported 41 captured. A careful re-scoring against
-> the bucket definitions gives **40**; C15 (the vendor dependency, whose "Contoso
-> contract, no leverage" clause at L23–24 is uncited) is **merged**, not captured.
+### Movement since the truncated measurement
 
-### Absent — the ten genuine misses
+| | Strict | Coverage |
+|---|---:|---:|
+| Measured on truncated output | 63 % | 84 % |
+| **Current** | **70 %** | **86 %** |
 
-**Northwind (3):** N3 Jonas chasing legal (L24–27 uncited) · N7 the three cosmetic
-defects (L15 uncited) · N17 inconsistent rules-API error responses (L9–10 uncited).
+Per sample, strict recall: northwind 65 % → **71 %**, contoso 68 % → **79 %**,
+rough-standup 59 % → **63 %**. The rough-notes sample gained the least in strict terms
+but its coverage is now 89 %, joint-highest — its misses are concentrated in merging,
+not in loss.
 
-**Contoso (3):** C5 Diane taking the slip to the executive committee on Tuesday
-(L30 uncited) · C13 damaged client confidence after a second slip (L37–38 uncited) ·
-C19 the decision to keep the client's late sign-off out of the note — L47 is cited
-but only L46's content is carried in `evidence`.
+### Absent — the nine genuine misses
 
-**Rough notes (4):** S8 "KT pending w/ infra - chk" (L9) · S11 the stale staging box,
-open since February (L10–11) · S20 the parallel contract renewal (L24–25) · S22 the
-"40-minute reindex might be fine for prod" assumption (L42).
+**Northwind (4):** N3 Jonas chasing legal (L24–27 uncited) · N7 the three cosmetic
+defects (L15) · N14 the decision to log the defect as *high* severity (L21–22) ·
+N17 inconsistent rules-API error responses (L9–10).
 
-**Nothing was hallucinated in any run.** Every candidate cited real line numbers and
-no owner appeared that is absent from the transcript.
+**Contoso (2):** C5 Diane taking the slip to the executive committee on Tuesday (L30) ·
+C19 the decision to keep the client's late sign-off out of the written note — L46 is
+captured but L47, where that decision is made, is not.
+
+**Rough notes (3):** S8 "KT pending w/ infra - chk" (L9) · S17 the explicit
+*"risk: if creds don't land by ~20th, billing slips past demo"* (L23) ·
+S20 the parallel contract renewal (L24–25).
+
+> **One regression worth naming.** S17 was captured in an earlier run and is absent
+> now. It is an explicitly labelled risk in the source text, so losing it is a worse
+> miss than the merges. Recorded rather than smoothed over.
+
+**Nothing was hallucinated in any run.** Every candidate cites real line numbers, and
+no owner appears who is not in the transcript.
 
 ## Prompt iteration — and an honest note about the trade
 
