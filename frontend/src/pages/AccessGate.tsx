@@ -25,7 +25,7 @@ export function AccessGate({ onUnlocked }: { onUnlocked: () => void }) {
   }
 
   return (
-    <div className="mx-auto flex min-h-full w-full max-w-[26rem] flex-col justify-center px-5 py-10">
+    <div className="mx-auto flex min-h-dvh w-full max-w-[26rem] flex-col justify-center px-5 py-10">
       <h1 className="text-[1.75rem] font-semibold leading-tight tracking-[-0.02em]">
         StatusPilot
       </h1>

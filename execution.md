@@ -322,7 +322,8 @@ ALLOWED_ORIGINS=http://localhost:5173
 MAX_INPUT_CHARS=12000            # ~3k tokens; the Groq free tier allows 8k tokens/min
 MAX_UPLOAD_BYTES=1000000
 MAX_CANDIDATES=40                 # hard cap on Jev fan-out per run
-RATE_LIMIT_PER_MIN=10
+RATE_LIMIT_PER_MIN=30                # raised from 10: one run costs 4-6 calls, so two
+                                  # sample taps in a minute tripped our own limiter
 ```
 
 `frontend/.env.example`:

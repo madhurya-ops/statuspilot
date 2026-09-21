@@ -1,19 +1,46 @@
 import type { ReactNode } from "react";
 
 /** The page shell: one column, thumb-reachable, with room for a sticky action bar. */
+/**
+ * The page shell.
+ *
+ * Two things this has to get right, both found by looking at a 1440px window rather
+ * than trusting the CSS:
+ *
+ *  1. The action bar is **full-bleed**, with only its contents constrained. Putting
+ *     the bar inside the centred column left a visible seam down the side of it on a
+ *     wide viewport, because the bar's own background stopped at the column edge.
+ *  2. The outer column is `min-h-dvh` with `flex-1` content, so the bar is pushed to
+ *     the bottom of the *viewport* when a page is short. `sticky bottom-0` alone only
+ *     sticks once the page scrolls, which is why it floated mid-page with empty space
+ *     beneath it.
+ *
+ * `dvh` rather than `vh` so iOS Safari's collapsing address bar does not leave the
+ * action bar off-screen.
+ */
 export function Screen({
   children,
   action,
+  wide,
 }: {
   children: ReactNode;
   action?: ReactNode;
+  /** Results and review pages earn more room on a laptop. */
+  wide?: boolean;
 }) {
+  const column = wide ? "max-w-[56rem]" : "max-w-[34rem]";
   return (
-    <div className="mx-auto flex min-h-full w-full max-w-[34rem] flex-col">
-      <div className="flex-1 px-4 pb-6 pt-5">{children}</div>
+    <div className="flex min-h-dvh flex-col">
+      <div className={`mx-auto w-full flex-1 px-4 pb-8 pt-5 sm:px-6 ${column}`}>
+        {children}
+      </div>
       {action ? (
-        <div className="sticky bottom-0 border-t border-line bg-paper/95 px-4 py-3 backdrop-blur">
-          {action}
+        <div className="sticky bottom-0 border-t border-line bg-paper/95 backdrop-blur">
+          <div
+            className={`mx-auto w-full px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-6 ${column}`}
+          >
+            {action}
+          </div>
         </div>
       ) : null}
     </div>

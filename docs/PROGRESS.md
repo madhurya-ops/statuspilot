@@ -543,3 +543,42 @@ exhausted (agreed with the user; costs zero tokens)
 7 MB tarball in 15 s), so `node_modules` is still empty and the project cannot be
 typechecked, built, or screenshotted yet. This is a network condition, not a broken
 install.
+
+---
+
+# TOKEN BUDGET — Day 2 (build day *and* demo day, one 200,000 budget, no reset between)
+
+**Agreed with the user 2026-09-21. Binding. Report consumption against this at every
+gate.** Groq's tokens-per-day cap does not appear in any response header, so the only
+reliable reading is the `Used` figure in a 429 body:
+
+```
+... on tokens per day (TPD): Limit 200000, Used 199232, Requested 2877.
+```
+
+| Line | Allocation | Rule |
+|---|---:|---|
+| **1. Cache rebuild** | **~35,000** | **First spend of the day, before anything else.** |
+| **2. Live verification, Phases 7–9** | **cap 40,000** | Mocks prove anything mocks can prove. Real tokens only where the live path genuinely differs from the mock path. |
+| **3. Demo reserve** | **60,000 — UNTOUCHABLE** | **Do not spend below this line without asking first.** |
+| 4. Contingency | ~65,000 | A failed cache build, or a regression needing a re-run. |
+
+**Stop-and-ask trigger:** if a planned spend would take the remaining balance below
+**60,000**, stop and ask before spending it.
+
+**What a spend costs, measured:**
+
+| Action | Requested tokens |
+|---|---:|
+| One extraction (~5,000-char transcript) | ~6,000–7,000 |
+| One generation (12–24 items) | ~3,100–4,100 |
+| **One full live report** | **~10,000–11,500** |
+| Full cache rebuild (3 samples) | ~35,000 |
+| Live demo paste (~1,070-char snippet) | **~4,000** |
+
+At ~10,000 per live report, the 60,000 reserve covers **six** live runs on demo day —
+enough for the paste moment plus five retries. The three bundled samples cost **zero**
+because they are served from the committed cache.
+
+**Cheapest thing that proves the most:** the bundled samples. They exercise the whole
+pipeline end to end at no token cost once cached, which is why the cache is line 1.

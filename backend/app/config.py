@@ -55,7 +55,7 @@ class Settings(BaseSettings):
     max_input_chars: int = Field(default=12_000, gt=0)
     max_upload_bytes: int = Field(default=1_000_000, gt=0)
     max_candidates: int = Field(default=40, gt=0)
-    rate_limit_per_min: int = Field(default=10, gt=0)
+    rate_limit_per_min: int = Field(default=30, gt=0)
     cached_samples: bool = True
 
     @field_validator("allowed_origins")
