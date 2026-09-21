@@ -116,3 +116,71 @@ reserved for quality escalation only.
 | **Precomputed sample runs** as a demo safety net, with `CACHED_SAMPLES` toggle and a visible "cached" badge; pasted/uploaded text always live | Phase 9, §12 |
 | "Run each sample 3 times" paced ≥60 s apart or run through the cache | Phase 9 |
 | Log TypeSafe's rate-limit headers **before** settling `JEV_CONCURRENCY` | Phase 4 |
+
+---
+
+## Phase 1 — Backend skeleton
+
+**Status:** code complete and pushed — **blocked on the Vercel deploy**, which needs
+dashboard access
+**Date:** 2026-09-21
+
+### Built
+
+| File | What it does |
+|---|---|
+| `backend/pyproject.toml` | Pinned deps, `requires-python = ">=3.13,<3.14"`, ruff + pytest config |
+| `backend/app/config.py` | pydantic-settings covering **every** env var in Section 5 |
+| `backend/app/main.py` | FastAPI app, CORS from `ALLOWED_ORIGINS`, router wiring |
+| `backend/app/routers/health.py` | `GET /api/health` |
+| `backend/app/security.py` | Access code, per-IP rate limiter, 413 size guard |
+| `backend/vercel.json` | `maxDuration` 60 s on `app/main.py`, tests excluded from the bundle |
+
+### Verification
+
+- `ruff check .` → clean.
+- `pytest` → **12 passed**.
+- Started `uvicorn` and hit `/api/health` over **real HTTP**, not only TestClient:
+  `{"status":"ok","version":"0.1.0","llm_primary":"groq","decision_engine":"jev","groq_model":"openai/gpt-oss-20b"}`
+- CORS verified live: `access-control-allow-origin: http://localhost:5173` present
+  for the configured origin, **absent** for an unknown origin.
+- Server log grepped for `gsk_` / `sk-` / `Bearer` → 0 matches.
+
+### Decisions worth recording
+
+1. **`pyproject.toml` is the single source of truth for dependencies.** Section 5
+   listed `requirements.txt` + `requirements-dev.txt`. Vercel accepts
+   `pyproject.toml`, `requirements.txt` or a Pipfile but **documents no precedence
+   when several are present**, and `pyproject.toml` is needed anyway for
+   `requires-python`. Two lists that can drift, with an undefined winner, is a worse
+   trade than one file. Section 5, Phase 1 and Section 13 updated.
+2. **`app/main.py` is a supported Vercel FastAPI entrypoint**, so no
+   `tool.vercel.entrypoint` override is needed and the Section 5 layout stands.
+3. **A blank `DEMO_ACCESS_CODE` returns 503, not 200.** Running wide open would
+   expose the Groq and TypeSafe keys to anyone with the URL, so it is treated as a
+   misconfiguration rather than as "no auth required".
+4. **A 401 does not consume rate-limit budget.** The code check runs before the
+   limiter, so unauthenticated traffic cannot lock out a legitimate client. Covered
+   by a test.
+5. **`config.py` fails loudly on inverted thresholds.** `CONF_REVIEW > CONF_AUTO`
+   would silently empty the "suggested" band and quietly change product behaviour, so
+   it raises at startup instead.
+
+### Notes for later phases
+
+- Vercel's Python runtime sets the working directory to the **project root**, not the
+  module's directory. `backend/app/samples/` must therefore be loaded via a path
+  built from `__file__`, not a relative `open()`. Matters in **Phase 2**.
+- Starlette 1.6 / FastAPI 0.141 wrap included routers in a lazily-resolved
+  `_IncludedRouter`, so `app.routes` does not list child paths until resolution.
+  Not a bug — but route-introspection assertions in later tests should go through
+  `TestClient`, not `app.routes`.
+- `HTTP_413_REQUEST_ENTITY_TOO_LARGE` is deprecated in this Starlette version;
+  using `HTTP_413_CONTENT_TOO_LARGE`.
+
+### Gate 1
+
+- [x] `ruff check` passes
+- [x] `pytest` passes (12 tests)
+- [x] Health endpoint verified over real HTTP locally
+- [ ] **Live health URL works from the phone** — *needs the Vercel deploy*

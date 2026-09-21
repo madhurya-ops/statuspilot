@@ -239,9 +239,7 @@ statuspilot/
 │   │   ├── samples/             # 3 synthetic transcripts (.txt) + index.json
 │   │   └── routers/             # parse, extract, classify, generate, export, samples, health
 │   ├── tests/
-│   ├── requirements.txt
-│   ├── requirements-dev.txt
-│   ├── pyproject.toml           # ruff + pytest config
+│   ├── pyproject.toml           # deps (pinned), requires-python, ruff + pytest config
 │   ├── vercel.json
 │   └── .env.example
 └── frontend/
@@ -557,12 +555,12 @@ Jev: echoed `jev-1.13.0` for `jev-latest`; usage 295 in / 21 out.
 ---
 
 ### PHASE 1 — Backend skeleton + deploy early · Day 1, ~1.5 h
-- [ ] `config.py` loading every env var in Section 5 via pydantic-settings.
-- [ ] `main.py`: FastAPI app, CORS from `ALLOWED_ORIGINS`, `GET /api/health` → `{status, version, llm_primary, decision_engine, groq_model}` (no secrets).
-- [ ] `security.py`: `X-Access-Code` dependency on every route except `/api/health` (401 otherwise); in-memory per-IP rate limiter (`RATE_LIMIT_PER_MIN`, documented as best-effort on serverless); request-size guard.
-- [ ] `vercel.json`: `maxDuration` 60 s keyed on the FastAPI entrypoint per current Vercel docs. **The Python version does not go here** — it goes in `pyproject.toml` as `requires-python = ">=3.13"` (see the note in Section 4).
-- [ ] `requirements.txt` / `requirements-dev.txt`, pinned.
-- [ ] Tests: health; access-code rejection; CORS header present.
+- [x] `config.py` loading every env var in Section 5 via pydantic-settings.
+- [x] `main.py`: FastAPI app, CORS from `ALLOWED_ORIGINS`, `GET /api/health` → `{status, version, llm_primary, decision_engine, groq_model}` (no secrets).
+- [x] `security.py`: `X-Access-Code` dependency on every route except `/api/health` (401 otherwise); in-memory per-IP rate limiter (`RATE_LIMIT_PER_MIN`, documented as best-effort on serverless); request-size guard.
+- [x] `vercel.json`: `maxDuration` 60 s keyed on `app/main.py` (a supported Vercel FastAPI entrypoint, so no `tool.vercel.entrypoint` override is needed), plus `excludeFiles` to keep tests and `.venv` out of the bundle. **The Python version does not go here** — it is `requires-python = ">=3.13,<3.14"` in `pyproject.toml`.
+- [x] ~~`requirements.txt` / `requirements-dev.txt`, pinned.~~ **Superseded: dependencies live in `pyproject.toml`** (`[project].dependencies` and `[project.optional-dependencies].dev`), pinned exactly. Vercel accepts `pyproject.toml`, `requirements.txt` or a Pipfile, but **does not document precedence when more than one is present** — and `pyproject.toml` is required regardless for `requires-python`. Shipping both would mean two dependency lists that can silently drift, with an undefined winner. One file, one source of truth. Install with `pip install -e ".[dev]"`.
+- [x] Tests: health; access-code rejection; CORS header present.
 - [ ] Create the Vercel projects via the dashboard's GitHub integration (deferred here from Phase 0): `statuspilot-api` with root directory `backend/`. `statuspilot-web` (root `frontend/`) can wait until Phase 6.
 - [ ] **Deploy `statuspilot-api` now**, add env vars in the Vercel dashboard, and open `/api/health` from the phone.
 
@@ -724,8 +722,8 @@ Jev: echoed `jev-1.13.0` for `jev-latest`; usage 295 in / 21 out.
 ```bash
 # backend (local)
 cd backend
-python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
-pip install -r requirements.txt -r requirements-dev.txt
+python3 -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
+pip install -e ".[dev]"     # deps live in pyproject.toml, not requirements.txt
 uvicorn app.main:app --reload --port 8000
 ruff check . && pytest -q
 
