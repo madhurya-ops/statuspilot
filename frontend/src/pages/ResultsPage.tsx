@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button, CachedTag, Screen } from "../components/Chrome";
 import { Chip, RagPill, SourceQuote } from "../components/Item";
+import { ExportSheet } from "../components/ExportSheet";
 import { Markdown } from "../components/Markdown";
 import type { Action, SessionState } from "../state/session";
 import type { ApprovedItem } from "../types";
@@ -24,6 +25,7 @@ export function ResultsPage({
   const [tab, setTab] = useState<Tab>("status");
   const [showInternal, setShowInternal] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const docs = state.documents;
   const rag = state.ragOverride ?? state.classified?.rag.status ?? "Amber";
 
@@ -50,7 +52,10 @@ export function ResultsPage({
           <Button full onClick={copyReport}>
             {copied ? "Copied" : "Copy status report"}
           </Button>
-          <Button variant="secondary" onClick={() => dispatch({ type: "reset" })}>
+          <Button variant="secondary" onClick={() => setExporting(true)}>
+            Export
+          </Button>
+          <Button variant="quiet" onClick={() => dispatch({ type: "reset" })}>
             Start over
           </Button>
         </div>
@@ -145,6 +150,19 @@ export function ResultsPage({
           </div>
         ) : null}
       </div>
+
+      {exporting ? (
+        <ExportSheet
+          documents={docs}
+          projectName={state.projectName || null}
+          rag={rag}
+          onClose={() => setExporting(false)}
+          onError={(message) => {
+            setExporting(false);
+            dispatch({ type: "error", message });
+          }}
+        />
+      ) : null}
     </Screen>
   );
 }

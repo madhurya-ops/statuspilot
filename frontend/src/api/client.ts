@@ -160,4 +160,34 @@ export const api = {
     }>(`/api/cached/${encodeURIComponent(sampleId)}`),
 
   budget: (needed = 4000) => request<BudgetStatus>(`/api/budget?needed=${needed}`),
+
+  /** Returns the file itself plus the server's filename, for a download or a share. */
+  exportFile: async (
+    fmt: "docx" | "xlsx" | "pdf",
+    documents: Documents,
+    projectName: string | null,
+    rag: string,
+  ): Promise<{ blob: Blob; filename: string }> => {
+    const response = await fetch(`${BASE}/api/export/${fmt}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Access-Code": getAccessCode() },
+      body: JSON.stringify({ documents, project_name: projectName, rag }),
+    });
+    if (!response.ok) {
+      let detail = `That ${fmt.toUpperCase()} could not be produced.`;
+      try {
+        const body = await response.json();
+        if (typeof body?.detail === "string") detail = body.detail;
+      } catch {
+        /* keep the generic message */
+      }
+      throw new ApiError(detail, response.status);
+    }
+    const disposition = response.headers.get("Content-Disposition") ?? "";
+    const match = /filename="([^"]+)"/.exec(disposition);
+    return {
+      blob: await response.blob(),
+      filename: match?.[1] ?? `StatusReport.${fmt}`,
+    };
+  },
 };

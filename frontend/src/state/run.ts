@@ -1,5 +1,5 @@
 import { api, ApiError } from "../api/client";
-import type { Action } from "./session";
+import { approvedItems, type Action, type SessionState } from "./session";
 
 /** A full run: cached samples return instantly; everything else goes live. */
 export async function runPipeline(
@@ -117,14 +117,13 @@ export async function waitForBudget(
 
 /** Review complete → generate the documents. Cached runs already have them. */
 export async function buildDocuments(
-  state: import("./session").SessionState,
+  state: SessionState,
   dispatch: React.Dispatch<Action>,
 ): Promise<void> {
   if (state.documents) {
     dispatch({ type: "go", screen: "results" });
     return;
   }
-  const { approvedItems } = await import("./session");
   dispatch({ type: "busy", busy: true });
   try {
     const rag = state.ragOverride

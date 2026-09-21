@@ -764,16 +764,16 @@ the "cached sample run" label while pasted text still goes live. Commit and push
 ---
 
 ### PHASE 7 — Review queue + results · Day 2, ~2.5 h
-- [ ] `ConfidenceBadge` (green ≥ 80%, amber 50–79%, red < 50%), `ReviewCard`, `SourceQuote`, `RagPill`.
-- [ ] Review screen: Accept / Change / Drop, progress, RAG confirmation card, "Accept all remaining", dropped-items restore list.
-- [ ] Build `ApprovedItem[]` from reviewed state → `/api/generate`.
-- [ ] Results screen: tabs, markdown rendering (write a minimal renderer for headings/lists/tables/bold, or ask before adding a library), internal-only toggle, source popovers.
-- [ ] **Status report empty state.** When `Documents.status_report_empty` is true, the
+- [x] `ConfidenceBadge` (green ≥ 80%, amber 50–79%, red < 50%), `ReviewCard`, `SourceQuote`, `RagPill`.
+- [x] Review screen: Accept / Change / Drop, progress, RAG confirmation card, "Accept all remaining", dropped-items restore list.
+- [x] Build `ApprovedItem[]` from reviewed state → `/api/generate`.
+- [x] Results screen: tabs, markdown rendering (write a minimal renderer for headings/lists/tables/bold, or ask before adding a library), internal-only toggle, source popovers.
+- [x] **Status report empty state.** When `Documents.status_report_empty` is true, the
       Status report tab renders an explicit explanation — *"No client-facing items:
       this is an internal standup with no client present"* — plus a pointer to the
       internal-only toggle, never a blank panel. This is a real path:
       `rough-standup-notes` produces 0 client-safe items of 17.
-- [ ] "How it works" screen.
+- [x] "How it works" screen.
 - [ ] Phone test across all 3 samples.
 
 **Gate 7:** the full flow works on the phone for all samples.
@@ -781,12 +781,12 @@ the "cached sample run" label while pasted text still goes live. Commit and push
 ---
 
 ### PHASE 8 — Exports · Day 2 afternoon, ~1.5 h
-- [ ] `docx_export.py` (status report + MoM, headings, action-item table).
-- [ ] `xlsx_export.py` (sheets: Action Items, Risks, Assumptions, Issues, Dependencies; headers, widths, severity fills, frozen header row).
-- [ ] `pdf_export.py` (fpdf2; status report with a RAG colour block).
-- [ ] `POST /api/export/{docx|xlsx|pdf}` → file response, filename `StatusReport_<project>_<date>.<ext>`.
-- [ ] Frontend export sheet: downloads, copy, Web Share API.
-- [ ] Tests: re-open each generated file with the same library to verify validity.
+- [x] `docx_export.py` (status report + MoM, headings, action-item table).
+- [x] `xlsx_export.py` (sheets: Action Items, Risks, Assumptions, Issues, Dependencies; headers, widths, severity fills, frozen header row).
+- [x] `pdf_export.py` (fpdf2; status report with a RAG colour block).
+- [x] `POST /api/export/{docx|xlsx|pdf}` → file response, filename `StatusReport_<project>_<date>.<ext>`.
+- [x] Frontend export sheet: downloads, copy, Web Share API.
+- [x] Tests: re-open each generated file with the same library to verify validity.
 
 **Gate 8:** all three files download and open on the phone.
 

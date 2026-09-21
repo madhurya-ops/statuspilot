@@ -10,7 +10,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import VERSION, get_settings
-from app.routers import budget, classify, extract, generate, health, parse, samples
+from app.routers import budget, classify, export, extract, generate, health, parse, samples
 from app.security import ACCESS_CODE_HEADER
 
 # Log timings, sizes, counts and error types only — never transcript content
@@ -48,3 +48,4 @@ app.include_router(extract.router)
 app.include_router(classify.router)
 app.include_router(generate.router)
 app.include_router(budget.router)
+app.include_router(export.router)

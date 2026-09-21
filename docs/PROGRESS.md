@@ -582,3 +582,61 @@ because they are served from the committed cache.
 
 **Cheapest thing that proves the most:** the bundled samples. They exercise the whole
 pipeline end to end at no token cost once cached, which is why the cache is line 1.
+
+---
+
+## Phases 7 & 8 — Review queue, results, exports
+
+**Status:** built and verified against mocks. **Zero Groq tokens spent.**
+**Date:** 2026-09-21
+
+### Phase 7
+
+`Markdown.tsx` (small renderer for the subset the documents use; no raw HTML, so model
+output cannot inject markup) · `Item.tsx` (RagPill, SourceQuote, severity chip showing
+the raw float beside the band, stated/inferred tags) · `ReviewPage` (Accept / Change /
+Drop, probability distribution per item, progress, RAG confirmation below 50 %,
+Accept all) · `ResultsPage` (four tabs, internal-only toggle, copy, leak warning) ·
+`HowItWorks`.
+
+**Bug found by clicking, not reading:** "Accept all" left the RAG unconfirmed, so
+**Build reports stayed disabled at 9/9** with nothing on screen explaining why. Accept
+all now also accepts the suggested status, and a disabled Build button states what it
+is waiting for.
+
+### Phase 8
+
+`docx_export.py` · `xlsx_export.py` · `pdf_export.py` · `POST /api/export/{fmt}` ·
+`ExportSheet.tsx`. All three verified over the wire from the browser:
+
+| Format | Bytes | Filename |
+|---|---:|---|
+| docx | 37,011 | `StatusReport_Contoso-Insurance_2026-09-21.docx` |
+| xlsx | 8,109 | `StatusReport_Contoso-Insurance_2026-09-21.xlsx` |
+| pdf | 1,337 | `StatusReport_Contoso-Insurance_2026-09-21.pdf` |
+
+**Two things worth noting:**
+
+1. **fpdf2 raised "Not enough horizontal space to render a single character."**
+   `multi_cell(0, …)` measures width from the *current* x, so a cursor left mid-page by
+   the RAG colour block eventually left no usable width. Every full-width line now
+   resets to the left margin. Covered by a test using long text and twelve items.
+2. **The export filename is built from user input and lands in a response header.**
+   It is reduced to `[A-Za-z0-9-]`, so `../../etc/passwd` becomes `etc-passwd`.
+   Parametrised test included.
+
+The XLSX carries the **raw severity float** in its own column, so a PM can sort by real
+priority rather than by a band that ties 1.52 with 2.0.
+
+### Layout fixes (from the user's review)
+
+- Desktop rendered hard against the left edge — the shell now centres, with a wider
+  column for review and results.
+- The sticky action bar floated mid-page with a seam down its side: `sticky bottom-0`
+  only sticks once a page scrolls, and the bar sat inside the centred column so its
+  background stopped at the column edge. Now full-bleed with constrained contents,
+  inside a `min-h-dvh` flex shell. Verified by screenshot at **375, 768 and 1440**.
+
+### Tests
+
+**220 backend tests pass**, `ruff` clean, `tsc` clean, `vite build` clean.
