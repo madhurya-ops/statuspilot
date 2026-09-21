@@ -213,7 +213,14 @@ Dev: `pytest`, `pytest-asyncio`, `respx`, `ruff`, `uvicorn`.
 
 > Optional: `typesafe-sdk` exists, but we call the REST endpoint with `httpx` so we control concurrency, timeouts, and retries. Read `sdk/python.md` to confirm field names; don't add the dependency without asking.
 
-**Frontend:** React 18 + Vite + TypeScript + Tailwind CSS + `lucide-react`. No other UI libraries unless approved.
+**Frontend:** React 19 + Vite + TypeScript + Tailwind CSS v4 + `lucide-react`. No other UI libraries unless approved.
+
+> **React 19, not 18 (noted 2026-09-21).** `npm create vite@latest --template react-ts`
+> now scaffolds React 19; 18 would mean deliberately downgrading. Nothing in Section 10
+> depends on a React 18 API. Tailwind v4 likewise configures through
+> `@import "tailwindcss"` and an `@theme` block in CSS rather than a
+> `tailwind.config.js`, so that file does not exist — the Section 5 layout is updated
+> accordingly.
 
 ---
 
@@ -278,7 +285,7 @@ statuspilot/
     │   ├── pages/               # InputPage, ProcessingPage, ReviewPage, ResultsPage, HowItWorksPage
     │   └── components/          # ConfidenceBadge, ReviewCard, RagPill, SourceQuote, ExportSheet, Stepper, Toast
     ├── index.html
-    ├── tailwind.config.js
+    ├── postcss.config.js       # Tailwind v4 configures in CSS, not a JS config file
     ├── vite.config.ts
     └── .env.example
 ```
@@ -745,9 +752,9 @@ the "cached sample run" label while pasted text still goes live. Commit and push
 ---
 
 ### PHASE 6 — Frontend foundation · Day 2 morning, ~2 h
-- [ ] Scaffold Vite + React + TS + Tailwind in `frontend/`.
-- [ ] `api/client.ts` (typed calls, access-code header, error normalisation, 60 s timeout) and `state/session.ts` (`useReducer` for the whole flow).
-- [ ] Access gate, Input screen, Processing screen per Section 10.
+- [x] Scaffold Vite + React + TS + Tailwind in `frontend/`.
+- [x] `api/client.ts` (typed calls, access-code header, error normalisation, 60 s timeout) and `state/session.ts` (`useReducer` for the whole flow).
+- [x] Access gate, Input screen, Processing screen per Section 10.
 - [ ] Deploy `statuspilot-web`, set `VITE_API_BASE_URL`, add its origin to the backend's `ALLOWED_ORIGINS`.
 - [ ] Phone test: a sample chip runs through to "Ready for review".
 

@@ -493,3 +493,53 @@ meanwhile, which costs nothing.
 - The router refuses to sleep longer than 30 s inside a request. Groq asked for 612 s
   and then 931 s; honouring that literally stalled two builds, and on Vercel
   (`maxDuration` 60 s) it would kill the function mid-sleep.
+
+---
+
+## Phase 6 — Frontend foundation
+
+**Status:** in progress — built against the mock providers while Groq's daily budget is
+exhausted (agreed with the user; costs zero tokens)
+**Date:** 2026-09-21
+
+### Built
+
+| File | What it does |
+|---|---|
+| `src/types.ts` | Mirrors `backend/app/models.py`, including `severity_value` and the null-confidence convention for Noul |
+| `src/api/client.ts` | Typed calls, `X-Access-Code`, 60 s timeout, error normalisation |
+| `src/state/session.ts` | `useReducer` for the whole flow, plus `approvedItems()` |
+| `src/state/run.ts` | Cache-first run orchestration and the budget countdown |
+| `src/pages/AccessGate.tsx` | One field, one button |
+| `src/pages/InputPage.tsx` | Sample chips, paste box, upload, budget-aware counter |
+| `src/pages/ProcessingPage.tsx` | Stepper with per-step timings and a labelled wait |
+| `src/components/Measure.tsx` | The confidence measure, badge and distribution |
+| `src/components/Chrome.tsx` | Screen shell, buttons, banner, toast, cached tag |
+
+### Design direction
+
+- **Two typefaces doing different jobs.** IBM Plex Sans for the application; **Newsreader
+  for generated documents**, so the status report and minutes read as documents a PM
+  would send rather than as app screens. That distinction *is* the product.
+- **The signature device is a measure** — a thin gauge showing where belief actually
+  sits — reused for confidence, kind distribution and RAG. A bare "62 % sure" says less
+  than seeing the probability mass, and the mass is the pitch.
+- Palette: `ink #232433`, `wash #F5F5F8`, `indigo #4F46E5` (the brief's accent), plus
+  true RAG colours. Deliberately not the cream/terracotta or near-black/acid defaults.
+- Copy does work: the character counter explains the limit
+  ("about 1,300 tokens") rather than enforcing it silently, and a budget wait names its
+  reason with a countdown instead of showing a spinner.
+
+### Deviations from the plan
+
+1. **React 19, not 18.** `npm create vite` scaffolds 19 now; 18 would be a deliberate
+   downgrade and nothing in Section 10 needs a React 18 API.
+2. **Tailwind v4**, which configures via `@import "tailwindcss"` and an `@theme` block
+   in CSS. There is no `tailwind.config.js`; Section 5's layout is updated.
+
+### Blocked
+
+`npm install` is crawling — the registry is serving at roughly **23 KB/s** (352 KB of a
+7 MB tarball in 15 s), so `node_modules` is still empty and the project cannot be
+typechecked, built, or screenshotted yet. This is a network condition, not a broken
+install.
