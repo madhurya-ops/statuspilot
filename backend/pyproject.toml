@@ -1,0 +1,51 @@
+[project]
+name = "statuspilot-api"
+version = "0.1.0"
+description = "StatusPilot backend: transcript -> MoM, action items, RAID log, status report."
+# Vercel reads this to pick the Python runtime. Supported: 3.12 (default), 3.13, 3.14.
+# Pinned to 3.13 to match the local interpreter exactly.
+requires-python = ">=3.13,<3.14"
+dependencies = [
+    "fastapi==0.141.1",
+    "pydantic==2.13.5",
+    "pydantic-settings==2.15.0",
+    "httpx==0.28.1",
+    "openai==3.16.2",
+    "python-docx==1.2.0",
+    "openpyxl==3.1.5",
+    "fpdf2==2.8.8",
+    "python-multipart==0.0.32",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==9.1.1",
+    "pytest-asyncio==1.4.0",
+    "respx==0.23.1",
+    "ruff==0.16.8",
+    "uvicorn==0.53.0",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.ruff.lint.flake8-bugbear]
+# FastAPI's dependency-injection markers are calls in argument defaults by design.
+extend-immutable-calls = [
+    "fastapi.Depends",
+    "fastapi.Header",
+    "fastapi.Query",
+    "fastapi.Path",
+    "fastapi.Body",
+    "fastapi.File",
+    "fastapi.Form",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = "-q"
