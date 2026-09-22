@@ -13,13 +13,13 @@
    "agenda": [
     "nav refactor status",
     "search indexing performance",
-    "client demo scheduling",
-    "legacy export relevance",
-    "billing integration credentials",
+    "demo preparation",
+    "legacy export",
+    "billing integration",
     "test coverage",
     "logging noise",
-    "documentation updates",
-    "timesheet reminders",
+    "documentation",
+    "timesheets",
     "accessibility audit",
     "design system upgrade",
     "performance budget",
@@ -28,30 +28,37 @@
    ]
   },
   "discussion_points": [
-   "Nav refactor largely complete but deep link edge cases remain.",
-   "Search indexing reindex time has increased from 12 to 40 minutes.",
-   "Client demo date is uncertain; needs confirmation with the account team.",
-   "Decision made to ship basic search for the demo, with faceting postponed.",
-   "Billing integration is stalled waiting for sandbox credentials from the client.",
-   "Multiple risks identified around credential delays, contract renewal, and lack of ownership for release processes."
+   "Dan finished most of the nav refactor but has a few edge cases with deep links.",
+   "Sasha reports the search reindex time has increased from 12 to 40 minutes, possibly due to the new analyzer or disk issues.",
+   "The staging box is still on an old image and has not been repointed.",
+   "The client demo is scheduled for either the 26th or 27th, affecting the search work timeline.",
+   "Billing integration is pending sandbox credentials, with a risk of delay if credentials are not received by ~20th.",
+   "Test coverage dropped to 61% after the refactor, largely due to deleted nav tests.",
+   "Logging in production is too noisy, making issue detection difficult.",
+   "Documentation for onboarding is stale and needs updating.",
+   "Accessibility audit was never performed, it was supposed to happen in sprint 3.",
+   "The design system is still on v2 while v4 is out, with no plan to upgrade.",
+   "Performance budget was agreed but no measurement is being done.",
+   "Release process ownership is unclear if Dan is unavailable.",
+   "Search cluster cost increased, but no investigation has been done."
   ],
   "candidates": [
    {
     "id": "c1",
-    "text": "Edge cases with deep links still open after nav refactor.",
-    "kind_hint": "issue",
-    "owner": null,
+    "text": "Dan will tidy up the nav refactor on Thursday or Friday.",
+    "kind_hint": "action_item",
+    "owner": "dan",
     "due_date": null,
     "source_lines": [
      4,
      5
     ],
-    "evidence": "finished the nav refactor, mostly. couple of edge cases w/ deep links still open"
+    "evidence": "- dan: finished the nav refactor, mostly. couple of edge cases w/ deep links still open - said he'd tidy up thurs or fri, not urgent"
    },
    {
     "id": "c2",
-    "text": "Search indexing reindex time increased to 40 minutes, needs investigation.",
-    "kind_hint": "issue",
+    "text": "Investigate the cause of the increased reindex time, possibly the new analyzer or disk performance.",
+    "kind_hint": "action_item",
     "owner": null,
     "due_date": null,
     "source_lines": [
@@ -59,154 +66,72 @@
      7,
      8
     ],
-    "evidence": "reindex takes 40 min now, was 12. not sure why. maybe the new analyzer?"
+    "evidence": "- sasha: still on the search indexing thing. slower than expected - reindex takes 40 min now, was 12. not sure why. maybe the new analyzer? - maybe look at perf? could be the analyzer, could be disk. needs investigating properly at some point"
    },
    {
     "id": "c3",
-    "text": "Knowledge transfer pending with infra.",
-    "kind_hint": "discussion_only",
-    "owner": null,
-    "due_date": null,
-    "source_lines": [
-     9
-    ],
-    "evidence": "KT pending w/ infra - chk"
-   },
-   {
-    "id": "c4",
-    "text": "Staging box still on old image, needs repointing.",
-    "kind_hint": "issue",
-    "owner": null,
-    "due_date": null,
-    "source_lines": [
-     10,
-     11
-    ],
-    "evidence": "infra guy said the staging box is still on the old image. nobody has repointed it"
-   },
-   {
-    "id": "c5",
-    "text": "Demo date uncertain, need confirmation with acct team.",
-    "kind_hint": "discussion_only",
-    "owner": null,
-    "due_date": null,
-    "source_lines": [
-     12,
-     13,
-     14
-    ],
-    "evidence": "demo is 26th? or 27th. need to confirm w/ acct team"
-   },
-   {
-    "id": "c6",
-    "text": "Decision: ship basic search for demo, faceting after.",
-    "kind_hint": "decision",
-    "owner": null,
-    "due_date": null,
-    "source_lines": [
-     16
-    ],
-    "evidence": "decision: ship basic search for the demo, faceting after"
-   },
-   {
-    "id": "c7",
-    "text": "Legacy export may no longer be needed; leaving it in for now.",
-    "kind_hint": "discussion_only",
-    "owner": null,
-    "due_date": null,
-    "source_lines": [
-     17,
-     18
-    ],
-    "evidence": "dan raised - do we still need the legacy export? nobody has asked for it in months"
-   },
-   {
-    "id": "c8",
-    "text": "Action: ask client if legacy export is still needed.",
+    "text": "Confirm the client demo date with the account team.",
     "kind_hint": "action_item",
     "owner": null,
     "due_date": null,
     "source_lines": [
-     19,
-     20
+     12,
+     13
     ],
-    "evidence": "action: someone to ask the client if legacy export is still needed"
+    "evidence": "- priya joined - asked about the client demo - demo is 26th? or 27th. need to confirm w/ acct team"
    },
    {
-    "id": "c9",
-    "text": "Billing integration waiting on sandbox credentials from client.",
-    "kind_hint": "dependency",
+    "id": "c4",
+    "text": "Ship basic search for the demo, postpone faceting until after.",
+    "kind_hint": "decision",
     "owner": null,
+    "due_date": null,
+    "source_lines": [
+     15,
+     16
+    ],
+    "evidence": "- sasha said she can get basic search working by then but not the faceting - decision: ship basic search for the demo, faceting after"
+   },
+   {
+    "id": "c5",
+    "text": "Ask the client if the legacy export is still needed.",
+    "kind_hint": "action_item",
+    "owner": null,
+    "due_date": null,
+    "source_lines": [
+     18,
+     19
+    ],
+    "evidence": "- nobody knew. leaving it in for now - action: someone to ask the client if legacy export is still needed"
+   },
+   {
+    "id": "c6",
+    "text": "Sasha will chase sandbox credentials for billing integration again this week.",
+    "kind_hint": "action_item",
+    "owner": "sasha",
     "due_date": null,
     "source_lines": [
      21,
      22
     ],
-    "evidence": "billing integration - waiting on sandbox creds from their side. chased twice"
+    "evidence": "- billing integration - waiting on sandbox creds from their side. chased twice - sasha: \"i'll chase again this week\" - ok"
    },
    {
-    "id": "c10",
-    "text": "Sasha will chase sandbox credentials again this week.",
+    "id": "c7",
+    "text": "Verify that the drop in test coverage is due to deleted nav tests and not a regression.",
     "kind_hint": "action_item",
-    "owner": "sasha",
-    "due_date": "this week",
-    "source_lines": [
-     22,
-     23
-    ],
-    "evidence": "sasha: \"i'll chase again this week\" - ok"
-   },
-   {
-    "id": "c11",
-    "text": "Risk: billing slips past demo if creds not received by ~20th.",
-    "kind_hint": "risk",
-    "owner": null,
-    "due_date": null,
-    "source_lines": [
-     23,
-     24
-    ],
-    "evidence": "risk: if creds don't land by ~20th, billing slips past demo"
-   },
-   {
-    "id": "c12",
-    "text": "Contract renewal conversation may affect scope.",
-    "kind_hint": "discussion_only",
-    "owner": null,
-    "due_date": null,
-    "source_lines": [
-     24,
-     25
-    ],
-    "evidence": "also the contract renewal convo is happening in parallel, might affect scope"
-   },
-   {
-    "id": "c13",
-    "text": "Test coverage dropped to 61% after refactor.",
-    "kind_hint": "issue",
     "owner": null,
     "due_date": null,
     "source_lines": [
      26,
-     27
-    ],
-    "evidence": "test coverage is down to 61%, was 78% before the refactor"
-   },
-   {
-    "id": "c14",
-    "text": "Dan claims test drop due to old nav tests deletion.",
-    "kind_hint": "discussion_only",
-    "owner": null,
-    "due_date": null,
-    "source_lines": [
      27,
      28
     ],
-    "evidence": "dan says most of that is the old nav tests that got deleted, not real regression"
+    "evidence": "- test coverage is down to 61%, was 78% before the refactor - dan says most of that is the old nav tests that got deleted, not real regression - should probably verify that claim"
    },
    {
-    "id": "c15",
-    "text": "Logging too noisy in prod, hard to find anything.",
+    "id": "c8",
+    "text": "Investigate why logging is too noisy in production and find a solution.",
     "kind_hint": "issue",
     "owner": null,
     "due_date": null,
@@ -214,107 +139,79 @@
      29,
      30
     ],
-    "evidence": "logging is too noisy in prod, hard to find anything"
+    "evidence": "- someone mentioned the logging is too noisy in prod, hard to find anything - no owner, no date"
    },
    {
-    "id": "c16",
-    "text": "Docs stale, onboarding readme references old build script.",
-    "kind_hint": "issue",
-    "owner": null,
+    "id": "c9",
+    "text": "Sasha will update the onboarding README to reference the new build script.",
+    "kind_hint": "action_item",
+    "owner": "sasha",
     "due_date": null,
     "source_lines": [
      31,
      32
     ],
-    "evidence": "docs are stale. the onboarding readme still references the old build script"
+    "evidence": "- sasha: docs are stale. the onboarding readme still references the old build script - said she'd fix \"when i get a sec\""
    },
    {
-    "id": "c17",
-    "text": "Sasha will fix docs when she gets a sec.",
+    "id": "c10",
+    "text": "Priya will submit timesheets by Friday.",
     "kind_hint": "action_item",
-    "owner": "sasha",
-    "due_date": null,
+    "owner": "priya",
+    "due_date": "Friday",
     "source_lines": [
-     32,
      33
     ],
-    "evidence": "said she'd fix \"when i get a sec\""
+    "evidence": "priya: reminder timesheets due friday"
    },
    {
-    "id": "c18",
-    "text": "Timesheets due Friday.",
-    "kind_hint": "discussion_only",
+    "id": "c11",
+    "text": "Conduct the accessibility audit that was supposed to happen in sprint 3.",
+    "kind_hint": "action_item",
     "owner": null,
     "due_date": null,
     "source_lines": [
-     33,
-     34
-    ],
-    "evidence": "reminder timesheets due friday"
-   },
-   {
-    "id": "c19",
-    "text": "Accessibility audit never happened, was supposed to be sprint 3.",
-    "kind_hint": "discussion_only",
-    "owner": null,
-    "due_date": null,
-    "source_lines": [
-     37,
-     38
+     37
     ],
     "evidence": "accessibility audit never happened. was supposed to be sprint 3"
    },
    {
-    "id": "c20",
-    "text": "Design system upgrade stuck on v2, no plan to move to v4.",
-    "kind_hint": "discussion_only",
+    "id": "c12",
+    "text": "Plan to upgrade the design system from v2 to v4.",
+    "kind_hint": "action_item",
     "owner": null,
     "due_date": null,
     "source_lines": [
-     38,
-     39
+     38
     ],
     "evidence": "the design system upgrade - still on v2, v4 is out. no plan to move"
    },
    {
-    "id": "c21",
-    "text": "Perf budget agreed but not being measured.",
-    "kind_hint": "discussion_only",
+    "id": "c13",
+    "text": "Measure and track performance against the agreed budget.",
+    "kind_hint": "action_item",
     "owner": null,
     "due_date": null,
     "source_lines": [
-     39,
-     40
+     39
     ],
     "evidence": "perf budget was agreed but nobody is measuring it"
    },
    {
-    "id": "c22",
-    "text": "Release process ownership unclear; Dan has been owner.",
-    "kind_hint": "discussion_only",
+    "id": "c14",
+    "text": "Define and document the release process ownership beyond Dan.",
+    "kind_hint": "action_item",
     "owner": null,
     "due_date": null,
     "source_lines": [
      40,
      41
     ],
-    "evidence": "we never wrote down who owns the release process. it's just been dan every time"
+    "evidence": "- we never wrote down who owns the release process. it's just been dan every time - if dan is off it's unclear what happens"
    },
    {
-    "id": "c23",
-    "text": "40 min reindex may be acceptable for prod; need real numbers.",
-    "kind_hint": "discussion_only",
-    "owner": null,
-    "due_date": null,
-    "source_lines": [
-     42,
-     43
-    ],
-    "evidence": "the 40 min reindex might actually be fine for prod? need real numbers"
-   },
-   {
-    "id": "c24",
-    "text": "Search cluster cost increased, no investigation.",
+    "id": "c15",
+    "text": "Investigate why the cost of the search cluster has increased.",
     "kind_hint": "issue",
     "owner": null,
     "due_date": null,
@@ -322,6 +219,29 @@
      43
     ],
     "evidence": "cost of the search cluster went up, nobody has looked at why"
+   },
+   {
+    "id": "c16",
+    "text": "Risk: billing integration may slip past the demo if sandbox credentials are not received by ~20th.",
+    "kind_hint": "risk",
+    "owner": null,
+    "due_date": "~20th",
+    "source_lines": [
+     23
+    ],
+    "evidence": "risk: if creds don't land by ~20th, billing slips past demo"
+   },
+   {
+    "id": "c17",
+    "text": "Risk: contract renewal conversation may affect scope.",
+    "kind_hint": "risk",
+    "owner": null,
+    "due_date": null,
+    "source_lines": [
+     24,
+     25
+    ],
+    "evidence": "- also the contract renewal convo is happening in parallel, might affect scope - not our problem directly but worth knowing"
    }
   ],
   "lines": [
@@ -547,62 +467,62 @@
    {
     "candidate": {
      "id": "c1",
-     "text": "Edge cases with deep links still open after nav refactor.",
-     "kind_hint": "issue",
-     "owner": null,
+     "text": "Dan will tidy up the nav refactor on Thursday or Friday.",
+     "kind_hint": "action_item",
+     "owner": "dan",
      "due_date": null,
      "source_lines": [
       4,
       5
      ],
-     "evidence": "finished the nav refactor, mostly. couple of edge cases w/ deep links still open"
+     "evidence": "- dan: finished the nav refactor, mostly. couple of edge cases w/ deep links still open - said he'd tidy up thurs or fri, not urgent"
     },
     "kind": {
      "label": "action_item",
-     "confidence": 0.45,
+     "confidence": 1.0,
      "probabilities": {
-      "discussion_only": 0.01,
-      "action_item": 0.54,
-      "decision": 0.0,
-      "risk": 0.0,
+      "assumption": 0.0,
+      "issue": 0.0,
+      "discussion_only": 0.0,
+      "action_item": 1.0,
       "dependency": 0.0,
-      "issue": 0.45,
-      "assumption": 0.0
+      "decision": 0.0,
+      "risk": 0.0
      },
      "value": null
     },
     "severity": {
      "label": "Low",
-     "confidence": 0.35,
+     "confidence": 0.83,
      "probabilities": {
-      "0": 0.57,
-      "1": 0.43,
+      "0": 0.89,
+      "1": 0.11,
       "2": 0.0
      },
-     "value": 0.43
+     "value": 0.11
     },
     "audience": {
-     "label": "internal_only",
-     "confidence": 0.67,
+     "label": "client_safe",
+     "confidence": 0.8,
      "probabilities": {
-      "client_safe": 0.83,
-      "internal_only": 0.17
+      "client_safe": 0.9,
+      "internal_only": 0.1
      },
      "value": null
     },
-    "severity_value": 0.43,
-    "owner_explicit": 0.29,
-    "due_explicit": 0.26,
-    "owner_status": "not_specified",
-    "due_status": "not_specified",
-    "routing": "review",
+    "severity_value": 0.11,
+    "owner_explicit": 0.93,
+    "due_explicit": 0.83,
+    "owner_status": "stated",
+    "due_status": "stated",
+    "routing": "auto",
     "engine": "jev"
    },
    {
     "candidate": {
      "id": "c2",
-     "text": "Search indexing reindex time increased to 40 minutes, needs investigation.",
-     "kind_hint": "issue",
+     "text": "Investigate the cause of the increased reindex time, possibly the new analyzer or disk performance.",
+     "kind_hint": "action_item",
      "owner": null,
      "due_date": null,
      "source_lines": [
@@ -610,19 +530,19 @@
       7,
       8
      ],
-     "evidence": "reindex takes 40 min now, was 12. not sure why. maybe the new analyzer?"
+     "evidence": "- sasha: still on the search indexing thing. slower than expected - reindex takes 40 min now, was 12. not sure why. maybe the new analyzer? - maybe look at perf? could be the analyzer, could be disk. needs investigating properly at some point"
     },
     "kind": {
      "label": "issue",
-     "confidence": 0.99,
+     "confidence": 0.83,
      "probabilities": {
-      "assumption": 0.0,
-      "risk": 0.0,
-      "issue": 0.99,
-      "action_item": 0.01,
       "dependency": 0.0,
-      "discussion_only": 0.0,
-      "decision": 0.0
+      "discussion_only": 0.01,
+      "action_item": 0.13,
+      "assumption": 0.0,
+      "decision": 0.0,
+      "risk": 0.0,
+      "issue": 0.86
      },
      "value": null
     },
@@ -638,15 +558,15 @@
     },
     "audience": {
      "label": "internal_only",
-     "confidence": 0.6,
+     "confidence": 0.55,
      "probabilities": {
-      "client_safe": 0.8,
-      "internal_only": 0.2
+      "client_safe": 0.78,
+      "internal_only": 0.22
      },
      "value": null
     },
     "severity_value": 1.02,
-    "owner_explicit": 0.04,
+    "owner_explicit": 0.25,
     "due_explicit": 0.03,
     "owner_status": "not_specified",
     "due_status": "not_specified",
@@ -656,51 +576,52 @@
    {
     "candidate": {
      "id": "c3",
-     "text": "Knowledge transfer pending with infra.",
-     "kind_hint": "discussion_only",
+     "text": "Confirm the client demo date with the account team.",
+     "kind_hint": "action_item",
      "owner": null,
      "due_date": null,
      "source_lines": [
-      9
+      12,
+      13
      ],
-     "evidence": "KT pending w/ infra - chk"
+     "evidence": "- priya joined - asked about the client demo - demo is 26th? or 27th. need to confirm w/ acct team"
     },
     "kind": {
-     "label": "dependency",
-     "confidence": 0.97,
+     "label": "action_item",
+     "confidence": 0.55,
      "probabilities": {
-      "discussion_only": 0.0,
+      "discussion_only": 0.01,
+      "action_item": 0.61,
       "decision": 0.0,
-      "action_item": 0.02,
-      "dependency": 0.98,
-      "assumption": 0.0,
-      "risk": 0.0,
-      "issue": 0.0
+      "risk": 0.01,
+      "dependency": 0.36,
+      "issue": 0.0,
+      "assumption": 0.01
      },
      "value": null
     },
     "severity": {
-     "label": "Medium",
-     "confidence": 0.79,
+     "label": "High",
+     "confidence": 0.48,
      "probabilities": {
       "0": 0.01,
-      "1": 0.86,
-      "2": 0.13
+      "1": 0.34,
+      "2": 0.65
      },
-     "value": 1.12
+     "value": 1.65
     },
     "audience": {
      "label": "internal_only",
-     "confidence": 0.37,
+     "confidence": 0.26,
      "probabilities": {
-      "client_safe": 0.68,
-      "internal_only": 0.32
+      "internal_only": 0.37,
+      "client_safe": 0.63
      },
      "value": null
     },
-    "severity_value": 1.12,
-    "owner_explicit": 0.04,
-    "due_explicit": 0.02,
+    "severity_value": 1.65,
+    "owner_explicit": 0.06,
+    "due_explicit": 0.17,
     "owner_status": "not_specified",
     "due_status": "not_specified",
     "routing": "review",
@@ -709,107 +630,106 @@
    {
     "candidate": {
      "id": "c4",
-     "text": "Staging box still on old image, needs repointing.",
-     "kind_hint": "issue",
+     "text": "Ship basic search for the demo, postpone faceting until after.",
+     "kind_hint": "decision",
      "owner": null,
      "due_date": null,
      "source_lines": [
-      10,
-      11
+      15,
+      16
      ],
-     "evidence": "infra guy said the staging box is still on the old image. nobody has repointed it"
+     "evidence": "- sasha said she can get basic search working by then but not the faceting - decision: ship basic search for the demo, faceting after"
     },
     "kind": {
-     "label": "issue",
-     "confidence": 0.81,
+     "label": "decision",
+     "confidence": 1.0,
      "probabilities": {
+      "dependency": 0.0,
       "risk": 0.0,
-      "issue": 0.84,
-      "decision": 0.0,
       "assumption": 0.0,
-      "dependency": 0.05,
-      "action_item": 0.11,
+      "issue": 0.0,
+      "decision": 1.0,
+      "action_item": 0.0,
       "discussion_only": 0.0
      },
      "value": null
     },
     "severity": {
      "label": "Medium",
-     "confidence": 0.74,
+     "confidence": 0.57,
      "probabilities": {
-      "0": 0.01,
-      "1": 0.83,
-      "2": 0.16
+      "0": 0.03,
+      "1": 0.72,
+      "2": 0.25
      },
-     "value": 1.15
+     "value": 1.22
     },
     "audience": {
      "label": "internal_only",
-     "confidence": 0.03,
+     "confidence": 0.63,
      "probabilities": {
-      "internal_only": 0.51,
-      "client_safe": 0.49
+      "client_safe": 0.81,
+      "internal_only": 0.19
      },
      "value": null
     },
-    "severity_value": 1.15,
-    "owner_explicit": 0.05,
-    "due_explicit": 0.03,
-    "owner_status": "not_specified",
+    "severity_value": 1.22,
+    "owner_explicit": 0.45,
+    "due_explicit": 0.1,
+    "owner_status": "inferred",
     "due_status": "not_specified",
-    "routing": "review",
+    "routing": "suggested",
     "engine": "jev"
    },
    {
     "candidate": {
      "id": "c5",
-     "text": "Demo date uncertain, need confirmation with acct team.",
-     "kind_hint": "discussion_only",
+     "text": "Ask the client if the legacy export is still needed.",
+     "kind_hint": "action_item",
      "owner": null,
      "due_date": null,
      "source_lines": [
-      12,
-      13,
-      14
+      18,
+      19
      ],
-     "evidence": "demo is 26th? or 27th. need to confirm w/ acct team"
+     "evidence": "- nobody knew. leaving it in for now - action: someone to ask the client if legacy export is still needed"
     },
     "kind": {
-     "label": "dependency",
-     "confidence": 0.83,
+     "label": "action_item",
+     "confidence": 0.99,
      "probabilities": {
-      "risk": 0.01,
       "issue": 0.0,
-      "dependency": 0.87,
+      "action_item": 0.99,
+      "risk": 0.0,
+      "assumption": 0.0,
       "decision": 0.0,
-      "action_item": 0.08,
-      "assumption": 0.03,
-      "discussion_only": 0.01
+      "discussion_only": 0.0,
+      "dependency": 0.01
      },
      "value": null
     },
     "severity": {
-     "label": "High",
-     "confidence": 0.29,
+     "label": "Medium",
+     "confidence": 0.33,
      "probabilities": {
-      "0": 0.0,
-      "1": 0.47,
-      "2": 0.53
+      "0": 0.44,
+      "1": 0.56,
+      "2": 0.0
      },
-     "value": 1.53
+     "value": 0.56
     },
     "audience": {
      "label": "internal_only",
-     "confidence": 0.41,
+     "confidence": 0.44,
      "probabilities": {
-      "internal_only": 0.3,
-      "client_safe": 0.7
+      "internal_only": 0.28,
+      "client_safe": 0.72
      },
      "value": null
     },
-    "severity_value": 1.53,
-    "owner_explicit": 0.04,
-    "due_explicit": 0.34,
+    "severity_value": 0.56,
+    "owner_explicit": 0.03,
+    "due_explicit": 0.03,
     "owner_status": "not_specified",
     "due_status": "not_specified",
     "routing": "review",
@@ -818,105 +738,107 @@
    {
     "candidate": {
      "id": "c6",
-     "text": "Decision: ship basic search for demo, faceting after.",
-     "kind_hint": "decision",
-     "owner": null,
+     "text": "Sasha will chase sandbox credentials for billing integration again this week.",
+     "kind_hint": "action_item",
+     "owner": "sasha",
      "due_date": null,
      "source_lines": [
-      16
+      21,
+      22
      ],
-     "evidence": "decision: ship basic search for the demo, faceting after"
+     "evidence": "- billing integration - waiting on sandbox creds from their side. chased twice - sasha: \"i'll chase again this week\" - ok"
     },
     "kind": {
-     "label": "decision",
-     "confidence": 1.0,
+     "label": "action_item",
+     "confidence": 0.83,
      "probabilities": {
-      "decision": 1.0,
-      "action_item": 0.0,
-      "risk": 0.0,
-      "assumption": 0.0,
-      "issue": 0.0,
+      "action_item": 0.86,
       "discussion_only": 0.0,
-      "dependency": 0.0
+      "issue": 0.0,
+      "assumption": 0.0,
+      "dependency": 0.14,
+      "risk": 0.0,
+      "decision": 0.0
      },
      "value": null
     },
     "severity": {
-     "label": "Medium",
-     "confidence": 0.51,
+     "label": "High",
+     "confidence": 0.52,
      "probabilities": {
-      "0": 0.05,
-      "1": 0.67,
-      "2": 0.28
+      "0": 0.0,
+      "1": 0.32,
+      "2": 0.68
      },
-     "value": 1.23
+     "value": 1.68
     },
     "audience": {
      "label": "internal_only",
-     "confidence": 0.63,
+     "confidence": 0.37,
      "probabilities": {
-      "internal_only": 0.19,
-      "client_safe": 0.81
+      "internal_only": 0.32,
+      "client_safe": 0.68
      },
      "value": null
     },
-    "severity_value": 1.23,
-    "owner_explicit": 0.03,
-    "due_explicit": 0.05,
-    "owner_status": "not_specified",
+    "severity_value": 1.68,
+    "owner_explicit": 0.95,
+    "due_explicit": 0.21,
+    "owner_status": "stated",
     "due_status": "not_specified",
-    "routing": "suggested",
+    "routing": "review",
     "engine": "jev"
    },
    {
     "candidate": {
      "id": "c7",
-     "text": "Legacy export may no longer be needed; leaving it in for now.",
-     "kind_hint": "discussion_only",
+     "text": "Verify that the drop in test coverage is due to deleted nav tests and not a regression.",
+     "kind_hint": "action_item",
      "owner": null,
      "due_date": null,
      "source_lines": [
-      17,
-      18
+      26,
+      27,
+      28
      ],
-     "evidence": "dan raised - do we still need the legacy export? nobody has asked for it in months"
+     "evidence": "- test coverage is down to 61%, was 78% before the refactor - dan says most of that is the old nav tests that got deleted, not real regression - should probably verify that claim"
     },
     "kind": {
      "label": "action_item",
-     "confidence": 0.38,
+     "confidence": 0.4,
      "probabilities": {
+      "decision": 0.0,
       "risk": 0.01,
-      "issue": 0.01,
-      "decision": 0.27,
-      "assumption": 0.05,
-      "action_item": 0.45999999999999996,
-      "dependency": 0.02,
-      "discussion_only": 0.18
+      "assumption": 0.44,
+      "dependency": 0.0,
+      "discussion_only": 0.01,
+      "action_item": 0.49,
+      "issue": 0.05
      },
      "value": null
     },
     "severity": {
-     "label": "Low",
-     "confidence": 0.58,
+     "label": "Medium",
+     "confidence": 0.8,
      "probabilities": {
-      "0": 0.73,
-      "1": 0.27,
-      "2": 0.0
+      "0": 0.13,
+      "1": 0.86,
+      "2": 0.01
      },
-     "value": 0.28
+     "value": 0.88
     },
     "audience": {
      "label": "internal_only",
-     "confidence": 0.09,
+     "confidence": 0.45,
      "probabilities": {
-      "internal_only": 0.46,
-      "client_safe": 0.54
+      "client_safe": 0.73,
+      "internal_only": 0.27
      },
      "value": null
     },
-    "severity_value": 0.28,
-    "owner_explicit": 0.08,
-    "due_explicit": 0.03,
+    "severity_value": 0.88,
+    "owner_explicit": 0.07,
+    "due_explicit": 0.02,
     "owner_status": "not_specified",
     "due_status": "not_specified",
     "routing": "review",
@@ -925,105 +847,51 @@
    {
     "candidate": {
      "id": "c8",
-     "text": "Action: ask client if legacy export is still needed.",
-     "kind_hint": "action_item",
+     "text": "Investigate why logging is too noisy in production and find a solution.",
+     "kind_hint": "issue",
      "owner": null,
      "due_date": null,
      "source_lines": [
-      19,
-      20
+      29,
+      30
      ],
-     "evidence": "action: someone to ask the client if legacy export is still needed"
+     "evidence": "- someone mentioned the logging is too noisy in prod, hard to find anything - no owner, no date"
     },
     "kind": {
-     "label": "action_item",
-     "confidence": 0.99,
+     "label": "issue",
+     "confidence": 0.9,
      "probabilities": {
-      "action_item": 1.0,
-      "discussion_only": 0.0,
-      "assumption": 0.0,
       "dependency": 0.0,
-      "issue": 0.0,
+      "discussion_only": 0.01,
+      "action_item": 0.08,
+      "issue": 0.91,
       "decision": 0.0,
-      "risk": 0.0
+      "risk": 0.0,
+      "assumption": 0.0
      },
      "value": null
     },
     "severity": {
      "label": "Medium",
-     "confidence": 0.37,
+     "confidence": 0.9,
      "probabilities": {
-      "0": 0.42,
-      "1": 0.57,
+      "0": 0.06,
+      "1": 0.9299999999999999,
       "2": 0.01
      },
-     "value": 0.59
+     "value": 0.95
     },
     "audience": {
      "label": "internal_only",
-     "confidence": 0.57,
+     "confidence": 0.41,
      "probabilities": {
-      "client_safe": 0.78,
-      "internal_only": 0.22
+      "client_safe": 0.71,
+      "internal_only": 0.29
      },
      "value": null
     },
-    "severity_value": 0.59,
+    "severity_value": 0.95,
     "owner_explicit": 0.03,
-    "due_explicit": 0.02,
-    "owner_status": "not_specified",
-    "due_status": "not_specified",
-    "routing": "suggested",
-    "engine": "jev"
-   },
-   {
-    "candidate": {
-     "id": "c9",
-     "text": "Billing integration waiting on sandbox credentials from client.",
-     "kind_hint": "dependency",
-     "owner": null,
-     "due_date": null,
-     "source_lines": [
-      21,
-      22
-     ],
-     "evidence": "billing integration - waiting on sandbox creds from their side. chased twice"
-    },
-    "kind": {
-     "label": "dependency",
-     "confidence": 0.99,
-     "probabilities": {
-      "discussion_only": 0.0,
-      "decision": 0.0,
-      "assumption": 0.0,
-      "risk": 0.0,
-      "issue": 0.0,
-      "dependency": 1.0,
-      "action_item": 0.0
-     },
-     "value": null
-    },
-    "severity": {
-     "label": "High",
-     "confidence": 0.7,
-     "probabilities": {
-      "0": 0.0,
-      "1": 0.2,
-      "2": 0.8
-     },
-     "value": 1.8
-    },
-    "audience": {
-     "label": "internal_only",
-     "confidence": 0.31,
-     "probabilities": {
-      "internal_only": 0.34,
-      "client_safe": 0.66
-     },
-     "value": null
-    },
-    "severity_value": 1.8,
-    "owner_explicit": 0.05,
     "due_explicit": 0.03,
     "owner_status": "not_specified",
     "due_status": "not_specified",
@@ -1032,159 +900,210 @@
    },
    {
     "candidate": {
-     "id": "c10",
-     "text": "Sasha will chase sandbox credentials again this week.",
+     "id": "c9",
+     "text": "Sasha will update the onboarding README to reference the new build script.",
      "kind_hint": "action_item",
      "owner": "sasha",
-     "due_date": "this week",
+     "due_date": null,
      "source_lines": [
-      22,
-      23
+      31,
+      32
      ],
-     "evidence": "sasha: \"i'll chase again this week\" - ok"
+     "evidence": "- sasha: docs are stale. the onboarding readme still references the old build script - said she'd fix \"when i get a sec\""
+    },
+    "kind": {
+     "label": "action_item",
+     "confidence": 0.97,
+     "probabilities": {
+      "risk": 0.0,
+      "issue": 0.02,
+      "decision": 0.0,
+      "assumption": 0.0,
+      "discussion_only": 0.0,
+      "action_item": 0.98,
+      "dependency": 0.0
+     },
+     "value": null
+    },
+    "severity": {
+     "label": "Low",
+     "confidence": 0.48,
+     "probabilities": {
+      "0": 0.65,
+      "1": 0.35,
+      "2": 0.0
+     },
+     "value": 0.35
+    },
+    "audience": {
+     "label": "internal_only",
+     "confidence": 0.25,
+     "probabilities": {
+      "internal_only": 0.37,
+      "client_safe": 0.63
+     },
+     "value": null
+    },
+    "severity_value": 0.35,
+    "owner_explicit": 0.87,
+    "due_explicit": 0.03,
+    "owner_status": "stated",
+    "due_status": "not_specified",
+    "routing": "review",
+    "engine": "jev"
+   },
+   {
+    "candidate": {
+     "id": "c10",
+     "text": "Priya will submit timesheets by Friday.",
+     "kind_hint": "action_item",
+     "owner": "priya",
+     "due_date": "Friday",
+     "source_lines": [
+      33
+     ],
+     "evidence": "priya: reminder timesheets due friday"
     },
     "kind": {
      "label": "action_item",
      "confidence": 0.94,
      "probabilities": {
-      "dependency": 0.05,
-      "action_item": 0.95,
-      "discussion_only": 0.0,
+      "discussion_only": 0.05,
       "risk": 0.0,
+      "decision": 0.0,
+      "action_item": 0.95,
+      "dependency": 0.0,
       "assumption": 0.0,
-      "issue": 0.0,
-      "decision": 0.0
+      "issue": 0.0
      },
      "value": null
     },
     "severity": {
-     "label": "High",
-     "confidence": 0.6,
+     "label": "Low",
+     "confidence": 0.93,
      "probabilities": {
-      "0": 0.0,
-      "1": 0.27,
-      "2": 0.73
+      "0": 0.96,
+      "1": 0.04,
+      "2": 0.0
      },
-     "value": 1.73
+     "value": 0.05
     },
     "audience": {
      "label": "internal_only",
-     "confidence": 0.31,
+     "confidence": 0.59,
      "probabilities": {
-      "client_safe": 0.65,
-      "internal_only": 0.35
+      "internal_only": 0.2,
+      "client_safe": 0.8
      },
      "value": null
     },
-    "severity_value": 1.73,
-    "owner_explicit": 0.83,
-    "due_explicit": 0.74,
+    "severity_value": 0.05,
+    "owner_explicit": 0.78,
+    "due_explicit": 0.98,
     "owner_status": "stated",
+    "due_status": "stated",
+    "routing": "suggested",
+    "engine": "jev"
+   },
+   {
+    "candidate": {
+     "id": "c11",
+     "text": "Conduct the accessibility audit that was supposed to happen in sprint 3.",
+     "kind_hint": "action_item",
+     "owner": null,
+     "due_date": null,
+     "source_lines": [
+      37
+     ],
+     "evidence": "accessibility audit never happened. was supposed to be sprint 3"
+    },
+    "kind": {
+     "label": "issue",
+     "confidence": 0.75,
+     "probabilities": {
+      "dependency": 0.0,
+      "risk": 0.0,
+      "assumption": 0.0,
+      "issue": 0.78,
+      "decision": 0.0,
+      "discussion_only": 0.01,
+      "action_item": 0.21
+     },
+     "value": null
+    },
+    "severity": {
+     "label": "Medium",
+     "confidence": 0.37,
+     "probabilities": {
+      "0": 0.0,
+      "1": 0.58,
+      "2": 0.42
+     },
+     "value": 1.41
+    },
+    "audience": {
+     "label": "internal_only",
+     "confidence": 0.16,
+     "probabilities": {
+      "client_safe": 0.58,
+      "internal_only": 0.42
+     },
+     "value": null
+    },
+    "severity_value": 1.41,
+    "owner_explicit": 0.02,
+    "due_explicit": 0.56,
+    "owner_status": "not_specified",
     "due_status": "inferred",
     "routing": "review",
     "engine": "jev"
    },
    {
     "candidate": {
-     "id": "c11",
-     "text": "Risk: billing slips past demo if creds not received by ~20th.",
-     "kind_hint": "risk",
-     "owner": null,
-     "due_date": null,
-     "source_lines": [
-      23,
-      24
-     ],
-     "evidence": "risk: if creds don't land by ~20th, billing slips past demo"
-    },
-    "kind": {
-     "label": "risk",
-     "confidence": 0.99,
-     "probabilities": {
-      "assumption": 0.0,
-      "issue": 0.0,
-      "decision": 0.0,
-      "risk": 0.99,
-      "discussion_only": 0.0,
-      "dependency": 0.01,
-      "action_item": 0.0
-     },
-     "value": null
-    },
-    "severity": {
-     "label": "High",
-     "confidence": 0.61,
-     "probabilities": {
-      "0": 0.0,
-      "1": 0.26,
-      "2": 0.74
-     },
-     "value": 1.74
-    },
-    "audience": {
-     "label": "internal_only",
-     "confidence": 0.35,
-     "probabilities": {
-      "client_safe": 0.67,
-      "internal_only": 0.33
-     },
-     "value": null
-    },
-    "severity_value": 1.74,
-    "owner_explicit": 0.03,
-    "due_explicit": 0.86,
-    "owner_status": "not_specified",
-    "due_status": "stated",
-    "routing": "review",
-    "engine": "jev"
-   },
-   {
-    "candidate": {
      "id": "c12",
-     "text": "Contract renewal conversation may affect scope.",
-     "kind_hint": "discussion_only",
+     "text": "Plan to upgrade the design system from v2 to v4.",
+     "kind_hint": "action_item",
      "owner": null,
      "due_date": null,
      "source_lines": [
-      24,
-      25
+      38
      ],
-     "evidence": "also the contract renewal convo is happening in parallel, might affect scope"
+     "evidence": "the design system upgrade - still on v2, v4 is out. no plan to move"
     },
     "kind": {
-     "label": "risk",
-     "confidence": 0.92,
+     "label": "issue",
+     "confidence": 0.9,
      "probabilities": {
-      "dependency": 0.02,
-      "assumption": 0.0,
       "action_item": 0.0,
-      "decision": 0.0,
-      "discussion_only": 0.04,
-      "risk": 0.94,
-      "issue": 0.0
+      "assumption": 0.0,
+      "risk": 0.01,
+      "decision": 0.02,
+      "issue": 0.92,
+      "discussion_only": 0.05,
+      "dependency": 0.0
      },
      "value": null
     },
     "severity": {
      "label": "Medium",
-     "confidence": 0.83,
+     "confidence": 0.63,
      "probabilities": {
-      "0": 0.04,
-      "1": 0.89,
-      "2": 0.07
+      "0": 0.21,
+      "1": 0.75,
+      "2": 0.04
      },
-     "value": 1.03
+     "value": 0.83
     },
     "audience": {
      "label": "internal_only",
-     "confidence": 0.37,
+     "confidence": 0.27,
      "probabilities": {
-      "internal_only": 0.31,
-      "client_safe": 0.69
+      "client_safe": 0.37,
+      "internal_only": 0.63
      },
      "value": null
     },
-    "severity_value": 1.03,
+    "severity_value": 0.83,
     "owner_explicit": 0.03,
     "due_explicit": 0.03,
     "owner_status": "not_specified",
@@ -1195,105 +1114,104 @@
    {
     "candidate": {
      "id": "c13",
-     "text": "Test coverage dropped to 61% after refactor.",
-     "kind_hint": "issue",
+     "text": "Measure and track performance against the agreed budget.",
+     "kind_hint": "action_item",
      "owner": null,
      "due_date": null,
      "source_lines": [
-      26,
-      27
+      39
      ],
-     "evidence": "test coverage is down to 61%, was 78% before the refactor"
+     "evidence": "perf budget was agreed but nobody is measuring it"
     },
     "kind": {
      "label": "issue",
-     "confidence": 0.82,
+     "confidence": 0.87,
      "probabilities": {
+      "assumption": 0.0,
       "dependency": 0.0,
+      "issue": 0.9,
       "risk": 0.0,
-      "assumption": 0.03,
-      "issue": 0.86,
       "decision": 0.0,
-      "action_item": 0.01,
-      "discussion_only": 0.1
+      "discussion_only": 0.0,
+      "action_item": 0.1
      },
      "value": null
     },
     "severity": {
-     "label": "Medium",
-     "confidence": 0.96,
+     "label": "High",
+     "confidence": 0.75,
      "probabilities": {
-      "0": 0.01,
-      "1": 0.98,
-      "2": 0.01
+      "0": 0.0,
+      "1": 0.16,
+      "2": 0.84
      },
-     "value": 1.0
+     "value": 1.83
     },
     "audience": {
      "label": "internal_only",
-     "confidence": 0.62,
+     "confidence": 0.12,
      "probabilities": {
-      "client_safe": 0.81,
-      "internal_only": 0.19
+      "client_safe": 0.44,
+      "internal_only": 0.56
      },
      "value": null
     },
-    "severity_value": 1.0,
-    "owner_explicit": 0.02,
+    "severity_value": 1.83,
+    "owner_explicit": 0.03,
     "due_explicit": 0.02,
     "owner_status": "not_specified",
     "due_status": "not_specified",
-    "routing": "suggested",
+    "routing": "review",
     "engine": "jev"
    },
    {
     "candidate": {
      "id": "c14",
-     "text": "Dan claims test drop due to old nav tests deletion.",
-     "kind_hint": "discussion_only",
+     "text": "Define and document the release process ownership beyond Dan.",
+     "kind_hint": "action_item",
      "owner": null,
      "due_date": null,
      "source_lines": [
-      27,
-      28
+      40,
+      41
      ],
-     "evidence": "dan says most of that is the old nav tests that got deleted, not real regression"
+     "evidence": "- we never wrote down who owns the release process. it's just been dan every time - if dan is off it's unclear what happens"
     },
     "kind": {
-     "label": "assumption",
-     "confidence": 0.89,
+     "label": "action_item",
+     "confidence": 0.45,
      "probabilities": {
+      "discussion_only": 0.0,
+      "issue": 0.26,
       "decision": 0.0,
-      "issue": 0.04,
-      "risk": 0.0,
-      "discussion_only": 0.04,
+      "action_item": 0.54,
+      "assumption": 0.0,
       "dependency": 0.0,
-      "action_item": 0.02,
-      "assumption": 0.9
+      "risk": 0.2
      },
      "value": null
     },
     "severity": {
      "label": "Medium",
-     "confidence": 0.89,
+     "confidence": 0.64,
      "probabilities": {
-      "0": 0.07,
-      "1": 0.92,
-      "2": 0.01
+      "0": 0.0,
+      "1": 0.76,
+      "2": 0.24
      },
-     "value": 0.94
+     "value": 1.23
     },
     "audience": {
      "label": "internal_only",
-     "confidence": 0.05,
+     "confidence": 0.01,
      "probabilities": {
-      "client_safe": 0.53,
-      "internal_only": 0.47
+      "internal_only": 0.51,
+      "client_safe": 0.49
      },
      "value": null
     },
-    "severity_value": 0.94,
-    "owner_explicit": 0.09,
+    "severity_value": 1.23,
+    "owner_explicit": 0.24,
     "due_explicit": 0.02,
     "owner_status": "not_specified",
     "due_status": "not_specified",
@@ -1303,493 +1221,7 @@
    {
     "candidate": {
      "id": "c15",
-     "text": "Logging too noisy in prod, hard to find anything.",
-     "kind_hint": "issue",
-     "owner": null,
-     "due_date": null,
-     "source_lines": [
-      29,
-      30
-     ],
-     "evidence": "logging is too noisy in prod, hard to find anything"
-    },
-    "kind": {
-     "label": "issue",
-     "confidence": 0.99,
-     "probabilities": {
-      "decision": 0.0,
-      "issue": 0.99,
-      "action_item": 0.0,
-      "discussion_only": 0.01,
-      "risk": 0.0,
-      "assumption": 0.0,
-      "dependency": 0.0
-     },
-     "value": null
-    },
-    "severity": {
-     "label": "Medium",
-     "confidence": 0.9,
-     "probabilities": {
-      "0": 0.06,
-      "1": 0.93,
-      "2": 0.01
-     },
-     "value": 0.95
-    },
-    "audience": {
-     "label": "internal_only",
-     "confidence": 0.68,
-     "probabilities": {
-      "client_safe": 0.84,
-      "internal_only": 0.16
-     },
-     "value": null
-    },
-    "severity_value": 0.95,
-    "owner_explicit": 0.02,
-    "due_explicit": 0.02,
-    "owner_status": "not_specified",
-    "due_status": "not_specified",
-    "routing": "suggested",
-    "engine": "jev"
-   },
-   {
-    "candidate": {
-     "id": "c16",
-     "text": "Docs stale, onboarding readme references old build script.",
-     "kind_hint": "issue",
-     "owner": null,
-     "due_date": null,
-     "source_lines": [
-      31,
-      32
-     ],
-     "evidence": "docs are stale. the onboarding readme still references the old build script"
-    },
-    "kind": {
-     "label": "action_item",
-     "confidence": 0.75,
-     "probabilities": {
-      "discussion_only": 0.0,
-      "risk": 0.0,
-      "action_item": 0.79,
-      "assumption": 0.0,
-      "dependency": 0.0,
-      "decision": 0.0,
-      "issue": 0.21
-     },
-     "value": null
-    },
-    "severity": {
-     "label": "Medium",
-     "confidence": 0.48,
-     "probabilities": {
-      "0": 0.35,
-      "1": 0.65,
-      "2": 0.0
-     },
-     "value": 0.65
-    },
-    "audience": {
-     "label": "internal_only",
-     "confidence": 0.56,
-     "probabilities": {
-      "internal_only": 0.22,
-      "client_safe": 0.78
-     },
-     "value": null
-    },
-    "severity_value": 0.65,
-    "owner_explicit": 0.05,
-    "due_explicit": 0.02,
-    "owner_status": "not_specified",
-    "due_status": "not_specified",
-    "routing": "suggested",
-    "engine": "jev"
-   },
-   {
-    "candidate": {
-     "id": "c17",
-     "text": "Sasha will fix docs when she gets a sec.",
-     "kind_hint": "action_item",
-     "owner": "sasha",
-     "due_date": null,
-     "source_lines": [
-      32,
-      33
-     ],
-     "evidence": "said she'd fix \"when i get a sec\""
-    },
-    "kind": {
-     "label": "action_item",
-     "confidence": 0.98,
-     "probabilities": {
-      "assumption": 0.0,
-      "decision": 0.0,
-      "discussion_only": 0.01,
-      "risk": 0.0,
-      "dependency": 0.0,
-      "issue": 0.01,
-      "action_item": 0.98
-     },
-     "value": null
-    },
-    "severity": {
-     "label": "Medium",
-     "confidence": 0.26,
-     "probabilities": {
-      "0": 0.49,
-      "1": 0.51,
-      "2": 0.0
-     },
-     "value": 0.51
-    },
-    "audience": {
-     "label": "internal_only",
-     "confidence": 0.29,
-     "probabilities": {
-      "client_safe": 0.35,
-      "internal_only": 0.65
-     },
-     "value": null
-    },
-    "severity_value": 0.51,
-    "owner_explicit": 0.38,
-    "due_explicit": 0.02,
-    "owner_status": "inferred",
-    "due_status": "not_specified",
-    "routing": "review",
-    "engine": "jev"
-   },
-   {
-    "candidate": {
-     "id": "c18",
-     "text": "Timesheets due Friday.",
-     "kind_hint": "discussion_only",
-     "owner": null,
-     "due_date": null,
-     "source_lines": [
-      33,
-      34
-     ],
-     "evidence": "reminder timesheets due friday"
-    },
-    "kind": {
-     "label": "discussion_only",
-     "confidence": 0.55,
-     "probabilities": {
-      "discussion_only": 0.62,
-      "risk": 0.02,
-      "assumption": 0.0,
-      "dependency": 0.0,
-      "action_item": 0.36,
-      "decision": 0.0,
-      "issue": 0.0
-     },
-     "value": null
-    },
-    "severity": {
-     "label": "Low",
-     "confidence": 0.9,
-     "probabilities": {
-      "0": 0.94,
-      "1": 0.06,
-      "2": 0.0
-     },
-     "value": 0.06
-    },
-    "audience": {
-     "label": "internal_only",
-     "confidence": 0.34,
-     "probabilities": {
-      "client_safe": 0.67,
-      "internal_only": 0.33
-     },
-     "value": null
-    },
-    "severity_value": 0.06,
-    "owner_explicit": 0.06,
-    "due_explicit": 0.97,
-    "owner_status": "not_specified",
-    "due_status": "stated",
-    "routing": "review",
-    "engine": "jev"
-   },
-   {
-    "candidate": {
-     "id": "c19",
-     "text": "Accessibility audit never happened, was supposed to be sprint 3.",
-     "kind_hint": "discussion_only",
-     "owner": null,
-     "due_date": null,
-     "source_lines": [
-      37,
-      38
-     ],
-     "evidence": "accessibility audit never happened. was supposed to be sprint 3"
-    },
-    "kind": {
-     "label": "issue",
-     "confidence": 0.97,
-     "probabilities": {
-      "discussion_only": 0.01,
-      "dependency": 0.0,
-      "action_item": 0.02,
-      "decision": 0.0,
-      "assumption": 0.0,
-      "risk": 0.0,
-      "issue": 0.97
-     },
-     "value": null
-    },
-    "severity": {
-     "label": "High",
-     "confidence": 0.27,
-     "probabilities": {
-      "0": 0.0,
-      "1": 0.48,
-      "2": 0.52
-     },
-     "value": 1.52
-    },
-    "audience": {
-     "label": "internal_only",
-     "confidence": 0.06,
-     "probabilities": {
-      "internal_only": 0.53,
-      "client_safe": 0.47
-     },
-     "value": null
-    },
-    "severity_value": 1.52,
-    "owner_explicit": 0.02,
-    "due_explicit": 0.57,
-    "owner_status": "not_specified",
-    "due_status": "inferred",
-    "routing": "review",
-    "engine": "jev"
-   },
-   {
-    "candidate": {
-     "id": "c20",
-     "text": "Design system upgrade stuck on v2, no plan to move to v4.",
-     "kind_hint": "discussion_only",
-     "owner": null,
-     "due_date": null,
-     "source_lines": [
-      38,
-      39
-     ],
-     "evidence": "the design system upgrade - still on v2, v4 is out. no plan to move"
-    },
-    "kind": {
-     "label": "issue",
-     "confidence": 0.97,
-     "probabilities": {
-      "action_item": 0.0,
-      "issue": 0.97,
-      "dependency": 0.0,
-      "discussion_only": 0.02,
-      "risk": 0.01,
-      "decision": 0.0,
-      "assumption": 0.0
-     },
-     "value": null
-    },
-    "severity": {
-     "label": "Medium",
-     "confidence": 0.75,
-     "probabilities": {
-      "0": 0.01,
-      "1": 0.83,
-      "2": 0.16
-     },
-     "value": 1.15
-    },
-    "audience": {
-     "label": "internal_only",
-     "confidence": 0.14,
-     "probabilities": {
-      "internal_only": 0.57,
-      "client_safe": 0.43
-     },
-     "value": null
-    },
-    "severity_value": 1.15,
-    "owner_explicit": 0.03,
-    "due_explicit": 0.02,
-    "owner_status": "not_specified",
-    "due_status": "not_specified",
-    "routing": "review",
-    "engine": "jev"
-   },
-   {
-    "candidate": {
-     "id": "c21",
-     "text": "Perf budget agreed but not being measured.",
-     "kind_hint": "discussion_only",
-     "owner": null,
-     "due_date": null,
-     "source_lines": [
-      39,
-      40
-     ],
-     "evidence": "perf budget was agreed but nobody is measuring it"
-    },
-    "kind": {
-     "label": "issue",
-     "confidence": 0.98,
-     "probabilities": {
-      "action_item": 0.01,
-      "discussion_only": 0.0,
-      "decision": 0.0,
-      "issue": 0.98,
-      "dependency": 0.0,
-      "assumption": 0.0,
-      "risk": 0.01
-     },
-     "value": null
-    },
-    "severity": {
-     "label": "Medium",
-     "confidence": 0.51,
-     "probabilities": {
-      "0": 0.0,
-      "1": 0.67,
-      "2": 0.33
-     },
-     "value": 1.33
-    },
-    "audience": {
-     "label": "internal_only",
-     "confidence": 0.03,
-     "probabilities": {
-      "client_safe": 0.52,
-      "internal_only": 0.48
-     },
-     "value": null
-    },
-    "severity_value": 1.33,
-    "owner_explicit": 0.03,
-    "due_explicit": 0.02,
-    "owner_status": "not_specified",
-    "due_status": "not_specified",
-    "routing": "review",
-    "engine": "jev"
-   },
-   {
-    "candidate": {
-     "id": "c22",
-     "text": "Release process ownership unclear; Dan has been owner.",
-     "kind_hint": "discussion_only",
-     "owner": null,
-     "due_date": null,
-     "source_lines": [
-      40,
-      41
-     ],
-     "evidence": "we never wrote down who owns the release process. it's just been dan every time"
-    },
-    "kind": {
-     "label": "risk",
-     "confidence": 0.48,
-     "probabilities": {
-      "decision": 0.0,
-      "issue": 0.43,
-      "risk": 0.5700000000000001,
-      "assumption": 0.0,
-      "dependency": 0.0,
-      "action_item": 0.0,
-      "discussion_only": 0.0
-     },
-     "value": null
-    },
-    "severity": {
-     "label": "Medium",
-     "confidence": 0.53,
-     "probabilities": {
-      "0": 0.0,
-      "1": 0.6900000000000001,
-      "2": 0.31
-     },
-     "value": 1.31
-    },
-    "audience": {
-     "label": "internal_only",
-     "confidence": 0.15,
-     "probabilities": {
-      "client_safe": 0.43,
-      "internal_only": 0.57
-     },
-     "value": null
-    },
-    "severity_value": 1.31,
-    "owner_explicit": 0.77,
-    "due_explicit": 0.02,
-    "owner_status": "stated",
-    "due_status": "not_specified",
-    "routing": "review",
-    "engine": "jev"
-   },
-   {
-    "candidate": {
-     "id": "c23",
-     "text": "40 min reindex may be acceptable for prod; need real numbers.",
-     "kind_hint": "discussion_only",
-     "owner": null,
-     "due_date": null,
-     "source_lines": [
-      42,
-      43
-     ],
-     "evidence": "the 40 min reindex might actually be fine for prod? need real numbers"
-    },
-    "kind": {
-     "label": "assumption",
-     "confidence": 0.82,
-     "probabilities": {
-      "issue": 0.0,
-      "action_item": 0.09,
-      "risk": 0.01,
-      "assumption": 0.85,
-      "decision": 0.0,
-      "discussion_only": 0.05,
-      "dependency": 0.0
-     },
-     "value": null
-    },
-    "severity": {
-     "label": "Medium",
-     "confidence": 0.75,
-     "probabilities": {
-      "0": 0.01,
-      "1": 0.84,
-      "2": 0.15
-     },
-     "value": 1.14
-    },
-    "audience": {
-     "label": "internal_only",
-     "confidence": 0.3,
-     "probabilities": {
-      "internal_only": 0.65,
-      "client_safe": 0.35
-     },
-     "value": null
-    },
-    "severity_value": 1.14,
-    "owner_explicit": 0.03,
-    "due_explicit": 0.03,
-    "owner_status": "not_specified",
-    "due_status": "not_specified",
-    "routing": "review",
-    "engine": "jev"
-   },
-   {
-    "candidate": {
-     "id": "c24",
-     "text": "Search cluster cost increased, no investigation.",
+     "text": "Investigate why the cost of the search cluster has increased.",
      "kind_hint": "issue",
      "owner": null,
      "due_date": null,
@@ -1800,15 +1232,15 @@
     },
     "kind": {
      "label": "issue",
-     "confidence": 0.99,
+     "confidence": 0.74,
      "probabilities": {
-      "dependency": 0.0,
-      "discussion_only": 0.0,
-      "issue": 1.0,
-      "action_item": 0.0,
-      "assumption": 0.0,
+      "discussion_only": 0.01,
+      "issue": 0.78,
       "risk": 0.0,
-      "decision": 0.0
+      "decision": 0.0,
+      "dependency": 0.0,
+      "action_item": 0.21,
+      "assumption": 0.0
      },
      "value": null
     },
@@ -1816,24 +1248,131 @@
      "label": "Medium",
      "confidence": 0.35,
      "probabilities": {
-      "0": 0.01,
-      "1": 0.56,
-      "2": 0.43
+      "0": 0.02,
+      "1": 0.5599999999999999,
+      "2": 0.42
      },
-     "value": 1.43
+     "value": 1.4
     },
     "audience": {
      "label": "internal_only",
-     "confidence": 0.19,
+     "confidence": 0.08,
      "probabilities": {
-      "client_safe": 0.4,
-      "internal_only": 0.6
+      "client_safe": 0.54,
+      "internal_only": 0.46
      },
      "value": null
     },
-    "severity_value": 1.43,
+    "severity_value": 1.4,
     "owner_explicit": 0.03,
     "due_explicit": 0.02,
+    "owner_status": "not_specified",
+    "due_status": "not_specified",
+    "routing": "review",
+    "engine": "jev"
+   },
+   {
+    "candidate": {
+     "id": "c16",
+     "text": "Risk: billing integration may slip past the demo if sandbox credentials are not received by ~20th.",
+     "kind_hint": "risk",
+     "owner": null,
+     "due_date": "~20th",
+     "source_lines": [
+      23
+     ],
+     "evidence": "risk: if creds don't land by ~20th, billing slips past demo"
+    },
+    "kind": {
+     "label": "risk",
+     "confidence": 0.97,
+     "probabilities": {
+      "dependency": 0.03,
+      "decision": 0.0,
+      "action_item": 0.0,
+      "assumption": 0.0,
+      "issue": 0.0,
+      "risk": 0.97,
+      "discussion_only": 0.0
+     },
+     "value": null
+    },
+    "severity": {
+     "label": "High",
+     "confidence": 0.26,
+     "probabilities": {
+      "0": 0.0,
+      "1": 0.49,
+      "2": 0.51
+     },
+     "value": 1.51
+    },
+    "audience": {
+     "label": "internal_only",
+     "confidence": 0.51,
+     "probabilities": {
+      "client_safe": 0.75,
+      "internal_only": 0.25
+     },
+     "value": null
+    },
+    "severity_value": 1.51,
+    "owner_explicit": 0.03,
+    "due_explicit": 0.95,
+    "owner_status": "not_specified",
+    "due_status": "stated",
+    "routing": "suggested",
+    "engine": "jev"
+   },
+   {
+    "candidate": {
+     "id": "c17",
+     "text": "Risk: contract renewal conversation may affect scope.",
+     "kind_hint": "risk",
+     "owner": null,
+     "due_date": null,
+     "source_lines": [
+      24,
+      25
+     ],
+     "evidence": "- also the contract renewal convo is happening in parallel, might affect scope - not our problem directly but worth knowing"
+    },
+    "kind": {
+     "label": "risk",
+     "confidence": 1.0,
+     "probabilities": {
+      "decision": 0.0,
+      "assumption": 0.0,
+      "action_item": 0.0,
+      "issue": 0.0,
+      "discussion_only": 0.0,
+      "dependency": 0.0,
+      "risk": 1.0
+     },
+     "value": null
+    },
+    "severity": {
+     "label": "Medium",
+     "confidence": 0.72,
+     "probabilities": {
+      "0": 0.13,
+      "1": 0.81,
+      "2": 0.06
+     },
+     "value": 0.93
+    },
+    "audience": {
+     "label": "internal_only",
+     "confidence": 0.2,
+     "probabilities": {
+      "internal_only": 0.4,
+      "client_safe": 0.6
+     },
+     "value": null
+    },
+    "severity_value": 0.93,
+    "owner_explicit": 0.03,
+    "due_explicit": 0.03,
     "owner_status": "not_specified",
     "due_status": "not_specified",
     "routing": "review",
@@ -1842,35 +1381,35 @@
   ],
   "rag": {
    "status": "Amber",
-   "confidence": 0.8,
+   "confidence": 0.74,
    "dimensions": {
     "schedule": {
      "label": "at_risk",
-     "confidence": 0.97,
+     "confidence": 0.99,
      "probabilities": {
-      "off_track": 0.02,
-      "at_risk": 0.98,
-      "on_track": 0.0
+      "on_track": 0.0,
+      "off_track": 0.0,
+      "at_risk": 1.0
      },
      "value": null
     },
     "scope": {
      "label": "changing",
-     "confidence": 0.8,
+     "confidence": 0.74,
      "probabilities": {
-      "stable": 0.0,
-      "uncontrolled": 0.13,
-      "changing": 0.87
+      "uncontrolled": 0.17,
+      "changing": 0.83,
+      "stable": 0.0
      },
      "value": null
     },
     "resourcing": {
      "label": "stretched",
-     "confidence": 0.95,
+     "confidence": 0.98,
      "probabilities": {
-      "stretched": 0.97,
-      "adequate": 0.0,
-      "blocked": 0.03
+      "blocked": 0.01,
+      "adequate": 0.01,
+      "stretched": 0.98
      },
      "value": null
     },
@@ -1879,8 +1418,8 @@
      "confidence": 0.99,
      "probabilities": {
       "0": 0.0,
-      "1": 1.0,
-      "2": 0.0
+      "1": 0.99,
+      "2": 0.01
      },
      "value": 1.0
     }
@@ -1889,43 +1428,112 @@
   },
   "stats": {
    "engine": "jev",
-   "requests": 25,
-   "latency_ms": 24097,
-   "input_tokens": 28087,
-   "output_tokens": 3875
+   "requests": 18,
+   "latency_ms": 9713,
+   "input_tokens": 20376,
+   "output_tokens": 2785
   },
   "dropped": []
  },
  "documents": {
-  "mom_markdown": "## Attendees\n- me\n- dan\n- sasha\n- priya\n- infra guy\n\n## Agenda\n- nav refactor status\n- search indexing performance\n- client demo scheduling\n- legacy export relevance\n- billing integration credentials\n- test coverage\n- logging noise\n- documentation updates\n- timesheet reminders\n- accessibility audit\n- design system upgrade\n- performance budget\n- release process ownership\n- search cluster cost\n\n## Key discussion points\n- Nav refactor largely complete but deep link edge cases remain.\n- Search indexing reindex time has increased from 12 to 40 minutes.\n- Client demo date is uncertain; needs confirmation with the account team.\n- Decision made to ship basic search for the demo, with faceting postponed.\n- Billing integration is stalled waiting for sandbox credentials from the client.\n- Multiple risks identified around credential delays, contract renewal, and lack of ownership for release processes.\n\n## Decisions\n- Decision: ship basic search for demo, faceting after.\n\n## Action items\n- Edge cases with deep links still open after nav refactor.\n- Legacy export may no longer be needed; leaving it in for now.\n- Action: ask client if legacy export is still needed.\n- Sasha will chase sandbox credentials again this week; owner sasha; due this week.\n- Docs stale, onboarding readme references old build script.\n- Sasha will fix docs when she gets a sec; owner sasha.\n",
-  "status_report_markdown": "## Overall status: Amber\n\nAmber because a milestone is at risk, and scope is changing, and the team is stretched.\n\n## No client-facing items\n\n24 of 24 items from this meeting were classified as internal only, so\nthere is nothing here that would go to a client.\n\nThat is a real result, not an error. This looks like an internal working session with no client present \u2014 the discussion is about how the team works, not about what the client receives.\n\nUse the **Show internal-only items** toggle to see everything that was captured, and\nthe RAID log and action items tabs for the full internal picture.\n",
+  "mom_markdown": "## Attendees\n- me\n- dan\n- sasha\n- priya\n- infra guy\n\n## Agenda\n- nav refactor status\n- search indexing performance\n- demo preparation\n- legacy export\n- billing integration\n- test coverage\n- logging noise\n- documentation\n- timesheets\n- accessibility audit\n- design system upgrade\n- performance budget\n- release process ownership\n- search cluster cost\n\n## Key discussion points\n- Dan finished most of the nav refactor but has a few edge cases with deep links.\n- Sasha reports the search reindex time has increased from 12 to 40 minutes, possibly due to the new analyzer or disk issues.\n- The staging box is still on an old image and has not been repointed.\n- The client demo is scheduled for either the 26th or 27th, affecting the search work timeline.\n- Billing integration is pending sandbox credentials, with a risk of delay if credentials are not received by ~20th.\n- Test coverage dropped to 61% after the refactor, largely due to deleted nav tests.\n- Logging in production is too noisy, making issue detection difficult.\n- Documentation for onboarding is stale and needs updating.\n- Accessibility audit was never performed, it was supposed to happen in sprint 3.\n- The design system is still on v2 while v4 is out, with no plan to upgrade.\n- Performance budget was agreed but no measurement is being done.\n- Release process ownership is unclear if Dan is unavailable.\n- Search cluster cost increased, but no investigation has been done.\n\n## Decisions\n- Ship basic search for the demo, postpone faceting until after.\n\n## Action items\n- Dan will tidy up the nav refactor on Thursday or Friday; owner dan\n- Investigate the cause of the increased reindex time, possibly the new analyzer or disk performance\n- Confirm the client demo date with the account team\n- Ask the client if the legacy export is still needed\n- Sasha will chase sandbox credentials for billing integration again this week; owner sasha\n- Verify that the drop in test coverage is due to deleted nav tests and not a regression\n- Investigate why logging is too noisy in production and find a solution\n- Sasha will update the onboarding README to reference the new build script; owner sasha\n- Priya will submit timesheets by Friday; owner priya; due Friday\n- Conduct the accessibility audit that was supposed to happen in sprint 3\n- Plan to upgrade the design system from v2 to v4\n- Measure and track performance against the agreed budget\n- Define and document the release process ownership beyond Dan\n- Investigate why the cost of the search cluster has increased\n- Risk: billing integration may slip past the demo if sandbox credentials are not received by ~20th; due ~20th\n- Risk: contract renewal conversation may affect scope\n",
+  "status_report_markdown": "## Overall status: Amber\nThe milestone is at risk, scope is changing, and the team is stretched.\n\n## Summary\nThe nav refactor is largely complete but requires final cleanup.\n\n## Progress this period\nDan will tidy up the nav refactor on Thursday or Friday.\n\n## Next steps\nNo further client\u2011directed actions are required at this time.\n\n## Risks and issues\nNone identified for the client.\n\n## Support needed from the client\nNone.",
   "action_items": [
    {
-    "id": "c10",
-    "text": "Sasha will chase sandbox credentials again this week.",
+    "id": "c6",
+    "text": "Sasha will chase sandbox credentials for billing integration again this week.",
     "kind": "action_item",
     "severity": "High",
-    "severity_value": 1.73,
+    "severity_value": 1.68,
     "audience": "internal_only",
     "owner": "sasha",
     "owner_status": "stated",
-    "due_date": "this week",
-    "due_status": "inferred",
+    "due_date": null,
+    "due_status": "not_specified",
     "source_lines": [
-     22,
-     23
+     21,
+     22
     ],
     "edited_by_user": false
    },
    {
-    "id": "c16",
-    "text": "Docs stale, onboarding readme references old build script.",
+    "id": "c3",
+    "text": "Confirm the client demo date with the account team.",
     "kind": "action_item",
-    "severity": "Medium",
-    "severity_value": 0.65,
+    "severity": "High",
+    "severity_value": 1.65,
     "audience": "internal_only",
     "owner": null,
     "owner_status": "not_specified",
+    "due_date": null,
+    "due_status": "not_specified",
+    "source_lines": [
+     12,
+     13
+    ],
+    "edited_by_user": false
+   },
+   {
+    "id": "c14",
+    "text": "Define and document the release process ownership beyond Dan.",
+    "kind": "action_item",
+    "severity": "Medium",
+    "severity_value": 1.23,
+    "audience": "internal_only",
+    "owner": null,
+    "owner_status": "not_specified",
+    "due_date": null,
+    "due_status": "not_specified",
+    "source_lines": [
+     40,
+     41
+    ],
+    "edited_by_user": false
+   },
+   {
+    "id": "c7",
+    "text": "Verify that the drop in test coverage is due to deleted nav tests and not a regression.",
+    "kind": "action_item",
+    "severity": "Medium",
+    "severity_value": 0.88,
+    "audience": "internal_only",
+    "owner": null,
+    "owner_status": "not_specified",
+    "due_date": null,
+    "due_status": "not_specified",
+    "source_lines": [
+     26,
+     27,
+     28
+    ],
+    "edited_by_user": false
+   },
+   {
+    "id": "c5",
+    "text": "Ask the client if the legacy export is still needed.",
+    "kind": "action_item",
+    "severity": "Medium",
+    "severity_value": 0.56,
+    "audience": "internal_only",
+    "owner": null,
+    "owner_status": "not_specified",
+    "due_date": null,
+    "due_status": "not_specified",
+    "source_lines": [
+     18,
+     19
+    ],
+    "edited_by_user": false
+   },
+   {
+    "id": "c9",
+    "text": "Sasha will update the onboarding README to reference the new build script.",
+    "kind": "action_item",
+    "severity": "Low",
+    "severity_value": 0.35,
+    "audience": "internal_only",
+    "owner": "sasha",
+    "owner_status": "stated",
     "due_date": null,
     "due_status": "not_specified",
     "source_lines": [
@@ -1935,50 +1543,16 @@
     "edited_by_user": false
    },
    {
-    "id": "c8",
-    "text": "Action: ask client if legacy export is still needed.",
-    "kind": "action_item",
-    "severity": "Medium",
-    "severity_value": 0.59,
-    "audience": "internal_only",
-    "owner": null,
-    "owner_status": "not_specified",
-    "due_date": null,
-    "due_status": "not_specified",
-    "source_lines": [
-     19,
-     20
-    ],
-    "edited_by_user": false
-   },
-   {
-    "id": "c17",
-    "text": "Sasha will fix docs when she gets a sec.",
-    "kind": "action_item",
-    "severity": "Medium",
-    "severity_value": 0.51,
-    "audience": "internal_only",
-    "owner": "sasha",
-    "owner_status": "inferred",
-    "due_date": null,
-    "due_status": "not_specified",
-    "source_lines": [
-     32,
-     33
-    ],
-    "edited_by_user": false
-   },
-   {
     "id": "c1",
-    "text": "Edge cases with deep links still open after nav refactor.",
+    "text": "Dan will tidy up the nav refactor on Thursday or Friday.",
     "kind": "action_item",
     "severity": "Low",
-    "severity_value": 0.43,
-    "audience": "internal_only",
-    "owner": null,
-    "owner_status": "not_specified",
+    "severity_value": 0.11,
+    "audience": "client_safe",
+    "owner": "dan",
+    "owner_status": "stated",
     "due_date": null,
-    "due_status": "not_specified",
+    "due_status": "stated",
     "source_lines": [
      4,
      5
@@ -1986,19 +1560,18 @@
     "edited_by_user": false
    },
    {
-    "id": "c7",
-    "text": "Legacy export may no longer be needed; leaving it in for now.",
+    "id": "c10",
+    "text": "Priya will submit timesheets by Friday.",
     "kind": "action_item",
     "severity": "Low",
-    "severity_value": 0.28,
+    "severity_value": 0.05,
     "audience": "internal_only",
-    "owner": null,
-    "owner_status": "not_specified",
-    "due_date": null,
-    "due_status": "not_specified",
+    "owner": "priya",
+    "owner_status": "stated",
+    "due_date": "Friday",
+    "due_status": "stated",
     "source_lines": [
-     17,
-     18
+     33
     ],
     "edited_by_user": false
    }
@@ -2006,45 +1579,27 @@
   "raid_log": {
    "Risks": [
     {
-     "id": "c11",
-     "text": "Risk: billing slips past demo if creds not received by ~20th.",
+     "id": "c16",
+     "text": "Risk: billing integration may slip past the demo if sandbox credentials are not received by ~20th.",
      "kind": "risk",
      "severity": "High",
-     "severity_value": 1.74,
+     "severity_value": 1.51,
      "audience": "internal_only",
      "owner": null,
      "owner_status": "not_specified",
-     "due_date": null,
+     "due_date": "~20th",
      "due_status": "stated",
      "source_lines": [
-      23,
-      24
+      23
      ],
      "edited_by_user": false
     },
     {
-     "id": "c22",
-     "text": "Release process ownership unclear; Dan has been owner.",
+     "id": "c17",
+     "text": "Risk: contract renewal conversation may affect scope.",
      "kind": "risk",
      "severity": "Medium",
-     "severity_value": 1.31,
-     "audience": "internal_only",
-     "owner": null,
-     "owner_status": "stated",
-     "due_date": null,
-     "due_status": "not_specified",
-     "source_lines": [
-      40,
-      41
-     ],
-     "edited_by_user": false
-    },
-    {
-     "id": "c12",
-     "text": "Contract renewal conversation may affect scope.",
-     "kind": "risk",
-     "severity": "Medium",
-     "severity_value": 1.03,
+     "severity_value": 0.93,
      "audience": "internal_only",
      "owner": null,
      "owner_status": "not_specified",
@@ -2057,66 +1612,46 @@
      "edited_by_user": false
     }
    ],
-   "Assumptions": [
+   "Assumptions": [],
+   "Issues": [
     {
-     "id": "c23",
-     "text": "40 min reindex may be acceptable for prod; need real numbers.",
-     "kind": "assumption",
-     "severity": "Medium",
-     "severity_value": 1.14,
+     "id": "c13",
+     "text": "Measure and track performance against the agreed budget.",
+     "kind": "issue",
+     "severity": "High",
+     "severity_value": 1.83,
      "audience": "internal_only",
      "owner": null,
      "owner_status": "not_specified",
      "due_date": null,
      "due_status": "not_specified",
      "source_lines": [
-      42,
-      43
+      39
      ],
      "edited_by_user": false
     },
     {
-     "id": "c14",
-     "text": "Dan claims test drop due to old nav tests deletion.",
-     "kind": "assumption",
-     "severity": "Medium",
-     "severity_value": 0.94,
-     "audience": "internal_only",
-     "owner": null,
-     "owner_status": "not_specified",
-     "due_date": null,
-     "due_status": "not_specified",
-     "source_lines": [
-      27,
-      28
-     ],
-     "edited_by_user": false
-    }
-   ],
-   "Issues": [
-    {
-     "id": "c19",
-     "text": "Accessibility audit never happened, was supposed to be sprint 3.",
+     "id": "c11",
+     "text": "Conduct the accessibility audit that was supposed to happen in sprint 3.",
      "kind": "issue",
-     "severity": "High",
-     "severity_value": 1.52,
+     "severity": "Medium",
+     "severity_value": 1.41,
      "audience": "internal_only",
      "owner": null,
      "owner_status": "not_specified",
      "due_date": null,
      "due_status": "inferred",
      "source_lines": [
-      37,
-      38
+      37
      ],
      "edited_by_user": false
     },
     {
-     "id": "c24",
-     "text": "Search cluster cost increased, no investigation.",
+     "id": "c15",
+     "text": "Investigate why the cost of the search cluster has increased.",
      "kind": "issue",
      "severity": "Medium",
-     "severity_value": 1.43,
+     "severity_value": 1.4,
      "audience": "internal_only",
      "owner": null,
      "owner_status": "not_specified",
@@ -2128,59 +1663,8 @@
      "edited_by_user": false
     },
     {
-     "id": "c21",
-     "text": "Perf budget agreed but not being measured.",
-     "kind": "issue",
-     "severity": "Medium",
-     "severity_value": 1.33,
-     "audience": "internal_only",
-     "owner": null,
-     "owner_status": "not_specified",
-     "due_date": null,
-     "due_status": "not_specified",
-     "source_lines": [
-      39,
-      40
-     ],
-     "edited_by_user": false
-    },
-    {
-     "id": "c20",
-     "text": "Design system upgrade stuck on v2, no plan to move to v4.",
-     "kind": "issue",
-     "severity": "Medium",
-     "severity_value": 1.15,
-     "audience": "internal_only",
-     "owner": null,
-     "owner_status": "not_specified",
-     "due_date": null,
-     "due_status": "not_specified",
-     "source_lines": [
-      38,
-      39
-     ],
-     "edited_by_user": false
-    },
-    {
-     "id": "c4",
-     "text": "Staging box still on old image, needs repointing.",
-     "kind": "issue",
-     "severity": "Medium",
-     "severity_value": 1.15,
-     "audience": "internal_only",
-     "owner": null,
-     "owner_status": "not_specified",
-     "due_date": null,
-     "due_status": "not_specified",
-     "source_lines": [
-      10,
-      11
-     ],
-     "edited_by_user": false
-    },
-    {
      "id": "c2",
-     "text": "Search indexing reindex time increased to 40 minutes, needs investigation.",
+     "text": "Investigate the cause of the increased reindex time, possibly the new analyzer or disk performance.",
      "kind": "issue",
      "severity": "Medium",
      "severity_value": 1.02,
@@ -2197,25 +1681,8 @@
      "edited_by_user": false
     },
     {
-     "id": "c13",
-     "text": "Test coverage dropped to 61% after refactor.",
-     "kind": "issue",
-     "severity": "Medium",
-     "severity_value": 1.0,
-     "audience": "internal_only",
-     "owner": null,
-     "owner_status": "not_specified",
-     "due_date": null,
-     "due_status": "not_specified",
-     "source_lines": [
-      26,
-      27
-     ],
-     "edited_by_user": false
-    },
-    {
-     "id": "c15",
-     "text": "Logging too noisy in prod, hard to find anything.",
+     "id": "c8",
+     "text": "Investigate why logging is too noisy in production and find a solution.",
      "kind": "issue",
      "severity": "Medium",
      "severity_value": 0.95,
@@ -2229,63 +1696,27 @@
       30
      ],
      "edited_by_user": false
+    },
+    {
+     "id": "c12",
+     "text": "Plan to upgrade the design system from v2 to v4.",
+     "kind": "issue",
+     "severity": "Medium",
+     "severity_value": 0.83,
+     "audience": "internal_only",
+     "owner": null,
+     "owner_status": "not_specified",
+     "due_date": null,
+     "due_status": "not_specified",
+     "source_lines": [
+      38
+     ],
+     "edited_by_user": false
     }
    ],
-   "Dependencies": [
-    {
-     "id": "c9",
-     "text": "Billing integration waiting on sandbox credentials from client.",
-     "kind": "dependency",
-     "severity": "High",
-     "severity_value": 1.8,
-     "audience": "internal_only",
-     "owner": null,
-     "owner_status": "not_specified",
-     "due_date": null,
-     "due_status": "not_specified",
-     "source_lines": [
-      21,
-      22
-     ],
-     "edited_by_user": false
-    },
-    {
-     "id": "c5",
-     "text": "Demo date uncertain, need confirmation with acct team.",
-     "kind": "dependency",
-     "severity": "High",
-     "severity_value": 1.53,
-     "audience": "internal_only",
-     "owner": null,
-     "owner_status": "not_specified",
-     "due_date": null,
-     "due_status": "not_specified",
-     "source_lines": [
-      12,
-      13,
-      14
-     ],
-     "edited_by_user": false
-    },
-    {
-     "id": "c3",
-     "text": "Knowledge transfer pending with infra.",
-     "kind": "dependency",
-     "severity": "Medium",
-     "severity_value": 1.12,
-     "audience": "internal_only",
-     "owner": null,
-     "owner_status": "not_specified",
-     "due_date": null,
-     "due_status": "not_specified",
-     "source_lines": [
-      9
-     ],
-     "edited_by_user": false
-    }
-   ]
+   "Dependencies": []
   },
-  "status_report_empty": true,
+  "status_report_empty": false,
   "cached": true,
   "leak_stripped": false
  }
