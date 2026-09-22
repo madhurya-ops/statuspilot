@@ -68,6 +68,52 @@ Jev, by contrast, is not a constraint: ~870 input tokens per candidate, 250 k
 tokens/second and 1,200 requests/minute published, and ~$0.0015 for a 40-candidate
 run.
 
+## Extraction is non-deterministic, and that is a design input
+
+**Five runs of `northwind-sprint-review`, byte-identical input, `temperature=0`:**
+
+| Run | Candidates |
+|---|---:|
+| 1 | 12 |
+| 2 | 16 |
+| 3 | 20 |
+| 4 | **11** ← the committed cache |
+| 5 | 9 (re-draw, abandoned when the daily cap hit) |
+
+**min 9 · max 20 · mean 13.6 · stdev 4.4 — the best draw finds 2.2x what the worst
+does.**
+
+Temperature is already 0, no `top_p` override and no `seed`. The remaining sources
+are (a) `openai/gpt-oss-20b` being a reasoning model, whose hidden reasoning trace
+varies between calls and steers the output, and (b) GPU serving being non-deterministic
+at temperature 0 in general, since batching changes floating-point reduction order.
+Groq's OpenAI-compatible API accepts a `seed` parameter; whether it materially tightens
+this spread is **untested** and should not be assumed.
+
+### Why this is stated rather than buried
+
+Quoting a single recall figure without this would be dishonest — the figure is a draw
+from a distribution, not a property of the system.
+
+It is also **the strongest argument for the review queue.** A non-deterministic
+extractor is precisely why the design routes low-confidence items to a human instead
+of letting them into a client report. The product does not claim the model is reliable;
+it claims the model's *uncertainty is measured and acted on*. Variance in the extractor
+is the problem that the confidence routing exists to contain.
+
+> Note what does **not** vary: no run has ever produced an item citing a line that does
+> not exist, or an owner absent from the transcript. The post-validation in
+> `pipeline/extract.py` is deterministic code, and it holds regardless of the draw.
+
+### The distinction that took four runs to see
+
+An earlier, systematic failure — the model silently dropping a whole required field
+because of schema property order — was a **bug**, and is fixed. The spread above is
+**variance**, and is not. Fixing the first did not remove the second, and it was wrong
+to expect it would.
+
+---
+
 ## Recall against the planted inventory — two numbers, not one
 
 **Re-measured 2026-09-21 against the current pipeline**, after the Phase 4 truncation
@@ -85,12 +131,17 @@ Every planted item falls in exactly one bucket:
 
 | Sample | Planted | Captured | Merged | Absent | **Strict recall** | **Content coverage** |
 |---|---:|---:|---:|---:|---:|---:|
-| `northwind-sprint-review` | 17 | 12 | 1 | 4 | **71 %** | 76 % |
+| `northwind-sprint-review` | 17 | 10 | 3 | 4 | 59 % | 76 % |
 | `contoso-escalation` | 19 | 15 | 2 | 2 | **79 %** | **89 %** |
-| `rough-standup-notes` | 27 | 17 | 7 | 3 | **63 %** | **89 %** |
-| **Total** | **63** | **44** | **10** | **9** | **70 %** | **86 %** |
+| `rough-standup-notes` | 27 | 17 | 7 | 3 | 63 % | **89 %** |
+| **Total** | **63** | **42** | **12** | **9** | **67 %** | **86 %** |
 
-**Strict recall (70 %)** = the planted item became its **own candidate**. This predicts
+*Measured on the committed demo cache (`7b215b1`), which is what the demo actually
+runs. A superseded earlier run scored 70 % / 86 %; the drop is entirely Northwind's
+low draw (see the variance section above), not a regression in the pipeline. Contoso
+improved from 68 % to 79 % once the schema-ordering bug was fixed.*
+
+**Strict recall (67 %)** = the planted item became its **own candidate**. This predicts
 how complete the RAID log and action-item **tables** are, because each row needs one
 candidate. A merged item gets no row of its own.
 

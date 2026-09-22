@@ -32,14 +32,32 @@ Two numbers, because one would mislead:
 
 | Metric | Score | What it means |
 |---|---:|---|
-| **Strict recall** | **70 %** | The planted item became **its own candidate**. This predicts how complete the RAID log and action-item **tables** are — each row needs its own candidate. |
+| **Strict recall** | **67 %** | The planted item became **its own candidate**. This predicts how complete the RAID log and action-item **tables** are — each row needs its own candidate. |
 | **Content coverage** | **86 %** | The planted item reached the output **at all**, either as its own candidate or merged into a neighbouring one. This predicts whether the status report **narrative** misses anything. |
 
 The gap between them is granularity, not lost information: the model's main failure is
 merging a problem with the task that fixes it, rather than dropping either. **Nine of
-63 items (14 %) were genuinely absent.** Nothing was hallucinated in any run — every
-candidate cites real transcript lines, and no owner appears who is not in the
-transcript.
+63 items (14 %) were genuinely absent.**
+
+### Extraction is non-deterministic, and the design assumes it
+
+Five runs over byte-identical input at `temperature=0` produced **12, 16, 20, 11 and 9**
+candidates — the best draw finds **2.2×** what the worst does. The cause is not
+temperature: `openai/gpt-oss-20b` is a reasoning model whose hidden trace varies between
+calls, and GPU serving is not bit-deterministic in general.
+
+The recall figures above are therefore **one draw from a distribution**, measured on the
+cache the demo actually ships, not a property of the system. They are quoted with the
+spread rather than without it.
+
+This is also the clearest argument for the review queue. **A non-deterministic
+extractor is exactly why low-confidence items go to a human instead of into a client
+report.** The claim is not that the model is reliable — it is that the model's
+uncertainty is measured and acted on.
+
+What does **not** vary: no run has produced an item citing a line that does not exist,
+or an owner absent from the transcript. That validation is deterministic code, and it
+holds regardless of the draw.
 
 ### Cost per report
 
