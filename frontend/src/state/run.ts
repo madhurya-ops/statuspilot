@@ -19,7 +19,11 @@ export async function runPipeline(
   } catch (err) {
     const message =
       err instanceof ApiError ? err.message : "Something went wrong. Please try again.";
-    dispatch({ type: "error", message });
+    // A wrong access code or an oversized file will not fix itself; a rate limit,
+    // a timeout or a provider blip might.
+    const retryable =
+      !(err instanceof ApiError) || (!err.isAuth && !err.isTooLarge && !err.isDailyLimit);
+    dispatch({ type: "error", message, retryable });
     dispatch({ type: "go", screen: "input" });
   }
 }

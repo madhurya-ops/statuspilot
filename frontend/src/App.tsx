@@ -48,7 +48,18 @@ export default function App() {
       {state.screen === "results" ? <ResultsPage state={state} dispatch={dispatch} /> : null}
       {state.screen === "how" ? <HowItWorks dispatch={dispatch} /> : null}
       {state.error ? (
-        <Toast message={state.error} onDismiss={() => dispatch({ type: "error", message: null })} />
+        <Toast
+          message={state.error}
+          onDismiss={() => dispatch({ type: "error", message: null })}
+          onRetry={
+            state.errorRetryable && state.text
+              ? () => {
+                  dispatch({ type: "error", message: null });
+                  run(state.text);
+                }
+              : undefined
+          }
+        />
       ) : null}
     </>
   );

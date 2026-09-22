@@ -96,16 +96,31 @@ export function Banner() {
   );
 }
 
-export function Toast({ message, onDismiss }: { message: string; onDismiss: () => void }) {
+export function Toast({
+  message,
+  onDismiss,
+  onRetry,
+}: {
+  message: string;
+  onDismiss: () => void;
+  /** Offered only when retrying could actually help. */
+  onRetry?: () => void;
+}) {
   return (
     <div
       role="alert"
+      aria-live="assertive"
       className="fixed inset-x-3 bottom-20 z-50 mx-auto max-w-[32rem] rounded-lg border border-rag-red/25 bg-rag-red-wash px-4 py-3 text-sm text-rag-red shadow-lg"
     >
-      <div className="flex items-start gap-3">
-        <span className="flex-1 leading-relaxed">{message}</span>
-        <button onClick={onDismiss} className="font-semibold" aria-label="Dismiss">
-          Close
+      <p className="leading-relaxed">{message}</p>
+      <div className="mt-2 flex gap-4">
+        {onRetry ? (
+          <button onClick={onRetry} className="text-sm font-semibold underline">
+            Try again
+          </button>
+        ) : null}
+        <button onClick={onDismiss} className="text-sm font-semibold">
+          Dismiss
         </button>
       </div>
     </div>

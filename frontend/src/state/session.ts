@@ -49,6 +49,8 @@ export interface SessionState {
   ragOverride: ClassifyResponse["rag"]["status"] | null;
   documents: Documents | null;
   error: string | null;
+  /** Set when the last failure is worth retrying (rate limit, timeout, provider). */
+  errorRetryable: boolean;
   busy: boolean;
 }
 
@@ -66,6 +68,7 @@ export const initialState: SessionState = {
   ragOverride: null,
   documents: null,
   error: null,
+  errorRetryable: false,
   busy: false,
 };
 
@@ -82,7 +85,7 @@ export type Action =
   | { type: "setRag"; status: ClassifyResponse["rag"]["status"] }
   | { type: "documents"; documents: Documents }
   | { type: "go"; screen: Screen }
-  | { type: "error"; message: string | null }
+  | { type: "error"; message: string | null; retryable?: boolean }
   | { type: "busy"; busy: boolean }
   | { type: "reset" };
 
@@ -143,7 +146,12 @@ export function reducer(state: SessionState, action: Action): SessionState {
     case "go":
       return { ...state, screen: action.screen, error: null };
     case "error":
-      return { ...state, error: action.message, busy: false };
+      return {
+        ...state,
+        error: action.message,
+        errorRetryable: action.retryable ?? false,
+        busy: false,
+      };
     case "busy":
       return { ...state, busy: action.busy };
     case "reset":
