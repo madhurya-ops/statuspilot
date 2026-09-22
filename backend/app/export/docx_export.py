@@ -11,6 +11,7 @@ from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.shared import Pt, RGBColor
 
+from app.export.audience import INTERNAL_BANNER, prepare
 from app.models import Documents
 
 RAG_COLOUR = {
@@ -56,6 +57,14 @@ def build_docx(documents: Documents, project: str, rag: str) -> bytes:
     title = document.add_heading(project or "Project status report", level=0)
     title.alignment = WD_ALIGN_PARAGRAPH.LEFT
 
+    # THE DOCX IS THE INTERNAL PACK: status report, minutes and the full RAID log
+    # including items withheld from the client. Anyone handing this to someone needs
+    # to know that on sight, so it is the first thing under the title.
+    banner = document.add_paragraph()
+    run = banner.add_run(INTERNAL_BANNER)
+    run.bold = True
+    run.font.color.rgb = RGBColor(0xB4, 0x23, 0x18)
+
     status = document.add_paragraph()
     status.add_run("Overall status: ").bold = True
     run = status.add_run(rag)
@@ -72,7 +81,7 @@ def build_docx(documents: Documents, project: str, rag: str) -> bytes:
             table.rows[0].cells, ("Action", "Owner", "Due", "Severity"), strict=True
         ):
             cell.paragraphs[0].add_run(label).bold = True
-        for item in documents.action_items:
+        for item in prepare(documents.action_items, "internal"):
             cells = table.add_row().cells
             cells[0].text = item.text
             cells[1].text = item.owner or "Not assigned"
@@ -83,7 +92,7 @@ def build_docx(documents: Documents, project: str, rag: str) -> bytes:
         if not items:
             continue
         document.add_heading(section, level=1)
-        for item in items:
+        for item in prepare(items, "internal"):
             paragraph = document.add_paragraph(style="List Bullet")
             paragraph.add_run(f"[{item.severity}] ").bold = True
             paragraph.add_run(item.text)

@@ -6,6 +6,7 @@ from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.utils import get_column_letter
 
+from app.export.audience import prepare
 from app.models import Documents
 
 HEADER_FILL = PatternFill("solid", fgColor="4F46E5")
@@ -34,7 +35,7 @@ def _sheet(workbook: Workbook, title: str, items) -> None:
         cell.alignment = Alignment(vertical="center")
     sheet.freeze_panes = "A2"
 
-    for item in items:
+    for item in prepare(items, "internal"):
         sheet.append([
             item.text,
             item.owner or "Not assigned",
@@ -59,6 +60,9 @@ def _sheet(workbook: Workbook, title: str, items) -> None:
 
 
 def build_xlsx(documents: Documents) -> bytes:
+    """The internal working file: every item, with an Audience column saying which
+    are cleared for the client. Provenance tags are reconciled with their values so a
+    row never reads `Owner: Raj Menon / Owner source: not specified`."""
     workbook = Workbook()
     workbook.remove(workbook.active)
     _sheet(workbook, "Action Items", documents.action_items)
