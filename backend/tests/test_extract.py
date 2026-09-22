@@ -502,3 +502,44 @@ class TestDailyVsMinuteLimit:
         minute = _rate_limit_detail(RateLimited("x", retry_after=20.0, scope="minute"))
         assert "daily" in daily.lower() and "precomputed" in daily
         assert "refilling" in minute and "daily" not in minute.lower()
+
+
+class TestSchemaMissBecomesRepairable:
+    """A 400 `json_validate_failed` that is NOT truncation must be repairable.
+
+    Observed: the model emitted `candidates` and `discussion_points` but omitted the
+    required `meta`, so Groq rejected the whole response. That surfaced as a generic
+    LLMError which the router re-raised immediately, killing an entire cache build
+    instead of repairing and then escalating.
+    """
+
+    def test_a_malformed_document_maps_to_json_invalid(self):
+        from app.llm.groq_client import _error_code, _mentions_truncation
+
+        class Err(Exception):
+            body = {
+                "error": {
+                    "message": (
+                        "Generated JSON does not match the expected schema. "
+                        "Error: jsonschema: '' does not validate with /required: "
+                        "missing properties: 'meta'"
+                    ),
+                    "code": "json_validate_failed",
+                    "failed_generation": '{"candidates":[]}',
+                }
+            }
+            response = None
+
+        err = Err()
+        assert _error_code(err) == "json_validate_failed"
+        # Not truncation -> must be treated as a repairable schema miss.
+        assert _mentions_truncation(err) is False
+
+    def test_field_order_puts_meta_first_and_discussion_points_last(self):
+        """Ordering by cost, not importance. The model drops whichever required field
+        it deprioritises, so the cheap one leads and the expendable one trails."""
+        from app.llm.groq_client import strict_schema
+        from app.models import ExtractionPayload
+
+        order = list(strict_schema(ExtractionPayload)["json_schema"]["schema"]["properties"])
+        assert order == ["meta", "candidates", "discussion_points"]

@@ -48,6 +48,13 @@ class Settings(BaseSettings):
     conf_review: float = Field(default=0.50, ge=0.0, le=1.0)
     noul_yes: float = Field(default=0.75, ge=0.0, le=1.0)
     noul_no: float = Field(default=0.35, ge=0.0, le=1.0)
+    # The audience fail-safe thresholds the PROBABILITY, not the confidence.
+    # `audience` is a two-option Choice, where confidence = 2*p_max - 1, so gating on
+    # CONF_AUTO (0.80) silently demanded p >= 0.90. Measured: that flipped 12 of 16
+    # Northwind items to internal_only even though Jev judged every one client_safe,
+    # leaving a mostly-on-track sprint review with a four-item client report that
+    # withheld its own RAG decision and its key client dependency.
+    conf_audience_safe: float = Field(default=0.85, ge=0.0, le=1.0)
 
     # --- App ---
     demo_access_code: str = ""

@@ -52,20 +52,33 @@ def band_noul(value: float, settings: Settings) -> OwnerStatus:
 def apply_audience_failsafe(audience: Decision, settings: Settings) -> Decision:
     """Force `internal_only` unless the model is confidently sure it is client-safe.
 
-    Asymmetric on purpose. The docs' confidence-routing pattern gates by consequence:
-    wrongly marking an item internal costs a line in a status report, while wrongly
-    marking it client-safe leaks blame or staffing detail to the client. Those are
-    not comparable, so only one direction gets the benefit of the doubt.
+    Asymmetric on purpose: wrongly marking an item internal costs a line in a status
+    report, while wrongly marking it client-safe leaks blame or staffing detail to the
+    client. Only one direction gets the benefit of the doubt.
+
+    Gates on the **probability**, not the confidence. `audience` has two options, and
+    for k = 2 confidence is `2 * p_max - 1` — so thresholding confidence at 0.80 was
+    really demanding `p >= 0.90`. Measured on the Northwind sample, that flipped 12 of
+    16 items to internal although Jev judged every one client-safe, producing a client
+    report that withheld the project's own RAG decision. The probability is also the
+    honest thing to explain: "shown to the client only if Jev is at least 85% sure it
+    is safe."
     """
-    confidence = audience.confidence if audience.confidence is not None else 0.0
-    if audience.label == CLIENT_SAFE and confidence < settings.conf_auto:
-        return Decision(
-            label=INTERNAL_ONLY,
-            confidence=audience.confidence,
-            probabilities=audience.probabilities,
-            value=audience.value,
-        )
-    return audience
+    if audience.label != CLIENT_SAFE:
+        return audience
+    probabilities = audience.probabilities or {}
+    p_safe = probabilities.get(CLIENT_SAFE)
+    if p_safe is None:
+        # No distribution to judge; fall back to confidence and stay cautious.
+        p_safe = audience.confidence if audience.confidence is not None else 0.0
+    if p_safe >= settings.conf_audience_safe:
+        return audience
+    return Decision(
+        label=INTERNAL_ONLY,
+        confidence=audience.confidence,
+        probabilities=audience.probabilities,
+        value=audience.value,
+    )
 
 
 def route(kind: Decision, audience: Decision, settings: Settings) -> Routing:

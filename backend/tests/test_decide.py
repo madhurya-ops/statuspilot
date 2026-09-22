@@ -135,24 +135,48 @@ class TestRouting:
         assert got == expected
 
 
+def _aud(label, p_safe):
+    """An audience Decision carrying a real two-option distribution."""
+    return Decision(
+        label=label,
+        confidence=abs(2 * p_safe - 1),
+        probabilities={"client_safe": p_safe, "internal_only": 1 - p_safe},
+    )
+
+
 class TestAudienceFailsafe:
-    def test_forces_internal_when_client_safe_is_not_confident(self):
-        """Wrongly internal costs a line in a report; wrongly client-safe leaks blame
-        to the client. The two are not comparable, so only one gets the benefit of
-        the doubt."""
-        out = apply_audience_failsafe(_d("client_safe", 0.79), get_settings())
+    """Gates on the PROBABILITY, not the confidence.
+
+    `audience` has two options, so confidence = 2*p_max - 1. Thresholding confidence
+    at CONF_AUTO (0.80) silently demanded p >= 0.90, which flipped 12 of 16 Northwind
+    items to internal although Jev judged every one client-safe.
+    """
+
+    def test_forces_internal_below_the_probability_threshold(self):
+        out = apply_audience_failsafe(_aud("client_safe", 0.84), get_settings())
         assert out.label == "internal_only"
 
-    def test_leaves_a_confident_client_safe_alone(self):
-        out = apply_audience_failsafe(_d("client_safe", 0.80), get_settings())
+    def test_leaves_a_sufficiently_probable_client_safe_alone(self):
+        out = apply_audience_failsafe(_aud("client_safe", 0.85), get_settings())
         assert out.label == "client_safe"
 
+    def test_an_ordinary_project_fact_is_no_longer_withheld(self):
+        """p=0.87 is the Northwind client dependency — the report's whole point. Under
+        the old confidence gate it needed 0.90 and was withheld."""
+        out = apply_audience_failsafe(_aud("client_safe", 0.87), get_settings())
+        assert out.label == "client_safe"
+
+    def test_a_genuinely_internal_remark_stays_internal(self):
+        """p=0.23 is the Contoso blame remark."""
+        out = apply_audience_failsafe(_aud("internal_only", 0.23), get_settings())
+        assert out.label == "internal_only"
+
     def test_never_flips_internal_to_client_safe(self):
-        for confidence in (0.0, 0.3, 0.99):
-            out = apply_audience_failsafe(_d("internal_only", confidence), get_settings())
+        for p_safe in (0.0, 0.3, 0.99):
+            out = apply_audience_failsafe(_aud("internal_only", p_safe), get_settings())
             assert out.label == "internal_only"
 
-    def test_missing_confidence_is_treated_as_zero(self):
+    def test_a_missing_distribution_falls_back_to_caution(self):
         out = apply_audience_failsafe(Decision(label="client_safe"), get_settings())
         assert out.label == "internal_only"
 

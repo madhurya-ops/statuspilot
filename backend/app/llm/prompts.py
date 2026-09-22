@@ -71,6 +71,12 @@ RULES FOR EACH CANDIDATE
 - evidence: a VERBATIM quote copied exactly from those lines, at most 300
   characters. Do not paraphrase in this field.
 
+ORDER OF WORK: produce `candidates` FIRST and in full. It is the only field that
+matters; `meta` and `discussion_points` are secondary and must never be produced at
+the expense of a complete candidate list. Work through the transcript from the first
+line to the last and do not stop part-way — a gap in the middle means real items were
+lost.
+
 Return JSON only, matching the provided schema exactly.
 """
 

@@ -165,8 +165,16 @@ class GroqProvider:
             # it returns 400 json_validate_failed whose body says "max completion
             # tokens reached before generating a valid document". Both are the same
             # problem and both must retry at the ceiling, not surface as a dead error.
-            if code == "json_validate_failed" and _mentions_truncation(err):
-                raise Truncated("Response hit the completion cap (400)") from err
+            if code == "json_validate_failed":
+                # Two different failures share this code. Truncation must retry at the
+                # ceiling cap; anything else is a malformed document, which the router
+                # can repair and then escalate. Previously only the truncation branch
+                # was recognised and the rest fell through to a generic LLMError that
+                # the router re-raised immediately — so a recoverable schema miss
+                # killed a whole cache build instead of being repaired.
+                if _mentions_truncation(err):
+                    raise Truncated("Response hit the completion cap (400)") from err
+                raise JSONInvalid("Model output did not satisfy the schema (400)") from err
             if err.status_code >= 500:
                 raise Transient(f"Groq returned {err.status_code}") from err
             raise LLMError(

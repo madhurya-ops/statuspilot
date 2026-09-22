@@ -9,9 +9,10 @@ that keeps the token budget out of the way.
 ## Ordering — cached first, live last
 
 The Groq free tier allows **8,000 tokens per minute** and **200,000 per day**, and one
-full report consumes **~8,000**. The three bundled samples are served from a committed cache and cost
-**zero** tokens, so they can be tapped back to back. A live run costs the whole
-budget.
+full report consumes **~8,000**. The three bundled samples are served from a committed
+cache and cost **zero** tokens, so they can be tapped back to back. A live run costs
+close to a full minute's allowance, so it needs a moment's headroom — not the whole
+day.
 
 Run the demo in this order:
 
@@ -34,8 +35,8 @@ that follows.
 
 ## The live paste snippet
 
-Short on purpose: **~1,200 characters**, so extraction requests roughly 2,600 tokens
-instead of 7,000 and yields few enough items that generation is quick. This is the
+Short on purpose: **1,066 characters**, so extraction consumes roughly 2,000 tokens
+instead of ~5,000 and yields few enough items that generation is quick. This is the
 fastest possible live run — seconds, not a minute.
 
 Synthetic. Fictional company (Fabrikam), invented names.

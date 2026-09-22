@@ -109,9 +109,24 @@ class CandidateDraft(BaseModel):
 # Deliberately no docstring: pydantic emits a class docstring into the JSON schema as
 # a "description", which is then sent to the model as input tokens on every call.
 class ExtractionPayload(BaseModel):
+    # FIELD ORDER IS LOAD-BEARING, and the failure is symmetric.
+    #
+    # Under strict `json_schema` the model emits properties in schema order and it
+    # drops whichever required field it deprioritises — the response is then rejected
+    # wholesale for a missing property. Observed both ways, well short of the
+    # completion cap, so this is attention rather than truncation:
+    #   meta, discussion_points, candidates  -> emitted meta + points, dropped CANDIDATES
+    #   candidates, meta, discussion_points  -> emitted candidates + points, dropped META
+    #
+    # Ordering by cost, not by importance, is what works: `meta` is small enough that
+    # it is never worth skipping, `candidates` carries the substance, and
+    # `discussion_points` is last so it is the field at risk if anything is.
+    # Cheap and small, so it is never the field that gets dropped.
     meta: MeetingMeta
-    discussion_points: list[str] = Field(default_factory=list)
+    # The only field the pipeline cannot work without.
     candidates: list[CandidateDraft] = Field(default_factory=list)
+    # Last on purpose: if the model runs out of steam, this is the one to lose.
+    discussion_points: list[str] = Field(default_factory=list)
 
 
 class Decision(BaseModel):
