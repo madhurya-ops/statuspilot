@@ -15,10 +15,12 @@ export function ReviewPage({
   state,
   dispatch,
   onBuild,
+  onBack,
 }: {
   state: SessionState;
   dispatch: React.Dispatch<Action>;
   onBuild: () => void;
+  onBack?: () => void;
 }) {
   const queue = useMemo(
     () => (state.classified?.items ?? []).filter((i) => i.routing === "review"),
@@ -33,6 +35,8 @@ export function ReviewPage({
   return (
     <Screen
       wide
+      onBack={onBack}
+      backLabel="Start again"
       action={
         <div>
           <Button full disabled={!allHandled} onClick={onBuild}>

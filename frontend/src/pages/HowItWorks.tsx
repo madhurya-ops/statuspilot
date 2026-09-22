@@ -3,9 +3,17 @@ import { Measure } from "../components/Measure";
 import type { Action } from "../state/session";
 
 /** The honest explanation. Every number here matches what the code actually does. */
-export function HowItWorks({ dispatch }: { dispatch: React.Dispatch<Action> }) {
+export function HowItWorks({
+  dispatch,
+  onBack,
+}: {
+  dispatch: React.Dispatch<Action>;
+  onBack?: () => void;
+}) {
   return (
     <Screen
+      onBack={onBack}
+      backLabel="Back to reports"
       action={
         <Button full variant="secondary" onClick={() => dispatch({ type: "go", screen: "results" })}>
           Back to reports

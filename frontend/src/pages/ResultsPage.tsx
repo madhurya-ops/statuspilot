@@ -18,9 +18,11 @@ const TABS: { id: Tab; label: string }[] = [
 export function ResultsPage({
   state,
   dispatch,
+  onBack,
 }: {
   state: SessionState;
   dispatch: React.Dispatch<Action>;
+  onBack?: () => void;
 }) {
   const [tab, setTab] = useState<Tab>("status");
   const [showInternal, setShowInternal] = useState(false);
@@ -47,6 +49,8 @@ export function ResultsPage({
   return (
     <Screen
       wide
+      onBack={onBack}
+      backLabel="Back to review"
       action={
         <div className="flex gap-2">
           <Button grow onClick={copyReport}>

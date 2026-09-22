@@ -1,14 +1,20 @@
 import { CachedTag, Screen } from "../components/Chrome";
 import type { SessionState, Step } from "../state/session";
 
-export function ProcessingPage({ state }: { state: SessionState }) {
+export function ProcessingPage({
+  state,
+  onBack,
+}: {
+  state: SessionState;
+  onBack?: () => void;
+}) {
   const stats = state.classified?.stats;
   const judgments = stats ? stats.requests * 5 : 0;
   const review = state.classified?.items.filter((i) => i.routing === "review").length ?? 0;
   const auto = state.classified?.items.filter((i) => i.routing !== "review").length ?? 0;
 
   return (
-    <Screen>
+    <Screen onBack={onBack} backLabel="Cancel">
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-semibold">Building your reports</h1>
         {state.cached ? <CachedTag /> : null}

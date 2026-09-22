@@ -22,16 +22,30 @@ export function Screen({
   children,
   action,
   wide,
+  onBack,
+  backLabel = "Back",
 }: {
   children: ReactNode;
   action?: ReactNode;
   /** Results and review pages earn more room on a laptop. */
   wide?: boolean;
+  /** Shows a back control. Navigation only; never re-runs anything. */
+  onBack?: () => void;
+  backLabel?: string;
 }) {
   const column = wide ? "max-w-[56rem]" : "max-w-[34rem]";
   return (
     <div className="flex min-h-dvh flex-col">
-      <div className={`mx-auto w-full flex-1 px-4 pb-8 pt-5 sm:px-6 ${column}`}>
+      <div className={`mx-auto w-full flex-1 px-4 pb-8 pt-3 sm:px-6 ${column}`}>
+        {onBack ? (
+          <button
+            onClick={onBack}
+            className="-ml-1 mb-2 inline-flex min-h-[2.25rem] items-center gap-1 pr-2 text-sm font-medium text-ink-soft hover:text-ink"
+          >
+            <span aria-hidden="true">&#8249;</span>
+            {backLabel}
+          </button>
+        ) : null}
         {children}
       </div>
       {action ? (
