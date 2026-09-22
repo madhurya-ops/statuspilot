@@ -1,0 +1,1628 @@
+{
+ "extract": {
+  "meta": {
+   "title": "Northwind Bank - Loan Origination Portal Sprint 14 Review",
+   "date": "12 March 2026",
+   "attendees": [
+    "Priya Nair",
+    "Marcus Webb",
+    "Anita Rao",
+    "Tom Fielding",
+    "Jonas Kern"
+   ],
+   "agenda": [
+    "Sprint goal",
+    "Demo",
+    "Defects",
+    "UAT readiness",
+    "Risk log"
+   ]
+  },
+  "discussion_points": [
+   "Sprint 14 goal achieved: document upload service and rules API integration completed.",
+   "Defect identified: orphaned document reference when a user navigates back during upload.",
+   "UAT readiness requires anonymised test data and repointing the UAT environment to the new rules API.",
+   "Dependency on Northwind data governance for anonymised test data.",
+   "Project status deemed amber due to test data risk.",
+   "Affordability declaration wording pending legal approval.",
+   "Sprint 15 planning scheduled for Thursday at ten."
+  ],
+  "candidates": [
+   {
+    "id": "c1",
+    "text": "Marcus to fix orphaned document reference defect by Thursday.",
+    "kind_hint": "action_item",
+    "owner": "Marcus Webb",
+    "due_date": "Thursday",
+    "source_lines": [
+     19,
+     20
+    ],
+    "evidence": "I'll take that one. It needs the upload to be transactional rather than fire and forget. I should have it done by Thursday. Marcus to fix the orphaned document reference defect by Thursday. Noted."
+   },
+   {
+    "id": "c2",
+    "text": "Jonas to update affordability declaration wording once Northwind legal provides it, expected 20 March.",
+    "kind_hint": "action_item",
+    "owner": "Jonas Kern",
+    "due_date": "20 March",
+    "source_lines": [
+     28,
+     29
+    ],
+    "evidence": "Tom to update the affordability declaration wording once Northwind legal provides it, expected 20 March. Now, UAT readiness. This is the part I want to spend time on."
+   },
+   {
+    "id": "c3",
+    "text": "Jonas to confirm anonymised test data date with Northwind data governance, by Monday 16 March.",
+    "kind_hint": "action_item",
+    "owner": "Jonas Kern",
+    "due_date": "Monday 16 March",
+    "source_lines": [
+     40,
+     41
+    ],
+    "evidence": "Jonas to confirm the anonymised test data date with Northwind data governance, by Monday 16 March. One more thing. The UAT environment is still pointing at the old rules API endpoint."
+   },
+   {
+    "id": "c4",
+    "text": "Marcus to raise the infrastructure ticket to repoint the UAT environment to the new rules API, before 6 April.",
+    "kind_hint": "action_item",
+    "owner": "Marcus Webb",
+    "due_date": "before 6 April",
+    "source_lines": [
+     45,
+     46
+    ],
+    "evidence": "Marcus to raise the infrastructure ticket to repoint the UAT environment to the new rules API, before 6 April. Should we flag anything to the steering committee?"
+   },
+   {
+    "id": "c5",
+    "text": "Assumption: anonymised data would be available by end of March.",
+    "kind_hint": "assumption",
+    "owner": null,
+    "due_date": null,
+    "source_lines": [
+     36,
+     37
+    ],
+    "evidence": "We have been assuming the anonymised data would be available by the end of March. That assumption is not confirmed anywhere. Then let us put it in the log properly as an assumption, not a fact."
+   },
+   {
+    "id": "c6",
+    "text": "Dependency: on Northwind's data governance team providing anonymised records.",
+    "kind_hint": "dependency",
+    "owner": null,
+    "due_date": null,
+    "source_lines": [
+     38,
+     39
+    ],
+    "evidence": "And the dependency is on Northwind's data governance team providing the anonymised records. Understood. I will raise it on Monday and come back to you with a date."
+   },
+   {
+    "id": "c7",
+    "text": "Risk: UAT starts on 6 April; if data arrives late, lose first week of UAT.",
+    "kind_hint": "risk",
+    "owner": null,
+    "due_date": null,
+    "source_lines": [
+     35,
+     36
+    ],
+    "evidence": "UAT starts on the sixth of April. If the data arrives late, we lose the first week of UAT. We have been assuming the anonymised data would be available by the end of March. That assumption is not confirmed anywhere."
+   },
+   {
+    "id": "c8",
+    "text": "Issue: UAT environment still pointing at old rules API endpoint.",
+    "kind_hint": "issue",
+    "owner": null,
+    "due_date": null,
+    "source_lines": [
+     41,
+     42
+    ],
+    "evidence": "One more thing. The UAT environment is still pointing at the old rules API endpoint. It needs repointing before UAT or nothing will work. It is a config change, maybe an hour."
+   },
+   {
+    "id": "c9",
+    "text": "Decision: project status amber due to test data risk.",
+    "kind_hint": "decision",
+    "owner": null,
+    "due_date": null,
+    "source_lines": [
+     48,
+     49
+    ],
+    "evidence": "Overall I would call the project amber rather than green, purely because of the test data. Delivery itself is on track. That seems fair to me. I would rather see amber with a reason than green with a surprise later."
+   },
+   {
+    "id": "c10",
+    "text": "Decision: test data dependency flagged to steering committee.",
+    "kind_hint": "decision",
+    "owner": null,
+    "due_date": null,
+    "source_lines": [
+     46,
+     47
+    ],
+    "evidence": "Should we flag anything to the steering committee? The test data dependency, yes. Everything else is inside our control."
+   },
+   {
+    "id": "c11",
+    "text": "Remark: The rules API integration took longer than we sized it.",
+    "kind_hint": "discussion_only",
+    "owner": null,
+    "due_date": null,
+    "source_lines": [
+     9,
+     10
+    ],
+    "evidence": "The rules API integration took longer than we sized it. We estimated five points and it was closer to eight, mostly because their error responses are not consistent. Right. We have a wrapper handling both now, so it is contained."
+   },
+   {
+    "id": "c12",
+    "text": "Remark: The fourth defect is more interesting.",
+    "kind_hint": "discussion_only",
+    "owner": null,
+    "due_date": null,
+    "source_lines": [
+     15,
+     16
+    ],
+    "evidence": "We closed eleven and opened four. Three of the four are cosmetic - spacing on the applicant summary screen, a truncated label in Welsh, and a date format that shows US order on one report. The fourth one is more interesting. If an applicant uploads a document and then hits back before the upload fin"
+   },
+   {
+    "id": "c13",
+    "text": "Remark: Rarely, but a branch user on a slow connection could hit it.",
+    "kind_hint": "discussion_only",
+    "owner": null,
+    "due_date": null,
+    "source_lines": [
+     17,
+     18
+    ],
+    "evidence": "How often would that happen in practice? Rarely, but a branch user on a slow connection could hit it. The record looks complete and is not."
+   },
+   {
+    "id": "c14",
+    "text": "Remark: The record looks complete and is not.",
+    "kind_hint": "discussion_only",
+    "owner": null,
+    "due_date": null,
+    "source_lines": [
+     18,
+     19
+    ],
+    "evidence": "Rarely, but a branch user on a slow connection could hit it. The record looks complete and is not. I'll take that one. It needs the upload to be transactional rather than fire and forget. I should have it done by Thursday."
+   },
+   {
+    "id": "c15",
+    "text": "Remark: The one thing I raised was the wording on the affordability declaration. Legal want specific phrasing.",
+    "kind_hint": "discussion_only",
+    "owner": null,
+    "due_date": null,
+    "source_lines": [
+     24,
+     25
+    ],
+    "evidence": "It was. The one thing I raised was the wording on the affordability declaration. Legal want specific phrasing. Jonas is sending me the approved wording. Once I have it, it is a ten minute change."
+   },
+   {
+    "id": "c16",
+    "text": "Remark: I would rather see amber with a reason than green with a surprise later.",
+    "kind_hint": "discussion_only",
+    "owner": null,
+    "due_date": null,
+    "source_lines": [
+     48,
+     49
+    ],
+    "evidence": "Overall I would call the project amber rather than green, purely because of the test data. Delivery itself is on track. That seems fair to me. I would rather see amber with a reason than green with a surprise later."
+   }
+  ],
+  "lines": [
+   {
+    "n": 1,
+    "speaker": null,
+    "text": "Northwind Bank - Loan Origination Portal"
+   },
+   {
+    "n": 2,
+    "speaker": null,
+    "text": "Sprint 14 Review"
+   },
+   {
+    "n": 3,
+    "speaker": null,
+    "text": "Date: 12 March 2026"
+   },
+   {
+    "n": 4,
+    "speaker": null,
+    "text": "Attendees: Priya Nair (Delivery Manager), Marcus Webb (Tech Lead), Anita Rao (QA Lead), Tom Fielding (Business Analyst), Jonas Kern (Northwind, Product Owner)"
+   },
+   {
+    "n": 5,
+    "speaker": "Priya Nair",
+    "text": "Morning everyone. Sprint 14 review, we have about forty minutes. Agenda is the same as usual - sprint goal, demo, defects, then UAT readiness and anything for the risk log."
+   },
+   {
+    "n": 6,
+    "speaker": "Priya Nair",
+    "text": "Marcus, do you want to start with where we landed against the sprint goal?"
+   },
+   {
+    "n": 7,
+    "speaker": "Marcus Webb",
+    "text": "Sure. The goal was to complete the document upload service and get the credit decision engine talking to the new rules API. Both are done and merged."
+   },
+   {
+    "n": 8,
+    "speaker": "Marcus Webb",
+    "text": "Document upload went in on Tuesday. We are handling PDF, JPEG and PNG, with the twenty megabyte cap Jonas asked for."
+   },
+   {
+    "n": 9,
+    "speaker": "Marcus Webb",
+    "text": "The rules API integration took longer than we sized it. We estimated five points and it was closer to eight, mostly because their error responses are not consistent."
+   },
+   {
+    "n": 10,
+    "speaker": "Marcus Webb",
+    "text": "Right. We have a wrapper handling both now, so it is contained."
+   },
+   {
+    "n": 11,
+    "speaker": "Priya Nair",
+    "text": "Did that overrun cost us anything else in the sprint?"
+   },
+   {
+    "n": 12,
+    "speaker": "Marcus Webb",
+    "text": "We dropped the audit log export story. It was the lowest priority item and nobody is blocked by it."
+   },
+   {
+    "n": 13,
+    "speaker": "Priya Nair",
+    "text": "Agreed, that carries to Sprint 15."
+   },
+   {
+    "n": 14,
+    "speaker": "Priya Nair",
+    "text": "Anita, defects?"
+   },
+   {
+    "n": 15,
+    "speaker": "Anita Rao",
+    "text": "We closed eleven and opened four. Three of the four are cosmetic - spacing on the applicant summary screen, a truncated label in Welsh, and a date format that shows US order on one report."
+   },
+   {
+    "n": 16,
+    "speaker": "Anita Rao",
+    "text": "The fourth one is more interesting. If an applicant uploads a document and then hits back before the upload finishes, the record ends up with a document reference pointing at nothing."
+   },
+   {
+    "n": 17,
+    "speaker": "Jonas Kern",
+    "text": "How often would that happen in practice?"
+   },
+   {
+    "n": 18,
+    "speaker": "Anita Rao",
+    "text": "Rarely, but a branch user on a slow connection could hit it. The record looks complete and is not."
+   },
+   {
+    "n": 19,
+    "speaker": "Marcus Webb",
+    "text": "I'll take that one. It needs the upload to be transactional rather than fire and forget. I should have it done by Thursday."
+   },
+   {
+    "n": 20,
+    "speaker": "Priya Nair",
+    "text": "Marcus to fix the orphaned document reference defect by Thursday. Noted."
+   },
+   {
+    "n": 21,
+    "speaker": "Anita Rao",
+    "text": "I'd call that one high severity even though it is low frequency, because the data ends up wrong and nobody knows."
+   },
+   {
+    "n": 22,
+    "speaker": "Priya Nair",
+    "text": "Fair. Let us log it as high."
+   },
+   {
+    "n": 23,
+    "speaker": "Tom Fielding",
+    "text": "On the demo - I walked Jonas through the applicant journey on Monday and the feedback was good."
+   },
+   {
+    "n": 24,
+    "speaker": "Jonas Kern",
+    "text": "It was. The one thing I raised was the wording on the affordability declaration. Legal want specific phrasing."
+   },
+   {
+    "n": 25,
+    "speaker": "Tom Fielding",
+    "text": "Jonas is sending me the approved wording. Once I have it, it is a ten minute change."
+   },
+   {
+    "n": 26,
+    "speaker": "Priya Nair",
+    "text": "Jonas, when do you think you will have that?"
+   },
+   {
+    "n": 27,
+    "speaker": "Jonas Kern",
+    "text": "I'll chase legal this week. I would say by the twentieth."
+   },
+   {
+    "n": 28,
+    "speaker": "Priya Nair",
+    "text": "Tom to update the affordability declaration wording once Northwind legal provides it, expected 20 March."
+   },
+   {
+    "n": 29,
+    "speaker": "Priya Nair",
+    "text": "Now, UAT readiness. This is the part I want to spend time on."
+   },
+   {
+    "n": 30,
+    "speaker": "Anita Rao",
+    "text": "We are ready from a build point of view. What we do not have is test data."
+   },
+   {
+    "n": 31,
+    "speaker": "Anita Rao",
+    "text": "We need around two hundred anonymised applicant records to exercise the decision engine properly. Synthetic data does not hit the edge cases."
+   },
+   {
+    "n": 32,
+    "speaker": "Jonas Kern",
+    "text": "That has to come from our side. I will need to talk to the data governance team."
+   },
+   {
+    "n": 33,
+    "speaker": "Priya Nair",
+    "text": "How long does that normally take at Northwind?"
+   },
+   {
+    "n": 34,
+    "speaker": "Jonas Kern",
+    "text": "Honestly, it varies. Two weeks if it is straightforward, longer if they want a new data sharing agreement."
+   },
+   {
+    "n": 35,
+    "speaker": "Priya Nair",
+    "text": "UAT starts on the sixth of April. If the data arrives late, we lose the first week of UAT."
+   },
+   {
+    "n": 36,
+    "speaker": "Anita Rao",
+    "text": "We have been assuming the anonymised data would be available by the end of March. That assumption is not confirmed anywhere."
+   },
+   {
+    "n": 37,
+    "speaker": "Priya Nair",
+    "text": "Then let us put it in the log properly as an assumption, not a fact."
+   },
+   {
+    "n": 38,
+    "speaker": "Priya Nair",
+    "text": "And the dependency is on Northwind's data governance team providing the anonymised records."
+   },
+   {
+    "n": 39,
+    "speaker": "Jonas Kern",
+    "text": "Understood. I will raise it on Monday and come back to you with a date."
+   },
+   {
+    "n": 40,
+    "speaker": "Priya Nair",
+    "text": "Jonas to confirm the anonymised test data date with Northwind data governance, by Monday 16 March."
+   },
+   {
+    "n": 41,
+    "speaker": "Marcus Webb",
+    "text": "One more thing. The UAT environment is still pointing at the old rules API endpoint."
+   },
+   {
+    "n": 42,
+    "speaker": "Marcus Webb",
+    "text": "It needs repointing before UAT or nothing will work. It is a config change, maybe an hour."
+   },
+   {
+    "n": 43,
+    "speaker": "Priya Nair",
+    "text": "Who owns that?"
+   },
+   {
+    "n": 44,
+    "speaker": "Marcus Webb",
+    "text": "Infrastructure, but I can raise the ticket."
+   },
+   {
+    "n": 45,
+    "speaker": "Priya Nair",
+    "text": "Marcus to raise the infrastructure ticket to repoint the UAT environment to the new rules API, before 6 April."
+   },
+   {
+    "n": 46,
+    "speaker": "Tom Fielding",
+    "text": "Should we flag anything to the steering committee?"
+   },
+   {
+    "n": 47,
+    "speaker": "Priya Nair",
+    "text": "The test data dependency, yes. Everything else is inside our control."
+   },
+   {
+    "n": 48,
+    "speaker": "Priya Nair",
+    "text": "Overall I would call the project amber rather than green, purely because of the test data. Delivery itself is on track."
+   },
+   {
+    "n": 49,
+    "speaker": "Jonas Kern",
+    "text": "That seems fair to me. I would rather see amber with a reason than green with a surprise later."
+   },
+   {
+    "n": 50,
+    "speaker": "Priya Nair",
+    "text": "Agreed. Anything else?"
+   },
+   {
+    "n": 51,
+    "speaker": "Priya Nair",
+    "text": "Thanks everyone. Sprint 15 planning is Thursday at ten."
+   }
+  ]
+ },
+ "classify": {
+  "items": [
+   {
+    "candidate": {
+     "id": "c1",
+     "text": "Marcus to fix orphaned document reference defect by Thursday.",
+     "kind_hint": "action_item",
+     "owner": "Marcus Webb",
+     "due_date": "Thursday",
+     "source_lines": [
+      19,
+      20
+     ],
+     "evidence": "I'll take that one. It needs the upload to be transactional rather than fire and forget. I should have it done by Thursday. Marcus to fix the orphaned document reference defect by Thursday. Noted."
+    },
+    "kind": {
+     "label": "action_item",
+     "confidence": 0.95,
+     "probabilities": {
+      "action_item": 0.96,
+      "assumption": 0.0,
+      "decision": 0.0,
+      "discussion_only": 0.0,
+      "risk": 0.0,
+      "issue": 0.04,
+      "dependency": 0.0
+     },
+     "value": null
+    },
+    "severity": {
+     "label": "Medium",
+     "confidence": 0.34,
+     "probabilities": {
+      "0": 0.0,
+      "1": 0.56,
+      "2": 0.44
+     },
+     "value": 1.44
+    },
+    "audience": {
+     "label": "client_safe",
+     "confidence": 0.85,
+     "probabilities": {
+      "client_safe": 0.93,
+      "internal_only": 0.07
+     },
+     "value": null
+    },
+    "severity_value": 1.44,
+    "owner_explicit": 0.77,
+    "due_explicit": 0.99,
+    "owner_status": "stated",
+    "due_status": "stated",
+    "routing": "auto",
+    "engine": "jev"
+   },
+   {
+    "candidate": {
+     "id": "c2",
+     "text": "Jonas to update affordability declaration wording once Northwind legal provides it, expected 20 March.",
+     "kind_hint": "action_item",
+     "owner": "Jonas Kern",
+     "due_date": "20 March",
+     "source_lines": [
+      28,
+      29
+     ],
+     "evidence": "Tom to update the affordability declaration wording once Northwind legal provides it, expected 20 March. Now, UAT readiness. This is the part I want to spend time on."
+    },
+    "kind": {
+     "label": "action_item",
+     "confidence": 0.83,
+     "probabilities": {
+      "discussion_only": 0.0,
+      "assumption": 0.0,
+      "decision": 0.0,
+      "risk": 0.0,
+      "dependency": 0.15,
+      "issue": 0.0,
+      "action_item": 0.85
+     },
+     "value": null
+    },
+    "severity": {
+     "label": "Medium",
+     "confidence": 0.7,
+     "probabilities": {
+      "0": 0.02,
+      "1": 0.8,
+      "2": 0.18
+     },
+     "value": 1.16
+    },
+    "audience": {
+     "label": "internal_only",
+     "confidence": 0.5,
+     "probabilities": {
+      "client_safe": 0.75,
+      "internal_only": 0.25
+     },
+     "value": null
+    },
+    "severity_value": 1.16,
+    "owner_explicit": 0.95,
+    "due_explicit": 0.96,
+    "owner_status": "stated",
+    "due_status": "stated",
+    "routing": "suggested",
+    "engine": "jev"
+   },
+   {
+    "candidate": {
+     "id": "c3",
+     "text": "Jonas to confirm anonymised test data date with Northwind data governance, by Monday 16 March.",
+     "kind_hint": "action_item",
+     "owner": "Jonas Kern",
+     "due_date": "Monday 16 March",
+     "source_lines": [
+      40,
+      41
+     ],
+     "evidence": "Jonas to confirm the anonymised test data date with Northwind data governance, by Monday 16 March. One more thing. The UAT environment is still pointing at the old rules API endpoint."
+    },
+    "kind": {
+     "label": "action_item",
+     "confidence": 0.87,
+     "probabilities": {
+      "dependency": 0.11,
+      "decision": 0.0,
+      "risk": 0.0,
+      "action_item": 0.89,
+      "assumption": 0.0,
+      "discussion_only": 0.0,
+      "issue": 0.0
+     },
+     "value": null
+    },
+    "severity": {
+     "label": "Medium",
+     "confidence": 0.62,
+     "probabilities": {
+      "0": 0.0,
+      "1": 0.75,
+      "2": 0.25
+     },
+     "value": 1.25
+    },
+    "audience": {
+     "label": "client_safe",
+     "confidence": 0.9,
+     "probabilities": {
+      "client_safe": 0.95,
+      "internal_only": 0.05
+     },
+     "value": null
+    },
+    "severity_value": 1.25,
+    "owner_explicit": 0.9,
+    "due_explicit": 0.98,
+    "owner_status": "stated",
+    "due_status": "stated",
+    "routing": "auto",
+    "engine": "jev"
+   },
+   {
+    "candidate": {
+     "id": "c4",
+     "text": "Marcus to raise the infrastructure ticket to repoint the UAT environment to the new rules API, before 6 April.",
+     "kind_hint": "action_item",
+     "owner": "Marcus Webb",
+     "due_date": "before 6 April",
+     "source_lines": [
+      45,
+      46
+     ],
+     "evidence": "Marcus to raise the infrastructure ticket to repoint the UAT environment to the new rules API, before 6 April. Should we flag anything to the steering committee?"
+    },
+    "kind": {
+     "label": "action_item",
+     "confidence": 1.0,
+     "probabilities": {
+      "decision": 0.0,
+      "risk": 0.0,
+      "issue": 0.0,
+      "discussion_only": 0.0,
+      "dependency": 0.0,
+      "action_item": 1.0,
+      "assumption": 0.0
+     },
+     "value": null
+    },
+    "severity": {
+     "label": "Medium",
+     "confidence": 0.8,
+     "probabilities": {
+      "0": 0.09,
+      "1": 0.86,
+      "2": 0.05
+     },
+     "value": 0.96
+    },
+    "audience": {
+     "label": "internal_only",
+     "confidence": 0.63,
+     "probabilities": {
+      "client_safe": 0.82,
+      "internal_only": 0.18
+     },
+     "value": null
+    },
+    "severity_value": 0.96,
+    "owner_explicit": 0.95,
+    "due_explicit": 0.98,
+    "owner_status": "stated",
+    "due_status": "stated",
+    "routing": "suggested",
+    "engine": "jev"
+   },
+   {
+    "candidate": {
+     "id": "c5",
+     "text": "Assumption: anonymised data would be available by end of March.",
+     "kind_hint": "assumption",
+     "owner": null,
+     "due_date": null,
+     "source_lines": [
+      36,
+      37
+     ],
+     "evidence": "We have been assuming the anonymised data would be available by the end of March. That assumption is not confirmed anywhere. Then let us put it in the log properly as an assumption, not a fact."
+    },
+    "kind": {
+     "label": "assumption",
+     "confidence": 0.99,
+     "probabilities": {
+      "issue": 0.0,
+      "decision": 0.0,
+      "risk": 0.0,
+      "action_item": 0.0,
+      "assumption": 1.0,
+      "discussion_only": 0.0,
+      "dependency": 0.0
+     },
+     "value": null
+    },
+    "severity": {
+     "label": "High",
+     "confidence": 0.42,
+     "probabilities": {
+      "0": 0.0,
+      "1": 0.38,
+      "2": 0.62
+     },
+     "value": 1.61
+    },
+    "audience": {
+     "label": "internal_only",
+     "confidence": 0.61,
+     "probabilities": {
+      "client_safe": 0.81,
+      "internal_only": 0.19
+     },
+     "value": null
+    },
+    "severity_value": 1.61,
+    "owner_explicit": 0.06,
+    "due_explicit": 0.33,
+    "owner_status": "not_specified",
+    "due_status": "not_specified",
+    "routing": "suggested",
+    "engine": "jev"
+   },
+   {
+    "candidate": {
+     "id": "c6",
+     "text": "Dependency: on Northwind's data governance team providing anonymised records.",
+     "kind_hint": "dependency",
+     "owner": null,
+     "due_date": null,
+     "source_lines": [
+      38,
+      39
+     ],
+     "evidence": "And the dependency is on Northwind's data governance team providing the anonymised records. Understood. I will raise it on Monday and come back to you with a date."
+    },
+    "kind": {
+     "label": "dependency",
+     "confidence": 1.0,
+     "probabilities": {
+      "risk": 0.0,
+      "discussion_only": 0.0,
+      "action_item": 0.0,
+      "issue": 0.0,
+      "decision": 0.0,
+      "assumption": 0.0,
+      "dependency": 1.0
+     },
+     "value": null
+    },
+    "severity": {
+     "label": "Medium",
+     "confidence": 0.33,
+     "probabilities": {
+      "0": 0.0,
+      "1": 0.56,
+      "2": 0.44
+     },
+     "value": 1.44
+    },
+    "audience": {
+     "label": "internal_only",
+     "confidence": 0.73,
+     "probabilities": {
+      "client_safe": 0.87,
+      "internal_only": 0.13
+     },
+     "value": null
+    },
+    "severity_value": 1.44,
+    "owner_explicit": 0.59,
+    "due_explicit": 0.43,
+    "owner_status": "inferred",
+    "due_status": "inferred",
+    "routing": "suggested",
+    "engine": "jev"
+   },
+   {
+    "candidate": {
+     "id": "c7",
+     "text": "Risk: UAT starts on 6 April; if data arrives late, lose first week of UAT.",
+     "kind_hint": "risk",
+     "owner": null,
+     "due_date": null,
+     "source_lines": [
+      35,
+      36
+     ],
+     "evidence": "UAT starts on the sixth of April. If the data arrives late, we lose the first week of UAT. We have been assuming the anonymised data would be available by the end of March. That assumption is not confirmed anywhere."
+    },
+    "kind": {
+     "label": "risk",
+     "confidence": 0.96,
+     "probabilities": {
+      "action_item": 0.0,
+      "assumption": 0.02,
+      "decision": 0.0,
+      "issue": 0.0,
+      "discussion_only": 0.0,
+      "risk": 0.97,
+      "dependency": 0.01
+     },
+     "value": null
+    },
+    "severity": {
+     "label": "High",
+     "confidence": 0.61,
+     "probabilities": {
+      "0": 0.0,
+      "1": 0.26,
+      "2": 0.74
+     },
+     "value": 1.74
+    },
+    "audience": {
+     "label": "internal_only",
+     "confidence": 0.52,
+     "probabilities": {
+      "internal_only": 0.24,
+      "client_safe": 0.76
+     },
+     "value": null
+    },
+    "severity_value": 1.74,
+    "owner_explicit": 0.03,
+    "due_explicit": 0.63,
+    "owner_status": "not_specified",
+    "due_status": "inferred",
+    "routing": "suggested",
+    "engine": "jev"
+   },
+   {
+    "candidate": {
+     "id": "c8",
+     "text": "Issue: UAT environment still pointing at old rules API endpoint.",
+     "kind_hint": "issue",
+     "owner": null,
+     "due_date": null,
+     "source_lines": [
+      41,
+      42
+     ],
+     "evidence": "One more thing. The UAT environment is still pointing at the old rules API endpoint. It needs repointing before UAT or nothing will work. It is a config change, maybe an hour."
+    },
+    "kind": {
+     "label": "issue",
+     "confidence": 0.94,
+     "probabilities": {
+      "action_item": 0.05,
+      "discussion_only": 0.0,
+      "assumption": 0.0,
+      "issue": 0.95,
+      "decision": 0.0,
+      "dependency": 0.0,
+      "risk": 0.0
+     },
+     "value": null
+    },
+    "severity": {
+     "label": "High",
+     "confidence": 0.72,
+     "probabilities": {
+      "0": 0.0,
+      "1": 0.18,
+      "2": 0.8200000000000001
+     },
+     "value": 1.81
+    },
+    "audience": {
+     "label": "client_safe",
+     "confidence": 0.94,
+     "probabilities": {
+      "client_safe": 0.97,
+      "internal_only": 0.03
+     },
+     "value": null
+    },
+    "severity_value": 1.81,
+    "owner_explicit": 0.09,
+    "due_explicit": 0.33,
+    "owner_status": "not_specified",
+    "due_status": "not_specified",
+    "routing": "auto",
+    "engine": "jev"
+   },
+   {
+    "candidate": {
+     "id": "c9",
+     "text": "Decision: project status amber due to test data risk.",
+     "kind_hint": "decision",
+     "owner": null,
+     "due_date": null,
+     "source_lines": [
+      48,
+      49
+     ],
+     "evidence": "Overall I would call the project amber rather than green, purely because of the test data. Delivery itself is on track. That seems fair to me. I would rather see amber with a reason than green with a surprise later."
+    },
+    "kind": {
+     "label": "decision",
+     "confidence": 0.99,
+     "probabilities": {
+      "dependency": 0.0,
+      "action_item": 0.0,
+      "issue": 0.0,
+      "decision": 1.0,
+      "assumption": 0.0,
+      "risk": 0.0,
+      "discussion_only": 0.0
+     },
+     "value": null
+    },
+    "severity": {
+     "label": "Medium",
+     "confidence": 0.94,
+     "probabilities": {
+      "0": 0.02,
+      "1": 0.95,
+      "2": 0.03
+     },
+     "value": 1.01
+    },
+    "audience": {
+     "label": "internal_only",
+     "confidence": 0.78,
+     "probabilities": {
+      "client_safe": 0.89,
+      "internal_only": 0.11
+     },
+     "value": null
+    },
+    "severity_value": 1.01,
+    "owner_explicit": 0.04,
+    "due_explicit": 0.02,
+    "owner_status": "not_specified",
+    "due_status": "not_specified",
+    "routing": "suggested",
+    "engine": "jev"
+   },
+   {
+    "candidate": {
+     "id": "c10",
+     "text": "Decision: test data dependency flagged to steering committee.",
+     "kind_hint": "decision",
+     "owner": null,
+     "due_date": null,
+     "source_lines": [
+      46,
+      47
+     ],
+     "evidence": "Should we flag anything to the steering committee? The test data dependency, yes. Everything else is inside our control."
+    },
+    "kind": {
+     "label": "decision",
+     "confidence": 0.99,
+     "probabilities": {
+      "action_item": 0.0,
+      "risk": 0.0,
+      "assumption": 0.0,
+      "decision": 0.99,
+      "issue": 0.0,
+      "discussion_only": 0.0,
+      "dependency": 0.01
+     },
+     "value": null
+    },
+    "severity": {
+     "label": "Medium",
+     "confidence": 0.87,
+     "probabilities": {
+      "0": 0.01,
+      "1": 0.92,
+      "2": 0.07
+     },
+     "value": 1.06
+    },
+    "audience": {
+     "label": "internal_only",
+     "confidence": 0.76,
+     "probabilities": {
+      "client_safe": 0.88,
+      "internal_only": 0.12
+     },
+     "value": null
+    },
+    "severity_value": 1.06,
+    "owner_explicit": 0.04,
+    "due_explicit": 0.03,
+    "owner_status": "not_specified",
+    "due_status": "not_specified",
+    "routing": "suggested",
+    "engine": "jev"
+   },
+   {
+    "candidate": {
+     "id": "c11",
+     "text": "Remark: The rules API integration took longer than we sized it.",
+     "kind_hint": "discussion_only",
+     "owner": null,
+     "due_date": null,
+     "source_lines": [
+      9,
+      10
+     ],
+     "evidence": "The rules API integration took longer than we sized it. We estimated five points and it was closer to eight, mostly because their error responses are not consistent. Right. We have a wrapper handling both now, so it is contained."
+    },
+    "kind": {
+     "label": "discussion_only",
+     "confidence": 0.47,
+     "probabilities": {
+      "decision": 0.0,
+      "issue": 0.44,
+      "dependency": 0.0,
+      "risk": 0.0,
+      "assumption": 0.0,
+      "action_item": 0.0,
+      "discussion_only": 0.56
+     },
+     "value": null
+    },
+    "severity": {
+     "label": "Medium",
+     "confidence": 0.62,
+     "probabilities": {
+      "0": 0.25,
+      "1": 0.75,
+      "2": 0.0
+     },
+     "value": 0.75
+    },
+    "audience": {
+     "label": "internal_only",
+     "confidence": 0.67,
+     "probabilities": {
+      "client_safe": 0.83,
+      "internal_only": 0.17
+     },
+     "value": null
+    },
+    "severity_value": 0.75,
+    "owner_explicit": 0.03,
+    "due_explicit": 0.02,
+    "owner_status": "not_specified",
+    "due_status": "not_specified",
+    "routing": "review",
+    "engine": "jev"
+   },
+   {
+    "candidate": {
+     "id": "c12",
+     "text": "Remark: The fourth defect is more interesting.",
+     "kind_hint": "discussion_only",
+     "owner": null,
+     "due_date": null,
+     "source_lines": [
+      15,
+      16
+     ],
+     "evidence": "We closed eleven and opened four. Three of the four are cosmetic - spacing on the applicant summary screen, a truncated label in Welsh, and a date format that shows US order on one report. The fourth one is more interesting. If an applicant uploads a document and then hits back before the upload fin"
+    },
+    "kind": {
+     "label": "issue",
+     "confidence": 0.91,
+     "probabilities": {
+      "discussion_only": 0.04,
+      "assumption": 0.0,
+      "issue": 0.93,
+      "action_item": 0.0,
+      "dependency": 0.0,
+      "risk": 0.03,
+      "decision": 0.0
+     },
+     "value": null
+    },
+    "severity": {
+     "label": "Medium",
+     "confidence": 0.87,
+     "probabilities": {
+      "0": 0.02,
+      "1": 0.91,
+      "2": 0.07
+     },
+     "value": 1.05
+    },
+    "audience": {
+     "label": "internal_only",
+     "confidence": 0.64,
+     "probabilities": {
+      "internal_only": 0.18,
+      "client_safe": 0.82
+     },
+     "value": null
+    },
+    "severity_value": 1.05,
+    "owner_explicit": 0.03,
+    "due_explicit": 0.03,
+    "owner_status": "not_specified",
+    "due_status": "not_specified",
+    "routing": "suggested",
+    "engine": "jev"
+   },
+   {
+    "candidate": {
+     "id": "c13",
+     "text": "Remark: Rarely, but a branch user on a slow connection could hit it.",
+     "kind_hint": "discussion_only",
+     "owner": null,
+     "due_date": null,
+     "source_lines": [
+      17,
+      18
+     ],
+     "evidence": "How often would that happen in practice? Rarely, but a branch user on a slow connection could hit it. The record looks complete and is not."
+    },
+    "kind": {
+     "label": "issue",
+     "confidence": 0.38,
+     "probabilities": {
+      "risk": 0.06,
+      "dependency": 0.0,
+      "assumption": 0.07,
+      "discussion_only": 0.06,
+      "decision": 0.0,
+      "issue": 0.47,
+      "action_item": 0.34
+     },
+     "value": null
+    },
+    "severity": {
+     "label": "Medium",
+     "confidence": 0.83,
+     "probabilities": {
+      "0": 0.08,
+      "1": 0.89,
+      "2": 0.03
+     },
+     "value": 0.95
+    },
+    "audience": {
+     "label": "internal_only",
+     "confidence": 0.38,
+     "probabilities": {
+      "internal_only": 0.31,
+      "client_safe": 0.69
+     },
+     "value": null
+    },
+    "severity_value": 0.95,
+    "owner_explicit": 0.03,
+    "due_explicit": 0.03,
+    "owner_status": "not_specified",
+    "due_status": "not_specified",
+    "routing": "review",
+    "engine": "jev"
+   },
+   {
+    "candidate": {
+     "id": "c14",
+     "text": "Remark: The record looks complete and is not.",
+     "kind_hint": "discussion_only",
+     "owner": null,
+     "due_date": null,
+     "source_lines": [
+      18,
+      19
+     ],
+     "evidence": "Rarely, but a branch user on a slow connection could hit it. The record looks complete and is not. I'll take that one. It needs the upload to be transactional rather than fire and forget. I should have it done by Thursday."
+    },
+    "kind": {
+     "label": "action_item",
+     "confidence": 0.88,
+     "probabilities": {
+      "assumption": 0.0,
+      "action_item": 0.9,
+      "issue": 0.1,
+      "risk": 0.0,
+      "dependency": 0.0,
+      "decision": 0.0,
+      "discussion_only": 0.0
+     },
+     "value": null
+    },
+    "severity": {
+     "label": "Medium",
+     "confidence": 0.7,
+     "probabilities": {
+      "0": 0.01,
+      "1": 0.8,
+      "2": 0.19
+     },
+     "value": 1.19
+    },
+    "audience": {
+     "label": "internal_only",
+     "confidence": 0.03,
+     "probabilities": {
+      "internal_only": 0.49,
+      "client_safe": 0.51
+     },
+     "value": null
+    },
+    "severity_value": 1.19,
+    "owner_explicit": 0.68,
+    "due_explicit": 0.95,
+    "owner_status": "inferred",
+    "due_status": "stated",
+    "routing": "review",
+    "engine": "jev"
+   },
+   {
+    "candidate": {
+     "id": "c15",
+     "text": "Remark: The one thing I raised was the wording on the affordability declaration. Legal want specific phrasing.",
+     "kind_hint": "discussion_only",
+     "owner": null,
+     "due_date": null,
+     "source_lines": [
+      24,
+      25
+     ],
+     "evidence": "It was. The one thing I raised was the wording on the affordability declaration. Legal want specific phrasing. Jonas is sending me the approved wording. Once I have it, it is a ten minute change."
+    },
+    "kind": {
+     "label": "action_item",
+     "confidence": 0.4,
+     "probabilities": {
+      "assumption": 0.0,
+      "dependency": 0.46,
+      "decision": 0.0,
+      "discussion_only": 0.0,
+      "risk": 0.0,
+      "issue": 0.05,
+      "action_item": 0.49
+     },
+     "value": null
+    },
+    "severity": {
+     "label": "Medium",
+     "confidence": 0.44,
+     "probabilities": {
+      "0": 0.32,
+      "1": 0.62,
+      "2": 0.06
+     },
+     "value": 0.74
+    },
+    "audience": {
+     "label": "client_safe",
+     "confidence": 0.88,
+     "probabilities": {
+      "client_safe": 0.94,
+      "internal_only": 0.06
+     },
+     "value": null
+    },
+    "severity_value": 0.74,
+    "owner_explicit": 0.66,
+    "due_explicit": 0.18,
+    "owner_status": "inferred",
+    "due_status": "not_specified",
+    "routing": "review",
+    "engine": "jev"
+   },
+   {
+    "candidate": {
+     "id": "c16",
+     "text": "Remark: I would rather see amber with a reason than green with a surprise later.",
+     "kind_hint": "discussion_only",
+     "owner": null,
+     "due_date": null,
+     "source_lines": [
+      48,
+      49
+     ],
+     "evidence": "Overall I would call the project amber rather than green, purely because of the test data. Delivery itself is on track. That seems fair to me. I would rather see amber with a reason than green with a surprise later."
+    },
+    "kind": {
+     "label": "decision",
+     "confidence": 0.6,
+     "probabilities": {
+      "action_item": 0.0,
+      "assumption": 0.0,
+      "decision": 0.66,
+      "discussion_only": 0.09,
+      "risk": 0.05,
+      "issue": 0.01,
+      "dependency": 0.19
+     },
+     "value": null
+    },
+    "severity": {
+     "label": "Medium",
+     "confidence": 0.88,
+     "probabilities": {
+      "0": 0.06,
+      "1": 0.92,
+      "2": 0.02
+     },
+     "value": 0.95
+    },
+    "audience": {
+     "label": "internal_only",
+     "confidence": 0.48,
+     "probabilities": {
+      "client_safe": 0.74,
+      "internal_only": 0.26
+     },
+     "value": null
+    },
+    "severity_value": 0.95,
+    "owner_explicit": 0.04,
+    "due_explicit": 0.03,
+    "owner_status": "not_specified",
+    "due_status": "not_specified",
+    "routing": "review",
+    "engine": "jev"
+   }
+  ],
+  "rag": {
+   "status": "Amber",
+   "confidence": 0.88,
+   "dimensions": {
+    "schedule": {
+     "label": "at_risk",
+     "confidence": 1.0,
+     "probabilities": {
+      "at_risk": 1.0,
+      "on_track": 0.0,
+      "off_track": 0.0
+     },
+     "value": null
+    },
+    "scope": {
+     "label": "changing",
+     "confidence": 0.88,
+     "probabilities": {
+      "stable": 0.07,
+      "uncontrolled": 0.01,
+      "changing": 0.92
+     },
+     "value": null
+    },
+    "resourcing": {
+     "label": "stretched",
+     "confidence": 0.89,
+     "probabilities": {
+      "stretched": 0.92,
+      "adequate": 0.02,
+      "blocked": 0.06
+     },
+     "value": null
+    },
+    "client_sentiment": {
+     "label": "",
+     "confidence": 0.97,
+     "probabilities": {
+      "0": 0.02,
+      "1": 0.98,
+      "2": 0.0
+     },
+     "value": 0.98
+    }
+   },
+   "reason": "Amber because a milestone is at risk, and scope is changing, and the team is stretched."
+  },
+  "stats": {
+   "engine": "jev",
+   "requests": 17,
+   "latency_ms": 9885,
+   "input_tokens": 20773,
+   "output_tokens": 2632
+  },
+  "dropped": []
+ },
+ "documents": {
+  "mom_markdown": "## Attendees\n- Priya Nair\n- Marcus Webb\n- Anita Rao\n- Tom Fielding\n- Jonas Kern\n\n## Agenda\n- Sprint goal\n- Demo\n- Defects\n- UAT readiness\n- Risk log\n\n## Key discussion points\n- Sprint 14 goal achieved: document upload service and rules API integration completed.\n- Defect identified: orphaned document reference when a user navigates back during upload.\n- UAT readiness requires anonymised test data and repointing the UAT environment to the new rules API.\n- Dependency on Northwind data governance for anonymised test data.\n- Project status deemed amber due to test data risk.\n- Affordability declaration wording pending legal approval.\n- Sprint 15 planning scheduled for Thursday at ten.\n\n## Decisions\n- Project status amber due to test data risk.\n- Test data dependency flagged to steering committee.\n\n## Action items\n- Marcus Webb to fix orphaned document reference defect by Thursday.\n- Jonas Kern to confirm anonymised test data date with Northwind data governance, by Monday 16 March.\n- Jonas Kern to update affordability declaration wording once Northwind legal provides it, expected 20 March.\n- Marcus Webb to raise the infrastructure ticket to repoint the UAT environment to the new rules API, before 6 April.\n- The record looks complete and is not.\n\n",
+  "status_report_markdown": "## Overall status: Amber\nThe milestone is at risk because the UAT environment still points to the old rules API endpoint and the availability of anonymised test data is uncertain.\n\n## Summary\nSprint 14 achieved its goal of completing the document upload service and integrating the rules API. A defect was identified and UAT readiness is pending due to test data and environment configuration.\n\n## Progress this period\n- Document upload service completed.\n- Rules API integration finished.\n- Defect identified: orphaned document reference.\n\n## Next steps\n- Fix the orphaned document reference defect.\n- Confirm the date for anonymised test data availability.\n\n## Risks and issues\n- UAT environment still pointing at old rules API endpoint.\n\n## Support needed from the client\nNone at this time.",
+  "action_items": [
+   {
+    "id": "c1",
+    "text": "Marcus to fix orphaned document reference defect by Thursday.",
+    "kind": "action_item",
+    "severity": "Medium",
+    "severity_value": 1.44,
+    "audience": "client_safe",
+    "owner": "Marcus Webb",
+    "owner_status": "stated",
+    "due_date": "Thursday",
+    "due_status": "stated",
+    "source_lines": [
+     19,
+     20
+    ],
+    "edited_by_user": false
+   },
+   {
+    "id": "c3",
+    "text": "Jonas to confirm anonymised test data date with Northwind data governance, by Monday 16 March.",
+    "kind": "action_item",
+    "severity": "Medium",
+    "severity_value": 1.25,
+    "audience": "client_safe",
+    "owner": "Jonas Kern",
+    "owner_status": "stated",
+    "due_date": "Monday 16 March",
+    "due_status": "stated",
+    "source_lines": [
+     40,
+     41
+    ],
+    "edited_by_user": false
+   },
+   {
+    "id": "c14",
+    "text": "Remark: The record looks complete and is not.",
+    "kind": "action_item",
+    "severity": "Medium",
+    "severity_value": 1.19,
+    "audience": "internal_only",
+    "owner": null,
+    "owner_status": "inferred",
+    "due_date": null,
+    "due_status": "stated",
+    "source_lines": [
+     18,
+     19
+    ],
+    "edited_by_user": false
+   },
+   {
+    "id": "c2",
+    "text": "Jonas to update affordability declaration wording once Northwind legal provides it, expected 20 March.",
+    "kind": "action_item",
+    "severity": "Medium",
+    "severity_value": 1.16,
+    "audience": "internal_only",
+    "owner": "Jonas Kern",
+    "owner_status": "stated",
+    "due_date": "20 March",
+    "due_status": "stated",
+    "source_lines": [
+     28,
+     29
+    ],
+    "edited_by_user": false
+   },
+   {
+    "id": "c4",
+    "text": "Marcus to raise the infrastructure ticket to repoint the UAT environment to the new rules API, before 6 April.",
+    "kind": "action_item",
+    "severity": "Medium",
+    "severity_value": 0.96,
+    "audience": "internal_only",
+    "owner": "Marcus Webb",
+    "owner_status": "stated",
+    "due_date": "before 6 April",
+    "due_status": "stated",
+    "source_lines": [
+     45,
+     46
+    ],
+    "edited_by_user": false
+   },
+   {
+    "id": "c15",
+    "text": "Remark: The one thing I raised was the wording on the affordability declaration. Legal want specific phrasing.",
+    "kind": "action_item",
+    "severity": "Medium",
+    "severity_value": 0.74,
+    "audience": "client_safe",
+    "owner": null,
+    "owner_status": "inferred",
+    "due_date": null,
+    "due_status": "not_specified",
+    "source_lines": [
+     24,
+     25
+    ],
+    "edited_by_user": false
+   }
+  ],
+  "raid_log": {
+   "Risks": [
+    {
+     "id": "c7",
+     "text": "Risk: UAT starts on 6 April; if data arrives late, lose first week of UAT.",
+     "kind": "risk",
+     "severity": "High",
+     "severity_value": 1.74,
+     "audience": "internal_only",
+     "owner": null,
+     "owner_status": "not_specified",
+     "due_date": null,
+     "due_status": "inferred",
+     "source_lines": [
+      35,
+      36
+     ],
+     "edited_by_user": false
+    }
+   ],
+   "Assumptions": [
+    {
+     "id": "c5",
+     "text": "Assumption: anonymised data would be available by end of March.",
+     "kind": "assumption",
+     "severity": "High",
+     "severity_value": 1.61,
+     "audience": "internal_only",
+     "owner": null,
+     "owner_status": "not_specified",
+     "due_date": null,
+     "due_status": "not_specified",
+     "source_lines": [
+      36,
+      37
+     ],
+     "edited_by_user": false
+    }
+   ],
+   "Issues": [
+    {
+     "id": "c8",
+     "text": "Issue: UAT environment still pointing at old rules API endpoint.",
+     "kind": "issue",
+     "severity": "High",
+     "severity_value": 1.81,
+     "audience": "client_safe",
+     "owner": null,
+     "owner_status": "not_specified",
+     "due_date": null,
+     "due_status": "not_specified",
+     "source_lines": [
+      41,
+      42
+     ],
+     "edited_by_user": false
+    },
+    {
+     "id": "c12",
+     "text": "Remark: The fourth defect is more interesting.",
+     "kind": "issue",
+     "severity": "Medium",
+     "severity_value": 1.05,
+     "audience": "internal_only",
+     "owner": null,
+     "owner_status": "not_specified",
+     "due_date": null,
+     "due_status": "not_specified",
+     "source_lines": [
+      15,
+      16
+     ],
+     "edited_by_user": false
+    },
+    {
+     "id": "c13",
+     "text": "Remark: Rarely, but a branch user on a slow connection could hit it.",
+     "kind": "issue",
+     "severity": "Medium",
+     "severity_value": 0.95,
+     "audience": "internal_only",
+     "owner": null,
+     "owner_status": "not_specified",
+     "due_date": null,
+     "due_status": "not_specified",
+     "source_lines": [
+      17,
+      18
+     ],
+     "edited_by_user": false
+    }
+   ],
+   "Dependencies": [
+    {
+     "id": "c6",
+     "text": "Dependency: on Northwind's data governance team providing anonymised records.",
+     "kind": "dependency",
+     "severity": "Medium",
+     "severity_value": 1.44,
+     "audience": "internal_only",
+     "owner": null,
+     "owner_status": "inferred",
+     "due_date": null,
+     "due_status": "inferred",
+     "source_lines": [
+      38,
+      39
+     ],
+     "edited_by_user": false
+    }
+   ]
+  },
+  "status_report_empty": false,
+  "cached": true,
+  "leak_stripped": false
+ }
+}

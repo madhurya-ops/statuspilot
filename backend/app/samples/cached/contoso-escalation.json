@@ -1,0 +1,1658 @@
+{
+ "extract": {
+  "meta": {
+   "title": "Contoso Insurance - Claims Platform Migration Weekly Client Call",
+   "date": "12 March 2026",
+   "attendees": [
+    "Priya Nair",
+    "Raj Menon",
+    "Elena Fischer",
+    "Diane Okafor",
+    "Bill Hartley"
+   ],
+   "agenda": [
+    "Status of migration defect",
+    "Impact on UAT schedule",
+    "Vendor API delivery delay",
+    "New go-live date proposal",
+    "Recovery plan and action items"
+   ]
+  },
+  "discussion_points": [
+   "The original go\u2011live date of 30 April is no longer achievable due to a defect in the transformation logic.",
+   "Claims with multiple linked policies lose secondary policy links during migration, affecting about 41,000 records.",
+   "UAT cannot commence until the defect is fixed, leaving 23 scripts and 11 testers idle.",
+   "The vendor\u2019s document storage API is overdue, with the latest commitment set for 27 March.",
+   "A new go\u2011live date of 29 May is proposed, contingent on a clean rehearsal by 27 March."
+  ],
+  "candidates": [
+   {
+    "id": "c1",
+    "text": "The go\u2011live date of 30 April is no longer achievable.",
+    "kind_hint": "issue",
+    "owner": null,
+    "due_date": null,
+    "source_lines": [
+     6
+    ],
+    "evidence": "The go-live date of the thirtieth of April is no longer achievable."
+   },
+   {
+    "id": "c2",
+    "text": "Claims with more than one linked policy migrate with the policy links dropped.",
+    "kind_hint": "issue",
+    "owner": null,
+    "due_date": null,
+    "source_lines": [
+     9,
+     10
+    ],
+    "evidence": "During the second dress rehearsal we found that claims with more than one linked policy migrate with the policy links dropped."
+   },
+   {
+    "id": "c3",
+    "text": "About nine percent of the historical set, roughly forty one thousand records, are affected by the defect.",
+    "kind_hint": "issue",
+    "owner": null,
+    "due_date": null,
+    "source_lines": [
+     12,
+     13
+    ],
+    "evidence": "About nine percent of the historical set. Roughly forty one thousand records."
+   },
+   {
+    "id": "c4",
+    "text": "The defect is in the transformation logic and must be fixed with a full rehearsal to prove it.",
+    "kind_hint": "action_item",
+    "owner": "Raj Menon",
+    "due_date": null,
+    "source_lines": [
+     14
+    ],
+    "evidence": "It is a defect in the transformation logic, not the data. We can fix it, but every fix has to be followed by a full rehearsal to prove it."
+   },
+   {
+    "id": "c5",
+    "text": "UAT cannot start while the defect is open, leaving 23 scripts and 11 testers idle.",
+    "kind_hint": "issue",
+    "owner": null,
+    "due_date": null,
+    "source_lines": [
+     16,
+     17
+    ],
+    "evidence": "UAT cannot start while this is open. We would be testing against data we know is wrong."
+   },
+   {
+    "id": "c6",
+    "text": "The vendor\u2019s document storage API was due on 28 February and is still not delivered; latest commitment is 27 March.",
+    "kind_hint": "issue",
+    "owner": null,
+    "due_date": null,
+    "source_lines": [
+     20,
+     21,
+     22
+    ],
+    "evidence": "The document storage API from the vendor was due on the twenty eighth of February. It is still not delivered."
+   },
+   {
+    "id": "c7",
+    "text": "Diane Okafor will speak to the vendor account director this week to address the API delay.",
+    "kind_hint": "action_item",
+    "owner": "Diane Okafor",
+    "due_date": "this week",
+    "source_lines": [
+     24,
+     25
+    ],
+    "evidence": "It is a Contoso contract. We have no leverage with them directly. Then I will escalate it. I will speak to their account director this week."
+   },
+   {
+    "id": "c8",
+    "text": "Priya Nair will provide a written recovery note to Diane Okafor by Monday 16 March.",
+    "kind_hint": "action_item",
+    "owner": "Priya Nair",
+    "due_date": "Monday 16 March",
+    "source_lines": [
+     31,
+     32
+    ],
+    "evidence": "Priya to provide a written recovery note to Diane by Monday 16 March."
+   },
+   {
+    "id": "c9",
+    "text": "Raj Menon will deliver the multi\u2011policy transformation fix and a clean rehearsal by 27 March.",
+    "kind_hint": "action_item",
+    "owner": "Raj Menon",
+    "due_date": "27 March",
+    "source_lines": [
+     33,
+     34
+    ],
+    "evidence": "Raj to deliver the multi-policy transformation fix and a clean rehearsal by 27 March."
+   },
+   {
+    "id": "c10",
+    "text": "Elena Fischer will reissue the UAT plan for the 6 April window by 20 March.",
+    "kind_hint": "action_item",
+    "owner": "Elena Fischer",
+    "due_date": "20 March",
+    "source_lines": [
+     35,
+     36
+    ],
+    "evidence": "Elena to reissue the UAT plan for the 6 April window by 20 March."
+   },
+   {
+    "id": "c11",
+    "text": "The new go\u2011live date is proposed as 29 May.",
+    "kind_hint": "decision",
+    "owner": null,
+    "due_date": null,
+    "source_lines": [
+     27,
+     28
+    ],
+    "evidence": "We are proposing the twenty ninth of May."
+   },
+   {
+    "id": "c12",
+    "text": "UAT will move to a four\u2011week window starting 6 April.",
+    "kind_hint": "decision",
+    "owner": null,
+    "due_date": null,
+    "source_lines": [
+     29
+    ],
+    "evidence": "And UAT moving to a four week window starting the sixth of April."
+   },
+   {
+    "id": "c13",
+    "text": "Priya Nair criticized the delay in the vendor\u2019s mapping document review.",
+    "kind_hint": "remark",
+    "owner": "Priya Nair",
+    "due_date": null,
+    "source_lines": [
+     38
+    ],
+    "evidence": "That is fair criticism and it is on me."
+   },
+   {
+    "id": "c14",
+    "text": "Elena Fischer remarked that the rehearsal cycle was sized too optimistically.",
+    "kind_hint": "remark",
+    "owner": "Elena Fischer",
+    "due_date": null,
+    "source_lines": [
+     48
+    ],
+    "evidence": "We should also be honest that we sized the rehearsal cycle wrong. Five days was always optimistic."
+   },
+   {
+    "id": "c15",
+    "text": "Raj Menon identified a risk that if the fourth rehearsal is not clean, the May go\u2011live is gone.",
+    "kind_hint": "risk",
+    "owner": null,
+    "due_date": null,
+    "source_lines": [
+     50,
+     51
+    ],
+    "evidence": "One risk nobody said out loud on the call. If the fourth rehearsal is not clean, May is gone too."
+   },
+   {
+    "id": "c16",
+    "text": "Elena Fischer noted a risk that Raj may be unavailable in the next three weeks, leaving the team one architect deep.",
+    "kind_hint": "risk",
+    "owner": null,
+    "due_date": null,
+    "source_lines": [
+     52,
+     53
+    ],
+    "evidence": "And we are one architect deep on the transformation logic. If Raj is unavailable in the next three weeks we have a problem."
+   }
+  ],
+  "lines": [
+   {
+    "n": 1,
+    "speaker": null,
+    "text": "Contoso Insurance - Claims Platform Migration"
+   },
+   {
+    "n": 2,
+    "speaker": null,
+    "text": "Weekly Client Call"
+   },
+   {
+    "n": 3,
+    "speaker": null,
+    "text": "Date: 12 March 2026"
+   },
+   {
+    "n": 4,
+    "speaker": null,
+    "text": "Attendees: Priya Nair (Delivery Manager), Raj Menon (Solution Architect), Elena Fischer (Test Manager), Diane Okafor (Contoso, Programme Director), Bill Hartley (Contoso, Head of Claims Ops)"
+   },
+   {
+    "n": 5,
+    "speaker": "Priya Nair",
+    "text": "Thanks for joining. I want to be straight with you today rather than walk through a status deck."
+   },
+   {
+    "n": 6,
+    "speaker": "Priya Nair",
+    "text": "The go-live date of the thirtieth of April is no longer achievable. I will explain why and what we are proposing."
+   },
+   {
+    "n": 7,
+    "speaker": "Diane Okafor",
+    "text": "I appreciate the directness. Go on."
+   },
+   {
+    "n": 8,
+    "speaker": "Priya Nair",
+    "text": "Three things have converged. Raj, do you want to cover the migration defect?"
+   },
+   {
+    "n": 9,
+    "speaker": "Raj Menon",
+    "text": "Yes. During the second dress rehearsal we found that claims with more than one linked policy migrate with the policy links dropped."
+   },
+   {
+    "n": 10,
+    "speaker": "Raj Menon",
+    "text": "The claim record arrives, the financials are correct, but the link back to the secondary policy is gone."
+   },
+   {
+    "n": 11,
+    "speaker": "Bill Hartley",
+    "text": "How many claims does that affect?"
+   },
+   {
+    "n": 12,
+    "speaker": "Raj Menon",
+    "text": "About nine percent of the historical set. Roughly forty one thousand records."
+   },
+   {
+    "n": 13,
+    "speaker": "Bill Hartley",
+    "text": "That is not a rounding error. Those are our complex claims, the ones that matter most."
+   },
+   {
+    "n": 14,
+    "speaker": "Raj Menon",
+    "text": "Agreed. It is a defect in the transformation logic, not the data. We can fix it, but every fix has to be followed by a full rehearsal to prove it."
+   },
+   {
+    "n": 15,
+    "speaker": "Priya Nair",
+    "text": "And a full rehearsal is a five day cycle."
+   },
+   {
+    "n": 16,
+    "speaker": "Elena Fischer",
+    "text": "That is the second problem. UAT cannot start while this is open. We would be testing against data we know is wrong."
+   },
+   {
+    "n": 17,
+    "speaker": "Elena Fischer",
+    "text": "We have twenty three UAT scripts ready and eleven testers booked from Contoso's side. They are effectively idle."
+   },
+   {
+    "n": 18,
+    "speaker": "Diane Okafor",
+    "text": "Those testers were released from their day roles specifically for this window."
+   },
+   {
+    "n": 19,
+    "speaker": "Priya Nair",
+    "text": "I know, and I am sorry. Holding them idle is not acceptable, so we need to agree a new window today."
+   },
+   {
+    "n": 20,
+    "speaker": "Priya Nair",
+    "text": "The third issue is the vendor. Raj?"
+   },
+   {
+    "n": 21,
+    "speaker": "Raj Menon",
+    "text": "The document storage API from the vendor was due on the twenty eighth of February. It is still not delivered."
+   },
+   {
+    "n": 22,
+    "speaker": "Raj Menon",
+    "text": "Their latest commitment is the twenty seventh of March, which is the third date they have given us."
+   },
+   {
+    "n": 23,
+    "speaker": "Diane Okafor",
+    "text": "Is that contract ours or yours?"
+   },
+   {
+    "n": 24,
+    "speaker": "Priya Nair",
+    "text": "It is a Contoso contract. We have no leverage with them directly."
+   },
+   {
+    "n": 25,
+    "speaker": "Diane Okafor",
+    "text": "Then I will escalate it. I will speak to their account director this week."
+   },
+   {
+    "n": 26,
+    "speaker": "Priya Nair",
+    "text": "Diane to escalate the document storage API delay with the vendor account director this week."
+   },
+   {
+    "n": 27,
+    "speaker": "Bill Hartley",
+    "text": "What is the new go-live date?"
+   },
+   {
+    "n": 28,
+    "speaker": "Priya Nair",
+    "text": "We are proposing the twenty ninth of May. That assumes the transformation fix lands by the twenty seventh of March and the fourth rehearsal is clean."
+   },
+   {
+    "n": 29,
+    "speaker": "Elena Fischer",
+    "text": "And UAT moving to a four week window starting the sixth of April."
+   },
+   {
+    "n": 30,
+    "speaker": "Diane Okafor",
+    "text": "A month's slip. I have to take that to the executive committee on Tuesday."
+   },
+   {
+    "n": 31,
+    "speaker": "Diane Okafor",
+    "text": "What I need from you is a written note by Monday setting out the cause, the recovery plan and what changes so this does not happen a third time."
+   },
+   {
+    "n": 32,
+    "speaker": "Priya Nair",
+    "text": "Priya to provide a written recovery note to Diane by Monday 16 March."
+   },
+   {
+    "n": 33,
+    "speaker": "Raj Menon",
+    "text": "I will own the transformation fix. Target is the twenty seventh of March for the fix and the rehearsal."
+   },
+   {
+    "n": 34,
+    "speaker": "Priya Nair",
+    "text": "Raj to deliver the multi-policy transformation fix and a clean rehearsal by 27 March."
+   },
+   {
+    "n": 35,
+    "speaker": "Elena Fischer",
+    "text": "I will rework the UAT plan for the April window and reconfirm the tester bookings."
+   },
+   {
+    "n": 36,
+    "speaker": "Priya Nair",
+    "text": "Elena to reissue the UAT plan for the 6 April window by 20 March."
+   },
+   {
+    "n": 37,
+    "speaker": "Bill Hartley",
+    "text": "I want to say something about confidence. This is the second slip. The first one we were told about a week after the fact."
+   },
+   {
+    "n": 38,
+    "speaker": "Priya Nair",
+    "text": "That is fair criticism and it is on me."
+   },
+   {
+    "n": 39,
+    "speaker": "Diane Okafor",
+    "text": "Let us focus on recovery. I would rather have an honest May date than an optimistic April one."
+   },
+   {
+    "n": 40,
+    "speaker": "Priya Nair",
+    "text": "Understood. Anything else from your side?"
+   },
+   {
+    "n": 41,
+    "speaker": "Diane Okafor",
+    "text": "No. Send the note by Monday. I have to drop, I have another call."
+   },
+   {
+    "n": 42,
+    "speaker": "Bill Hartley",
+    "text": "Same here. Thanks both."
+   },
+   {
+    "n": 43,
+    "speaker": "Priya Nair",
+    "text": "Thanks Diane, thanks Bill."
+   },
+   {
+    "n": 44,
+    "speaker": "Priya Nair",
+    "text": "Right, they have gone. Let us have two minutes internally."
+   },
+   {
+    "n": 45,
+    "speaker": "Elena Fischer",
+    "text": "That went better than I expected."
+   },
+   {
+    "n": 46,
+    "speaker": "Raj Menon",
+    "text": "Honestly their team never reviews anything on time. Half of those forty one thousand records would not be an issue if they had signed off the mapping document in January like they promised."
+   },
+   {
+    "n": 47,
+    "speaker": "Priya Nair",
+    "text": "That is true but it is not going in the note. We own the transformation logic."
+   },
+   {
+    "n": 48,
+    "speaker": "Elena Fischer",
+    "text": "We should also be honest that we sized the rehearsal cycle wrong. Five days was always optimistic."
+   },
+   {
+    "n": 49,
+    "speaker": "Priya Nair",
+    "text": "Agreed. I will put the rehearsal sizing in the lessons learned."
+   },
+   {
+    "n": 50,
+    "speaker": "Raj Menon",
+    "text": "One risk nobody said out loud on the call. If the fourth rehearsal is not clean, May is gone too."
+   },
+   {
+    "n": 51,
+    "speaker": "Priya Nair",
+    "text": "That is the real risk. Let us log it."
+   },
+   {
+    "n": 52,
+    "speaker": "Elena Fischer",
+    "text": "And we are one architect deep on the transformation logic. If Raj is unavailable in the next three weeks we have a problem."
+   },
+   {
+    "n": 53,
+    "speaker": "Priya Nair",
+    "text": "Also going in the log. Thanks both."
+   }
+  ]
+ },
+ "classify": {
+  "items": [
+   {
+    "candidate": {
+     "id": "c1",
+     "text": "The go\u2011live date of 30 April is no longer achievable.",
+     "kind_hint": "issue",
+     "owner": null,
+     "due_date": null,
+     "source_lines": [
+      6
+     ],
+     "evidence": "The go-live date of the thirtieth of April is no longer achievable."
+    },
+    "kind": {
+     "label": "issue",
+     "confidence": 0.96,
+     "probabilities": {
+      "risk": 0.0,
+      "issue": 0.98,
+      "dependency": 0.0,
+      "decision": 0.0,
+      "action_item": 0.0,
+      "assumption": 0.0,
+      "discussion_only": 0.02
+     },
+     "value": null
+    },
+    "severity": {
+     "label": "High",
+     "confidence": 1.0,
+     "probabilities": {
+      "0": 0.0,
+      "1": 0.0,
+      "2": 1.0
+     },
+     "value": 2.0
+    },
+    "audience": {
+     "label": "client_safe",
+     "confidence": 1.0,
+     "probabilities": {
+      "internal_only": 0.0,
+      "client_safe": 1.0
+     },
+     "value": null
+    },
+    "severity_value": 2.0,
+    "owner_explicit": 0.02,
+    "due_explicit": 0.49,
+    "owner_status": "not_specified",
+    "due_status": "inferred",
+    "routing": "auto",
+    "engine": "jev"
+   },
+   {
+    "candidate": {
+     "id": "c2",
+     "text": "Claims with more than one linked policy migrate with the policy links dropped.",
+     "kind_hint": "issue",
+     "owner": null,
+     "due_date": null,
+     "source_lines": [
+      9,
+      10
+     ],
+     "evidence": "During the second dress rehearsal we found that claims with more than one linked policy migrate with the policy links dropped."
+    },
+    "kind": {
+     "label": "issue",
+     "confidence": 1.0,
+     "probabilities": {
+      "risk": 0.0,
+      "issue": 1.0,
+      "decision": 0.0,
+      "assumption": 0.0,
+      "dependency": 0.0,
+      "discussion_only": 0.0,
+      "action_item": 0.0
+     },
+     "value": null
+    },
+    "severity": {
+     "label": "High",
+     "confidence": 0.72,
+     "probabilities": {
+      "0": 0.0,
+      "1": 0.19,
+      "2": 0.81
+     },
+     "value": 1.81
+    },
+    "audience": {
+     "label": "client_safe",
+     "confidence": 0.95,
+     "probabilities": {
+      "internal_only": 0.02,
+      "client_safe": 0.98
+     },
+     "value": null
+    },
+    "severity_value": 1.81,
+    "owner_explicit": 0.03,
+    "due_explicit": 0.02,
+    "owner_status": "not_specified",
+    "due_status": "not_specified",
+    "routing": "auto",
+    "engine": "jev"
+   },
+   {
+    "candidate": {
+     "id": "c3",
+     "text": "About nine percent of the historical set, roughly forty one thousand records, are affected by the defect.",
+     "kind_hint": "issue",
+     "owner": null,
+     "due_date": null,
+     "source_lines": [
+      12,
+      13
+     ],
+     "evidence": "About nine percent of the historical set. Roughly forty one thousand records."
+    },
+    "kind": {
+     "label": "issue",
+     "confidence": 0.88,
+     "probabilities": {
+      "discussion_only": 0.1,
+      "risk": 0.0,
+      "action_item": 0.0,
+      "dependency": 0.0,
+      "issue": 0.9,
+      "decision": 0.0,
+      "assumption": 0.0
+     },
+     "value": null
+    },
+    "severity": {
+     "label": "High",
+     "confidence": 0.95,
+     "probabilities": {
+      "0": 0.0,
+      "1": 0.03,
+      "2": 0.97
+     },
+     "value": 1.97
+    },
+    "audience": {
+     "label": "client_safe",
+     "confidence": 0.94,
+     "probabilities": {
+      "internal_only": 0.03,
+      "client_safe": 0.97
+     },
+     "value": null
+    },
+    "severity_value": 1.97,
+    "owner_explicit": 0.02,
+    "due_explicit": 0.02,
+    "owner_status": "not_specified",
+    "due_status": "not_specified",
+    "routing": "auto",
+    "engine": "jev"
+   },
+   {
+    "candidate": {
+     "id": "c4",
+     "text": "The defect is in the transformation logic and must be fixed with a full rehearsal to prove it.",
+     "kind_hint": "action_item",
+     "owner": "Raj Menon",
+     "due_date": null,
+     "source_lines": [
+      14
+     ],
+     "evidence": "It is a defect in the transformation logic, not the data. We can fix it, but every fix has to be followed by a full rehearsal to prove it."
+    },
+    "kind": {
+     "label": "issue",
+     "confidence": 0.92,
+     "probabilities": {
+      "action_item": 0.06,
+      "dependency": 0.0,
+      "issue": 0.9400000000000001,
+      "decision": 0.0,
+      "discussion_only": 0.0,
+      "assumption": 0.0,
+      "risk": 0.0
+     },
+     "value": null
+    },
+    "severity": {
+     "label": "High",
+     "confidence": 0.99,
+     "probabilities": {
+      "0": 0.0,
+      "1": 0.0,
+      "2": 1.0
+     },
+     "value": 1.99
+    },
+    "audience": {
+     "label": "client_safe",
+     "confidence": 0.91,
+     "probabilities": {
+      "client_safe": 0.95,
+      "internal_only": 0.05
+     },
+     "value": null
+    },
+    "severity_value": 1.99,
+    "owner_explicit": 0.04,
+    "due_explicit": 0.04,
+    "owner_status": "not_specified",
+    "due_status": "not_specified",
+    "routing": "auto",
+    "engine": "jev"
+   },
+   {
+    "candidate": {
+     "id": "c5",
+     "text": "UAT cannot start while the defect is open, leaving 23 scripts and 11 testers idle.",
+     "kind_hint": "issue",
+     "owner": null,
+     "due_date": null,
+     "source_lines": [
+      16,
+      17
+     ],
+     "evidence": "UAT cannot start while this is open. We would be testing against data we know is wrong."
+    },
+    "kind": {
+     "label": "issue",
+     "confidence": 0.98,
+     "probabilities": {
+      "decision": 0.0,
+      "action_item": 0.0,
+      "risk": 0.0,
+      "assumption": 0.0,
+      "issue": 0.99,
+      "discussion_only": 0.0,
+      "dependency": 0.01
+     },
+     "value": null
+    },
+    "severity": {
+     "label": "High",
+     "confidence": 0.98,
+     "probabilities": {
+      "0": 0.0,
+      "1": 0.01,
+      "2": 0.99
+     },
+     "value": 1.99
+    },
+    "audience": {
+     "label": "internal_only",
+     "confidence": 0.35,
+     "probabilities": {
+      "internal_only": 0.32,
+      "client_safe": 0.68
+     },
+     "value": null
+    },
+    "severity_value": 1.99,
+    "owner_explicit": 0.03,
+    "due_explicit": 0.02,
+    "owner_status": "not_specified",
+    "due_status": "not_specified",
+    "routing": "review",
+    "engine": "jev"
+   },
+   {
+    "candidate": {
+     "id": "c6",
+     "text": "The vendor\u2019s document storage API was due on 28 February and is still not delivered; latest commitment is 27 March.",
+     "kind_hint": "issue",
+     "owner": null,
+     "due_date": null,
+     "source_lines": [
+      20,
+      21,
+      22
+     ],
+     "evidence": "The document storage API from the vendor was due on the twenty eighth of February. It is still not delivered."
+    },
+    "kind": {
+     "label": "dependency",
+     "confidence": 0.89,
+     "probabilities": {
+      "action_item": 0.0,
+      "discussion_only": 0.0,
+      "decision": 0.0,
+      "issue": 0.1,
+      "assumption": 0.0,
+      "dependency": 0.9,
+      "risk": 0.0
+     },
+     "value": null
+    },
+    "severity": {
+     "label": "High",
+     "confidence": 0.95,
+     "probabilities": {
+      "0": 0.0,
+      "1": 0.03,
+      "2": 0.97
+     },
+     "value": 1.97
+    },
+    "audience": {
+     "label": "internal_only",
+     "confidence": 0.63,
+     "probabilities": {
+      "client_safe": 0.82,
+      "internal_only": 0.18
+     },
+     "value": null
+    },
+    "severity_value": 1.97,
+    "owner_explicit": 0.03,
+    "due_explicit": 0.96,
+    "owner_status": "not_specified",
+    "due_status": "stated",
+    "routing": "suggested",
+    "engine": "jev"
+   },
+   {
+    "candidate": {
+     "id": "c7",
+     "text": "Diane Okafor will speak to the vendor account director this week to address the API delay.",
+     "kind_hint": "action_item",
+     "owner": "Diane Okafor",
+     "due_date": "this week",
+     "source_lines": [
+      24,
+      25
+     ],
+     "evidence": "It is a Contoso contract. We have no leverage with them directly. Then I will escalate it. I will speak to their account director this week."
+    },
+    "kind": {
+     "label": "action_item",
+     "confidence": 1.0,
+     "probabilities": {
+      "assumption": 0.0,
+      "risk": 0.0,
+      "issue": 0.0,
+      "dependency": 0.0,
+      "action_item": 1.0,
+      "discussion_only": 0.0,
+      "decision": 0.0
+     },
+     "value": null
+    },
+    "severity": {
+     "label": "High",
+     "confidence": 0.65,
+     "probabilities": {
+      "0": 0.0,
+      "1": 0.23,
+      "2": 0.77
+     },
+     "value": 1.77
+    },
+    "audience": {
+     "label": "internal_only",
+     "confidence": 0.33,
+     "probabilities": {
+      "client_safe": 0.66,
+      "internal_only": 0.34
+     },
+     "value": null
+    },
+    "severity_value": 1.77,
+    "owner_explicit": 0.68,
+    "due_explicit": 0.87,
+    "owner_status": "inferred",
+    "due_status": "stated",
+    "routing": "review",
+    "engine": "jev"
+   },
+   {
+    "candidate": {
+     "id": "c8",
+     "text": "Priya Nair will provide a written recovery note to Diane Okafor by Monday 16 March.",
+     "kind_hint": "action_item",
+     "owner": "Priya Nair",
+     "due_date": "Monday 16 March",
+     "source_lines": [
+      31,
+      32
+     ],
+     "evidence": "Priya to provide a written recovery note to Diane by Monday 16 March."
+    },
+    "kind": {
+     "label": "action_item",
+     "confidence": 1.0,
+     "probabilities": {
+      "assumption": 0.0,
+      "action_item": 1.0,
+      "issue": 0.0,
+      "decision": 0.0,
+      "dependency": 0.0,
+      "risk": 0.0,
+      "discussion_only": 0.0
+     },
+     "value": null
+    },
+    "severity": {
+     "label": "High",
+     "confidence": 0.28,
+     "probabilities": {
+      "0": 0.08,
+      "1": 0.32,
+      "2": 0.6
+     },
+     "value": 1.52
+    },
+    "audience": {
+     "label": "client_safe",
+     "confidence": 0.87,
+     "probabilities": {
+      "internal_only": 0.07,
+      "client_safe": 0.93
+     },
+     "value": null
+    },
+    "severity_value": 1.52,
+    "owner_explicit": 0.94,
+    "due_explicit": 0.99,
+    "owner_status": "stated",
+    "due_status": "stated",
+    "routing": "auto",
+    "engine": "jev"
+   },
+   {
+    "candidate": {
+     "id": "c9",
+     "text": "Raj Menon will deliver the multi\u2011policy transformation fix and a clean rehearsal by 27 March.",
+     "kind_hint": "action_item",
+     "owner": "Raj Menon",
+     "due_date": "27 March",
+     "source_lines": [
+      33,
+      34
+     ],
+     "evidence": "Raj to deliver the multi-policy transformation fix and a clean rehearsal by 27 March."
+    },
+    "kind": {
+     "label": "action_item",
+     "confidence": 1.0,
+     "probabilities": {
+      "decision": 0.0,
+      "dependency": 0.0,
+      "risk": 0.0,
+      "assumption": 0.0,
+      "issue": 0.0,
+      "discussion_only": 0.0,
+      "action_item": 1.0
+     },
+     "value": null
+    },
+    "severity": {
+     "label": "High",
+     "confidence": 0.6,
+     "probabilities": {
+      "0": 0.0,
+      "1": 0.27,
+      "2": 0.73
+     },
+     "value": 1.73
+    },
+    "audience": {
+     "label": "client_safe",
+     "confidence": 0.96,
+     "probabilities": {
+      "client_safe": 0.98,
+      "internal_only": 0.02
+     },
+     "value": null
+    },
+    "severity_value": 1.73,
+    "owner_explicit": 0.94,
+    "due_explicit": 0.99,
+    "owner_status": "stated",
+    "due_status": "stated",
+    "routing": "auto",
+    "engine": "jev"
+   },
+   {
+    "candidate": {
+     "id": "c10",
+     "text": "Elena Fischer will reissue the UAT plan for the 6 April window by 20 March.",
+     "kind_hint": "action_item",
+     "owner": "Elena Fischer",
+     "due_date": "20 March",
+     "source_lines": [
+      35,
+      36
+     ],
+     "evidence": "Elena to reissue the UAT plan for the 6 April window by 20 March."
+    },
+    "kind": {
+     "label": "action_item",
+     "confidence": 1.0,
+     "probabilities": {
+      "risk": 0.0,
+      "discussion_only": 0.0,
+      "decision": 0.0,
+      "issue": 0.0,
+      "assumption": 0.0,
+      "dependency": 0.0,
+      "action_item": 1.0
+     },
+     "value": null
+    },
+    "severity": {
+     "label": "Medium",
+     "confidence": 0.47,
+     "probabilities": {
+      "0": 0.0,
+      "1": 0.65,
+      "2": 0.35
+     },
+     "value": 1.34
+    },
+    "audience": {
+     "label": "client_safe",
+     "confidence": 0.88,
+     "probabilities": {
+      "internal_only": 0.06,
+      "client_safe": 0.94
+     },
+     "value": null
+    },
+    "severity_value": 1.34,
+    "owner_explicit": 0.71,
+    "due_explicit": 0.99,
+    "owner_status": "inferred",
+    "due_status": "stated",
+    "routing": "auto",
+    "engine": "jev"
+   },
+   {
+    "candidate": {
+     "id": "c11",
+     "text": "The new go\u2011live date is proposed as 29 May.",
+     "kind_hint": "decision",
+     "owner": null,
+     "due_date": null,
+     "source_lines": [
+      27,
+      28
+     ],
+     "evidence": "We are proposing the twenty ninth of May."
+    },
+    "kind": {
+     "label": "decision",
+     "confidence": 0.49,
+     "probabilities": {
+      "action_item": 0.0,
+      "discussion_only": 0.16,
+      "assumption": 0.25,
+      "issue": 0.0,
+      "decision": 0.56,
+      "dependency": 0.01,
+      "risk": 0.01
+     },
+     "value": null
+    },
+    "severity": {
+     "label": "High",
+     "confidence": 0.99,
+     "probabilities": {
+      "0": 0.0,
+      "1": 0.01,
+      "2": 0.99
+     },
+     "value": 1.99
+    },
+    "audience": {
+     "label": "client_safe",
+     "confidence": 0.85,
+     "probabilities": {
+      "client_safe": 0.93,
+      "internal_only": 0.07
+     },
+     "value": null
+    },
+    "severity_value": 1.99,
+    "owner_explicit": 0.04,
+    "due_explicit": 0.7,
+    "owner_status": "not_specified",
+    "due_status": "inferred",
+    "routing": "review",
+    "engine": "jev"
+   },
+   {
+    "candidate": {
+     "id": "c12",
+     "text": "UAT will move to a four\u2011week window starting 6 April.",
+     "kind_hint": "decision",
+     "owner": null,
+     "due_date": null,
+     "source_lines": [
+      29
+     ],
+     "evidence": "And UAT moving to a four week window starting the sixth of April."
+    },
+    "kind": {
+     "label": "decision",
+     "confidence": 0.77,
+     "probabilities": {
+      "risk": 0.0,
+      "action_item": 0.02,
+      "assumption": 0.01,
+      "issue": 0.03,
+      "decision": 0.8,
+      "discussion_only": 0.13,
+      "dependency": 0.0
+     },
+     "value": null
+    },
+    "severity": {
+     "label": "High",
+     "confidence": 0.95,
+     "probabilities": {
+      "0": 0.0,
+      "1": 0.04,
+      "2": 0.96
+     },
+     "value": 1.96
+    },
+    "audience": {
+     "label": "client_safe",
+     "confidence": 0.97,
+     "probabilities": {
+      "client_safe": 0.98,
+      "internal_only": 0.02
+     },
+     "value": null
+    },
+    "severity_value": 1.96,
+    "owner_explicit": 0.04,
+    "due_explicit": 0.76,
+    "owner_status": "not_specified",
+    "due_status": "stated",
+    "routing": "suggested",
+    "engine": "jev"
+   },
+   {
+    "candidate": {
+     "id": "c13",
+     "text": "Priya Nair criticized the delay in the vendor\u2019s mapping document review.",
+     "kind_hint": "remark",
+     "owner": "Priya Nair",
+     "due_date": null,
+     "source_lines": [
+      38
+     ],
+     "evidence": "That is fair criticism and it is on me."
+    },
+    "kind": {
+     "label": "issue",
+     "confidence": 0.72,
+     "probabilities": {
+      "risk": 0.0,
+      "issue": 0.76,
+      "dependency": 0.02,
+      "decision": 0.0,
+      "action_item": 0.03,
+      "assumption": 0.0,
+      "discussion_only": 0.19
+     },
+     "value": null
+    },
+    "severity": {
+     "label": "High",
+     "confidence": 0.53,
+     "probabilities": {
+      "0": 0.01,
+      "1": 0.3,
+      "2": 0.69
+     },
+     "value": 1.69
+    },
+    "audience": {
+     "label": "internal_only",
+     "confidence": 0.53,
+     "probabilities": {
+      "internal_only": 0.77,
+      "client_safe": 0.23
+     },
+     "value": null
+    },
+    "severity_value": 1.69,
+    "owner_explicit": 0.47,
+    "due_explicit": 0.02,
+    "owner_status": "inferred",
+    "due_status": "not_specified",
+    "routing": "suggested",
+    "engine": "jev"
+   },
+   {
+    "candidate": {
+     "id": "c14",
+     "text": "Elena Fischer remarked that the rehearsal cycle was sized too optimistically.",
+     "kind_hint": "remark",
+     "owner": "Elena Fischer",
+     "due_date": null,
+     "source_lines": [
+      48
+     ],
+     "evidence": "We should also be honest that we sized the rehearsal cycle wrong. Five days was always optimistic."
+    },
+    "kind": {
+     "label": "action_item",
+     "confidence": 0.27,
+     "probabilities": {
+      "action_item": 0.37,
+      "dependency": 0.0,
+      "issue": 0.36,
+      "decision": 0.01,
+      "assumption": 0.01,
+      "risk": 0.03,
+      "discussion_only": 0.22
+     },
+     "value": null
+    },
+    "severity": {
+     "label": "High",
+     "confidence": 0.67,
+     "probabilities": {
+      "0": 0.0,
+      "1": 0.22,
+      "2": 0.78
+     },
+     "value": 1.78
+    },
+    "audience": {
+     "label": "internal_only",
+     "confidence": 0.17,
+     "probabilities": {
+      "client_safe": 0.42,
+      "internal_only": 0.58
+     },
+     "value": null
+    },
+    "severity_value": 1.78,
+    "owner_explicit": 0.08,
+    "due_explicit": 0.04,
+    "owner_status": "not_specified",
+    "due_status": "not_specified",
+    "routing": "review",
+    "engine": "jev"
+   },
+   {
+    "candidate": {
+     "id": "c15",
+     "text": "Raj Menon identified a risk that if the fourth rehearsal is not clean, the May go\u2011live is gone.",
+     "kind_hint": "risk",
+     "owner": null,
+     "due_date": null,
+     "source_lines": [
+      50,
+      51
+     ],
+     "evidence": "One risk nobody said out loud on the call. If the fourth rehearsal is not clean, May is gone too."
+    },
+    "kind": {
+     "label": "risk",
+     "confidence": 1.0,
+     "probabilities": {
+      "risk": 1.0,
+      "issue": 0.0,
+      "decision": 0.0,
+      "assumption": 0.0,
+      "dependency": 0.0,
+      "action_item": 0.0,
+      "discussion_only": 0.0
+     },
+     "value": null
+    },
+    "severity": {
+     "label": "High",
+     "confidence": 1.0,
+     "probabilities": {
+      "0": 0.0,
+      "1": 0.0,
+      "2": 1.0
+     },
+     "value": 2.0
+    },
+    "audience": {
+     "label": "internal_only",
+     "confidence": 0.44,
+     "probabilities": {
+      "internal_only": 0.72,
+      "client_safe": 0.28
+     },
+     "value": null
+    },
+    "severity_value": 2.0,
+    "owner_explicit": 0.04,
+    "due_explicit": 0.49,
+    "owner_status": "not_specified",
+    "due_status": "inferred",
+    "routing": "review",
+    "engine": "jev"
+   },
+   {
+    "candidate": {
+     "id": "c16",
+     "text": "Elena Fischer noted a risk that Raj may be unavailable in the next three weeks, leaving the team one architect deep.",
+     "kind_hint": "risk",
+     "owner": null,
+     "due_date": null,
+     "source_lines": [
+      52,
+      53
+     ],
+     "evidence": "And we are one architect deep on the transformation logic. If Raj is unavailable in the next three weeks we have a problem."
+    },
+    "kind": {
+     "label": "risk",
+     "confidence": 0.99,
+     "probabilities": {
+      "decision": 0.0,
+      "issue": 0.01,
+      "risk": 0.99,
+      "assumption": 0.0,
+      "action_item": 0.0,
+      "discussion_only": 0.0,
+      "dependency": 0.0
+     },
+     "value": null
+    },
+    "severity": {
+     "label": "Medium",
+     "confidence": 0.42,
+     "probabilities": {
+      "0": 0.0,
+      "1": 0.62,
+      "2": 0.38
+     },
+     "value": 1.38
+    },
+    "audience": {
+     "label": "internal_only",
+     "confidence": 0.34,
+     "probabilities": {
+      "internal_only": 0.67,
+      "client_safe": 0.33
+     },
+     "value": null
+    },
+    "severity_value": 1.38,
+    "owner_explicit": 0.07,
+    "due_explicit": 0.38,
+    "owner_status": "not_specified",
+    "due_status": "inferred",
+    "routing": "review",
+    "engine": "jev"
+   }
+  ],
+  "rag": {
+   "status": "Red",
+   "confidence": 0.84,
+   "dimensions": {
+    "schedule": {
+     "label": "off_track",
+     "confidence": 1.0,
+     "probabilities": {
+      "off_track": 1.0,
+      "at_risk": 0.0,
+      "on_track": 0.0
+     },
+     "value": null
+    },
+    "scope": {
+     "label": "changing",
+     "confidence": 0.92,
+     "probabilities": {
+      "stable": 0.04,
+      "uncontrolled": 0.01,
+      "changing": 0.95
+     },
+     "value": null
+    },
+    "resourcing": {
+     "label": "stretched",
+     "confidence": 0.84,
+     "probabilities": {
+      "stretched": 0.89,
+      "adequate": 0.0,
+      "blocked": 0.11
+     },
+     "value": null
+    },
+    "client_sentiment": {
+     "label": "",
+     "confidence": 0.87,
+     "probabilities": {
+      "0": 0.91,
+      "1": 0.09,
+      "2": 0.0
+     },
+     "value": 0.09
+    }
+   },
+   "reason": "Red because a milestone has slipped, and the client is dissatisfied or escalating."
+  },
+  "stats": {
+   "engine": "jev",
+   "requests": 17,
+   "latency_ms": 4520,
+   "input_tokens": 20279,
+   "output_tokens": 2626
+  },
+  "dropped": []
+ },
+ "documents": {
+  "mom_markdown": "## Attendees\n- Priya Nair\n- Raj Menon\n- Elena Fischer\n- Diane Okafor\n- Bill Hartley\n\n## Agenda\n- Status of migration defect\n- Impact on UAT schedule\n- Vendor API delivery delay\n- New go\u2011live date proposal\n- Recovery plan and action items\n\n## Key discussion points\n- The original go\u2011live date of 30 April is no longer achievable due to a defect in the transformation logic.\n- Claims with multiple linked policies lose secondary policy links during migration, affecting about 41,000 records.\n- UAT cannot commence until the defect is fixed, leaving 23 scripts and 11 testers idle.\n- The vendor\u2019s document storage API is overdue, with the latest commitment set for 27 March.\n- A new go\u2011live date of 29 May is proposed, contingent on a clean rehearsal by 27 March.\n\n## Decisions\n- The new go\u2011live date is proposed as 29 May.\n- UAT will move to a four\u2011week window starting 6 April.\n\n## Action items\n- Priya Nair will provide a written recovery note to Diane Okafor by Monday 16 March.\n- Raj Menon will deliver the multi\u2011policy transformation fix and a clean rehearsal by 27 March.\n- Elena Fischer will reissue the UAT plan for the 6 April window by 20 March.\n",
+  "status_report_markdown": "## Overall status: Red\nThe go\u2011live date of 30 April is no longer achievable, causing a milestone slip.\n\n## Summary\nThe migration defect in transformation logic has prevented the original go\u2011live date and impacted UAT readiness. A new go\u2011live date of 29 May has been proposed.\n\n## Progress this period\n- The defect affecting 41,000 records has been identified.\n- A new go\u2011live date of 29 May and a four\u2011week UAT window starting 6 April have been agreed.\n\n## Next steps\n- Priya Nair will submit a written recovery note to Diane Okafor by 16 March.\n- Raj Menon will deliver the multi\u2011policy transformation fix and a clean rehearsal by 27 March.\n- Elena Fischer will reissue the UAT plan for the 6 April window by 20 March.\n\n## Risks and issues\n- The go\u2011live date of 30 April is no longer achievable.\n- Claims with more than one linked policy migrate with the policy links dropped.\n- About nine percent of the historical set, roughly forty one thousand records, are affected by the defect.\n- The defect is in the transformation logic and must be fixed with a full rehearsal to prove it.\n\n## Support needed from the client\nNone at this time.",
+  "action_items": [
+   {
+    "id": "c14",
+    "text": "Elena Fischer remarked that the rehearsal cycle was sized too optimistically.",
+    "kind": "action_item",
+    "severity": "High",
+    "severity_value": 1.78,
+    "audience": "internal_only",
+    "owner": "Elena Fischer",
+    "owner_status": "not_specified",
+    "due_date": null,
+    "due_status": "not_specified",
+    "source_lines": [
+     48
+    ],
+    "edited_by_user": false
+   },
+   {
+    "id": "c7",
+    "text": "Diane Okafor will speak to the vendor account director this week to address the API delay.",
+    "kind": "action_item",
+    "severity": "High",
+    "severity_value": 1.77,
+    "audience": "internal_only",
+    "owner": "Diane Okafor",
+    "owner_status": "inferred",
+    "due_date": "this week",
+    "due_status": "stated",
+    "source_lines": [
+     24,
+     25
+    ],
+    "edited_by_user": false
+   },
+   {
+    "id": "c9",
+    "text": "Raj Menon will deliver the multi\u2011policy transformation fix and a clean rehearsal by 27 March.",
+    "kind": "action_item",
+    "severity": "High",
+    "severity_value": 1.73,
+    "audience": "client_safe",
+    "owner": "Raj Menon",
+    "owner_status": "stated",
+    "due_date": "27 March",
+    "due_status": "stated",
+    "source_lines": [
+     33,
+     34
+    ],
+    "edited_by_user": false
+   },
+   {
+    "id": "c8",
+    "text": "Priya Nair will provide a written recovery note to Diane Okafor by Monday 16 March.",
+    "kind": "action_item",
+    "severity": "High",
+    "severity_value": 1.52,
+    "audience": "client_safe",
+    "owner": "Priya Nair",
+    "owner_status": "stated",
+    "due_date": "Monday 16 March",
+    "due_status": "stated",
+    "source_lines": [
+     31,
+     32
+    ],
+    "edited_by_user": false
+   },
+   {
+    "id": "c10",
+    "text": "Elena Fischer will reissue the UAT plan for the 6 April window by 20 March.",
+    "kind": "action_item",
+    "severity": "Medium",
+    "severity_value": 1.34,
+    "audience": "client_safe",
+    "owner": "Elena Fischer",
+    "owner_status": "inferred",
+    "due_date": "20 March",
+    "due_status": "stated",
+    "source_lines": [
+     35,
+     36
+    ],
+    "edited_by_user": false
+   }
+  ],
+  "raid_log": {
+   "Risks": [
+    {
+     "id": "c15",
+     "text": "Raj Menon identified a risk that if the fourth rehearsal is not clean, the May go\u2011live is gone.",
+     "kind": "risk",
+     "severity": "High",
+     "severity_value": 2.0,
+     "audience": "internal_only",
+     "owner": null,
+     "owner_status": "not_specified",
+     "due_date": null,
+     "due_status": "inferred",
+     "source_lines": [
+      50,
+      51
+     ],
+     "edited_by_user": false
+    },
+    {
+     "id": "c16",
+     "text": "Elena Fischer noted a risk that Raj may be unavailable in the next three weeks, leaving the team one architect deep.",
+     "kind": "risk",
+     "severity": "Medium",
+     "severity_value": 1.38,
+     "audience": "internal_only",
+     "owner": null,
+     "owner_status": "not_specified",
+     "due_date": null,
+     "due_status": "inferred",
+     "source_lines": [
+      52,
+      53
+     ],
+     "edited_by_user": false
+    }
+   ],
+   "Assumptions": [],
+   "Issues": [
+    {
+     "id": "c1",
+     "text": "The go\u2011live date of 30 April is no longer achievable.",
+     "kind": "issue",
+     "severity": "High",
+     "severity_value": 2.0,
+     "audience": "client_safe",
+     "owner": null,
+     "owner_status": "not_specified",
+     "due_date": null,
+     "due_status": "inferred",
+     "source_lines": [
+      6
+     ],
+     "edited_by_user": false
+    },
+    {
+     "id": "c4",
+     "text": "The defect is in the transformation logic and must be fixed with a full rehearsal to prove it.",
+     "kind": "issue",
+     "severity": "High",
+     "severity_value": 1.99,
+     "audience": "client_safe",
+     "owner": "Raj Menon",
+     "owner_status": "not_specified",
+     "due_date": null,
+     "due_status": "not_specified",
+     "source_lines": [
+      14
+     ],
+     "edited_by_user": false
+    },
+    {
+     "id": "c5",
+     "text": "UAT cannot start while the defect is open, leaving 23 scripts and 11 testers idle.",
+     "kind": "issue",
+     "severity": "High",
+     "severity_value": 1.99,
+     "audience": "internal_only",
+     "owner": null,
+     "owner_status": "not_specified",
+     "due_date": null,
+     "due_status": "not_specified",
+     "source_lines": [
+      16,
+      17
+     ],
+     "edited_by_user": false
+    },
+    {
+     "id": "c3",
+     "text": "About nine percent of the historical set, roughly forty one thousand records, are affected by the defect.",
+     "kind": "issue",
+     "severity": "High",
+     "severity_value": 1.97,
+     "audience": "client_safe",
+     "owner": null,
+     "owner_status": "not_specified",
+     "due_date": null,
+     "due_status": "not_specified",
+     "source_lines": [
+      12,
+      13
+     ],
+     "edited_by_user": false
+    },
+    {
+     "id": "c2",
+     "text": "Claims with more than one linked policy migrate with the policy links dropped.",
+     "kind": "issue",
+     "severity": "High",
+     "severity_value": 1.81,
+     "audience": "client_safe",
+     "owner": null,
+     "owner_status": "not_specified",
+     "due_date": null,
+     "due_status": "not_specified",
+     "source_lines": [
+      9,
+      10
+     ],
+     "edited_by_user": false
+    },
+    {
+     "id": "c13",
+     "text": "Priya Nair criticized the delay in the vendor\u2019s mapping document review.",
+     "kind": "issue",
+     "severity": "High",
+     "severity_value": 1.69,
+     "audience": "internal_only",
+     "owner": "Priya Nair",
+     "owner_status": "inferred",
+     "due_date": null,
+     "due_status": "not_specified",
+     "source_lines": [
+      38
+     ],
+     "edited_by_user": false
+    }
+   ],
+   "Dependencies": [
+    {
+     "id": "c6",
+     "text": "The vendor\u2019s document storage API was due on 28 February and is still not delivered; latest commitment is 27 March.",
+     "kind": "dependency",
+     "severity": "High",
+     "severity_value": 1.97,
+     "audience": "internal_only",
+     "owner": null,
+     "owner_status": "not_specified",
+     "due_date": null,
+     "due_status": "stated",
+     "source_lines": [
+      20,
+      21,
+      22
+     ],
+     "edited_by_user": false
+    }
+   ]
+  },
+  "status_report_empty": false,
+  "cached": true,
+  "leak_stripped": false
+ }
+}
